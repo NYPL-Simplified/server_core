@@ -1,7 +1,11 @@
 from nose.tools import set_trace
 import base64
 import datetime
-import isbnlib
+
+import imp
+ignore, isbnlib_path, ignore = imp.find_module("isbnlib")
+isbnlib = imp.load_source("isbnlib", isbnlib_path + "/_core.py")
+
 import os
 import json
 import logging

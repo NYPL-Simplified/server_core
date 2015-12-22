@@ -8,7 +8,11 @@ from lxml import etree
 from nose.tools import set_trace
 import bisect
 import datetime
-import isbnlib
+
+import imp
+ignore, isbnlib_path, ignore = imp.find_module("isbnlib")
+isbnlib = imp.load_source("isbnlib", isbnlib_path + "/_core.py")
+
 import json
 import logging
 import md5
