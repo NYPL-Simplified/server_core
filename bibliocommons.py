@@ -7,7 +7,11 @@ from datetime import (
 import os
 import json
 import urlparse
-import isbnlib
+
+import imp
+ignore, isbnlib_path, ignore = imp.find_module("isbnlib")
+isbnlib = imp.load_source("isbnlib", isbnlib_path + "/_core.py")
+
 from sqlalchemy.orm.session import Session
 
 from model import (
