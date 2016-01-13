@@ -33,6 +33,7 @@ from model import (
     DeliveryMechanism,
     Edition,
     Genre,
+    Hyperlink,
     LicensePool,
     Work,
     WorkGenre,
@@ -971,6 +972,10 @@ class Lane(object):
         # TODO: Also filter on formats.
 
         # TODO: Only find works with unsuppressed LicensePools.
+
+        # Only include works with open access license pools if they
+        # have an open access link
+        q = q.join(Hyperlink).filter((LicensePool.open_access == False) | (Hyperlink.rel == Hyperlink.OPEN_ACCESS_DOWNLOAD))
 
         # Only find unmerged presentation-ready works.
         #
