@@ -2461,13 +2461,14 @@ class Edition(Base):
     @property
     def best_open_access_link(self):
         """Find the best open-access Resource for this LicensePool."""
-        open_access = Hyperlink.OPEN_ACCESS_DOWNLOAD
+        if not self.license_pool.open_access:
+            return None
 
         _db = Session.object_session(self)
         best = None
         best_priority = None
         q = Identifier.resources_for_identifier_ids(
-            _db, [self.primary_identifier.id], open_access)
+            _db, [self.primary_identifier.id])
         for resource in q:
             if not any(
                     [resource.representation and
