@@ -3421,9 +3421,7 @@ class Work(Base):
             or not self.title
             or not self.primary_edition.author
             or not self.language
-            or not self.work_genres
-            or (not self.cover_thumbnail_url
-                and not self.primary_edition.no_known_cover)):
+            or not self.work_genres):
             self.presentation_ready = False
         else:
             self.set_presentation_ready()
