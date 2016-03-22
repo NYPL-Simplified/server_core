@@ -3695,6 +3695,12 @@ class Work(Base):
         qu = qu.filter(condition)
         return qu
 
+    def complaints_index(self):
+        index = dict({})
+        for pool in self.license_pools:
+            for complaint in pool.complaints:
+                index[complaint.type] = index.get(complaint.type, 0) + 1
+        return index
 
 # Used for quality filter queries.
 Index("ix_works_audience_target_age_quality_random", Work.audience, Work.target_age, Work.quality, Work.random)
