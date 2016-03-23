@@ -1095,6 +1095,44 @@ class TestWork(DatabaseTest):
         eq_(1, results[2][2])
         eq_((type1, type2, type2), types)
 
+    def test_complaints_index(self):
+        type = iter(Complaint.VALID_TYPES)
+        type1 = next(type)
+        type2 = next(type)
+
+        work = self._work(
+            "fiction work with complaint",
+            language="eng",
+            fiction=True,
+            with_open_access_download=True)
+        complaint1 = self._complaint(
+            work.license_pools[0],
+            type1,
+            "complaint1 source",
+            "complaint1 detail")
+        complaint2 = self._complaint(
+            work.license_pools[0],
+            type1,
+            "complaint2 source",
+            "complaint2 detail")
+        complaint3 = self._complaint(
+            work.license_pools[0],
+            type2,
+            "complaint3 source",
+            "complaint3 detail")
+        
+        work2 = self._work(
+            "nonfiction work with complaint",
+            language="eng",
+            fiction=True,
+            with_open_access_download=True)
+        
+        expected = dict({})
+        expected[type1] = 2
+        expected[type2] = 1        
+
+        eq_(work.complaints_index(), expected)
+        eq_(work2.complaints_index(), dict({}))
 
 class TestCirculationEvent(DatabaseTest):
 
