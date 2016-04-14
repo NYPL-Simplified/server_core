@@ -283,7 +283,6 @@ def get_one(db, model, on_multiple='error', **kwargs):
     except NoResultFound:
         return None
 
-
 def get_one_or_create(db, model, create_method='',
                       create_method_kwargs=None,
                       **kwargs):
@@ -1811,7 +1810,6 @@ class UnresolvedIdentifier(Base):
             q = q.order_by(func.random())
         return q
 
-
     def set_attempt(self, time=None):
         """Set most_recent_attempt (and possibly first_attempt) to the given
         time.
@@ -1820,6 +1818,7 @@ class UnresolvedIdentifier(Base):
         self.most_recent_attempt = time
         if not self.first_attempt:
             self.first_attempt = time
+
 
 class Contributor(Base):
 
@@ -3011,7 +3010,6 @@ class PresentationCalculationPolicy(object):
             update_search_index=True,
         )
 
-        
 
 class Work(Base):
 
@@ -6819,6 +6817,40 @@ class Admin(Base):
         self.access_token = access_token
         self.credential = credential
         _db.commit()
+
+
+class Library(Base):
+
+    __tablename__ = 'libraries'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+    client_id = Column(Unicode, unique=True)
+    client_secret = Column(Unicode, unique=True, nullable=False)
+
+    CLIENT_ID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
+                       'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                       '0123456789')
+
+    CLIENT_SECRET_CHARS = '!"#$%&()*+,-./[]^_`{}|~'
+
+    @classmethod
+    def generate(cls, _db, name):
+        library = get_one(_db, cls, name=name)
+        if not library:
+            def make_client_string(chars, length):
+                return u"".join([random.choice(chars) for x in range(length)])
+
+            full_client_secret_chars = cls.CLIENT_ID_CHARS + cls.CLIENT_SECRET_CHARS
+            client_id = make_client_string(cls.CLIENT_ID_CHARS, 25)
+            client_secret = make_client_string(full_client_secret_chars, 40)
+
+            library, new = create(
+                _db, cls, name=unicode(name), client_id=client_id,
+                client_secret=client_secret
+            )
+            return library, new
+        return library, False
 
 
 from sqlalchemy.sql import compiler
