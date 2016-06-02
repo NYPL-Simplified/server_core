@@ -11,10 +11,11 @@ from collections import defaultdict
 from sqlalchemy.orm.session import Session
 from nose.tools import set_trace
 from dateutil.parser import parse
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.orm.exc import (
     NoResultFound,
 )
+from sqlalchemy.orm import aliased
 import csv
 import datetime
 import logging
@@ -29,6 +30,7 @@ from model import (
     DataSource,
     DeliveryMechanism,
     Edition,
+    Equivalency,
     Hyperlink,
     Identifier,
     LicensePool,
@@ -37,6 +39,7 @@ from model import (
     PresentationCalculationPolicy,
     RightsStatus,
     Representation,
+    Work,
 )
 from classifier import NO_VALUE, NO_NUMBER
 
@@ -122,6 +125,7 @@ class ReplacementPolicy(object):
             formats=False,
             **args
         )
+
 
 class SubjectData(object):
     def __init__(self, type, identifier, name=None, weight=1):
@@ -298,6 +302,7 @@ class IdentifierData(object):
             _db, self.type, self.identifier
         )
 
+
 class LinkData(object):
     def __init__(self, rel, href=None, media_type=None, content=None,
                  thumbnail=None, rights_uri=None):
@@ -329,6 +334,7 @@ class LinkData(object):
             content
         )
 
+
 class MeasurementData(object):
     def __init__(self,
                  quantity_measured,
@@ -351,6 +357,7 @@ class MeasurementData(object):
             self.quantity_measured, self.value, self.weight, self.taken_at
         )
 
+
 class FormatData(object):
     def __init__(self, content_type, drm_scheme, link=None):
         self.content_type = content_type
@@ -360,6 +367,46 @@ class FormatData(object):
                 "Expected LinkData object, got %s" % type(link)
             )
         self.link = link
+
+
+class RecommendationData(object):
+
+    def __init__(self, data_source, identifiers=None):
+        self.data_source = data_source
+        self.identifiers = identifiers or []
+
+    @property
+    def recommended_works(self):
+        """:return: a query of all of the recommended works in self.identifiers
+        or None
+        """
+        identifier_ids = []
+        _db = Session.object_session(self.data_source)
+        for identifier_data in self.identifiers[:]:
+            if isinstance(identifier_data, Identifier):
+                identifier = identifier_data
+            else:
+                identifier, ignore = Identifier.for_foreign_id(
+                    _db, identifier_data.type, identifier_data.identifier,
+                    autocreate=False
+                )
+            if not identifier:
+                self.identifiers.remove(identifier_data)
+                continue
+            identifier_ids.append(identifier.id)
+
+        if not identifier_ids:
+            return None
+
+        equivalent_identifier = aliased(Identifier)
+        works_q = Work.feed_query(_db)
+        works_q = works_q.outerjoin(Identifier.equivalencies).\
+            outerjoin(equivalent_identifier, Equivalency.output).\
+            filter(or_(
+                Identifier.id.in_(identifier_ids),
+                equivalent_identifier.id.in_(identifier_ids)
+            ))
+        return works_q
 
 class CirculationData(object):
 
@@ -437,6 +484,7 @@ class CirculationData(object):
             self.last_checked
         )
         return changed
+
 
 class Metadata(object):
 
@@ -609,7 +657,6 @@ class Metadata(object):
                 break
         return primary_author
 
-
     def update(self, metadata):
         """Update this Metadata object with values from the given Metadata
         object.
@@ -622,7 +669,6 @@ class Metadata(object):
             new_value = getattr(metadata, field)
             if new_value:
                 setattr(self, field, new_value)
-
 
     def calculate_permanent_work_id(self, _db, metadata_client):
         """Try to calculate a permanent work ID from this metadata.
@@ -736,7 +782,6 @@ class Metadata(object):
         if self.rights_uri == None:
             # We still haven't determined rights, so it's unknown.
             self.rights_uri = RightsStatus.UNKNOWN
-
 
     def license_pool(self, _db):
         if not self.primary_identifier:
@@ -858,8 +903,6 @@ class Metadata(object):
                 potentials[lp] = confidence
                 success = True
         return success
-
-
 
     # TODO: We need to change all calls to apply() to use a ReplacementPolicy
     # instead of passing in individual `replace` arguments. Once that's done,
@@ -1106,9 +1149,6 @@ class Metadata(object):
         )
         return edition, made_core_changes
 
-
-
-
     def mirror_link(self, pool, data_source, link, link_obj, policy):
         """Retrieve a copy of the given link and make sure it gets
         mirrored. If it's a full-size image, create a thumbnail and
@@ -1224,7 +1264,6 @@ class Metadata(object):
             if representation.mirrored_at and not representation.mirror_exception:
                 representation.content = None
 
-
     def make_thumbnail(self, pool, data_source, link, link_obj):
         """Make sure a Hyperlink representing an image is connected
         to its thumbnail.
@@ -1295,6 +1334,7 @@ class Metadata(object):
 
 class CSVFormatError(csv.Error):
     pass
+
 
 class CSVMetadataImporter(object):
 
