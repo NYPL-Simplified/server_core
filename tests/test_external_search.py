@@ -187,6 +187,36 @@ class TestExternalSearch(DatabaseTest):
             self.sherlock_spanish.set_presentation_ready()
             works.append(self.sherlock_spanish)
 
+            self.suppressed = self._work(with_license_pool=True, title="Suppressed")
+            self.suppressed.license_pools[0].suppressed = True
+            self.suppressed.set_presentation_ready()
+            works.append(self.suppressed)
+
+            self.no_licenses_owned = self._work(with_license_pool=True, title="NoLicensesOwned")
+            self.no_licenses_owned.license_pools[0].open_access = False
+            self.no_licenses_owned.license_pools[0].licenses_owned = 0
+            self.no_licenses_owned.set_presentation_ready()
+            works.append(self.no_licenses_owned)
+
+            self.open_access = self._work(with_license_pool=True, title="OpenAccess")
+            self.open_access.license_pools[0].open_access = True
+            self.open_access.set_presentation_ready()
+            works.append(self.open_access)
+
+            self.licenses_available = self._work(with_license_pool=True, title="LotsOfLicenses")
+            self.licenses_available.license_pools[0].open_access = False
+            self.licenses_available.license_pools[0].licenses_owned = 20
+            self.licenses_available.license_pools[0].licenses_available = 20
+            self.licenses_available.set_presentation_ready()
+            works.append(self.licenses_available)
+
+            self.no_licenses_available = self._work(with_license_pool=True, title="NoLicensesAvailable")
+            self.no_licenses_available.license_pools[0].open_access = False
+            self.no_licenses_available.license_pools[0].licenses_owned = 1
+            self.no_licenses_available.license_pools[0].licenses_available = 0
+            self.no_licenses_available.set_presentation_ready()
+            works.append(self.no_licenses_available)
+
             self.search.bulk_update(works)
 
             time.sleep(1)
@@ -206,17 +236,17 @@ class TestExternalSearch(DatabaseTest):
 
         # Pagination
 
-        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=1, offset=0)
+        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=1, offset=0, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]["_id"])
 
-        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=1, offset=1)
+        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=1, offset=1, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.moby_duck.id), hits[0]["_id"])
 
-        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=2, offset=0)
+        results = self.search.query_works("moby dick", None, None, None, None, None, None, None, size=2, offset=0, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]["_id"])
@@ -224,28 +254,28 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches all main fields
 
-        title_results = self.search.query_works("moby", None, None, None, None, None, None, None)
+        title_results = self.search.query_works("moby", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(2, len(title_results["hits"]["hits"]))
 
-        author_results = self.search.query_works("melville", None, None, None, None, None, None, None)
+        author_results = self.search.query_works("melville", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(1, len(author_results["hits"]["hits"]))
 
-        subtitle_results = self.search.query_works("whale", None, None, None, None, None, None, None)
+        subtitle_results = self.search.query_works("whale", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(1, len(subtitle_results["hits"]["hits"]))
 
-        series_results = self.search.query_works("classics", None, None, None, None, None, None, None)
+        series_results = self.search.query_works("classics", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(1, len(series_results["hits"]["hits"]))
 
-        summary_results = self.search.query_works("ishmael", None, None, None, None, None, None, None)
+        summary_results = self.search.query_works("ishmael", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(1, len(summary_results["hits"]["hits"]))
 
-        publisher_results = self.search.query_works("gutenberg", None, None, None, None, None, None, None)
+        publisher_results = self.search.query_works("gutenberg", None, None, None, None, None, None, None, only_deliverable=False)
         eq_(1, len(summary_results["hits"]["hits"]))
 
 
         # Ranks title above subtitle above summary above publisher
 
-        results = self.search.query_works("match", None, None, None, None, None, None, None)
+        results = self.search.query_works("match", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(4, len(hits))
         eq_(unicode(self.title_match.id), hits[0]['_id'])
@@ -256,7 +286,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Ranks both title and author higher than only title
 
-        results = self.search.query_works("moby melville", None, None, None, None, None, None, None)
+        results = self.search.query_works("moby melville", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]['_id'])
@@ -265,7 +295,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches a quoted phrase
 
-        results = self.search.query_works("\"moby dick\"", None, None, None, None, None, None, None)
+        results = self.search.query_works("\"moby dick\"", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]["_id"])
@@ -273,7 +303,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches stemmed word
 
-        results = self.search.query_works("runs", None, None, None, None, None, None, None)
+        results = self.search.query_works("runs", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.dodger.id), hits[0]['_id'])
@@ -281,27 +311,27 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches misspelled phrase
 
-        results = self.search.query_works("movy", None, None, None, None, None, None, None)
+        results = self.search.query_works("movy", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
 
-        results = self.search.query_works("mleville", None, None, None, None, None, None, None)
+        results = self.search.query_works("mleville", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
 
-        results = self.search.query_works("mo by dick", None, None, None, None, None, None, None)
+        results = self.search.query_works("mo by dick", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
 
 
         # Matches word with apostrophe
 
-        results = self.search.query_works("durbervilles", None, None, None, None, None, None, None)
+        results = self.search.query_works("durbervilles", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.tess.id), hits[0]['_id'])
 
-        results = self.search.query_works("tiffanys", None, None, None, None, None, None, None)
+        results = self.search.query_works("tiffanys", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.tiffany.id), hits[0]['_id'])
@@ -309,7 +339,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches work with unicode character
 
-        results = self.search.query_works("les miserables", None, None, None, None, None, None, None)
+        results = self.search.query_works("les miserables", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.les_mis.id), hits[0]['_id'])
@@ -317,12 +347,12 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches fiction
 
-        results = self.search.query_works("fiction moby", None, None, None, None, None, None, None)
+        results = self.search.query_works("fiction moby", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]['_id'])
 
-        results = self.search.query_works("nonfiction moby", None, None, None, None, None, None, None)
+        results = self.search.query_works("nonfiction moby", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.moby_duck.id), hits[0]['_id'])
@@ -330,7 +360,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches genre
 
-        results = self.search.query_works("romance", None, None, None, None, None, None, None)
+        results = self.search.query_works("romance", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.ya_romance.id), hits[0]['_id'])
@@ -338,12 +368,12 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches audience
 
-        results = self.search.query_works("children's", None, None, None, None, None, None, None)
+        results = self.search.query_works("children's", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.children_work.id), hits[0]['_id'])
 
-        results = self.search.query_works("young adult", None, None, None, None, None, None, None)
+        results = self.search.query_works("young adult", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         work_ids = sorted([unicode(self.ya_work.id), unicode(self.ya_romance.id)])
@@ -353,12 +383,12 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches grade
 
-        results = self.search.query_works("grade 4", None, None, None, None, None, None, None)
+        results = self.search.query_works("grade 4", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.age_9_10.id), hits[0]['_id'])
         
-        results = self.search.query_works("grade 4-6", None, None, None, None, None, None, None)
+        results = self.search.query_works("grade 4-6", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.age_9_10.id), hits[0]['_id'])
@@ -366,12 +396,12 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches age
 
-        results = self.search.query_works("age 9", None, None, None, None, None, None, None)
+        results = self.search.query_works("age 9", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.age_9_10.id), hits[0]['_id'])
         
-        results = self.search.query_works("age 10-12", None, None, None, None, None, None, None)
+        results = self.search.query_works("age 10-12", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.age_9_10.id), hits[0]['_id'])
@@ -379,7 +409,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Ranks closest target age range highest
 
-        results = self.search.query_works("age 3-5", None, None, None, None, None, None, None)
+        results = self.search.query_works("age 3-5", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(3, len(hits))
         eq_(unicode(self.age_4_5.id), hits[0]['_id'])
@@ -389,7 +419,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches genre + audience
 
-        results = self.search.query_works("young adult romance", None, None, None, None, None, None, None)
+        results = self.search.query_works("young adult romance", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.ya_romance.id), hits[0]['_id'])
@@ -397,7 +427,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches age + fiction
 
-        results = self.search.query_works("age 5 fiction", None, None, None, None, None, None, None)
+        results = self.search.query_works("age 5 fiction", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.age_4_5.id), hits[0]['_id'])
@@ -405,7 +435,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches genre + title
 
-        results = self.search.query_works("lincoln biography", None, None, None, None, None, None, None)
+        results = self.search.query_works("lincoln biography", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         eq_(unicode(self.lincoln.id), hits[0]['_id'])
@@ -414,7 +444,7 @@ class TestExternalSearch(DatabaseTest):
 
         # Matches age + genre + summary
 
-        results = self.search.query_works("age 8 president biography", None, None, None, None, None, None, None)
+        results = self.search.query_works("age 8 president biography", None, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(5, len(hits))
         eq_(unicode(self.obama.id), hits[0]['_id'])
@@ -425,12 +455,12 @@ class TestExternalSearch(DatabaseTest):
         book_lane = Lane(self._db, "Books", media=Edition.BOOK_MEDIUM)
         audio_lane = Lane(self._db, "Audio", media=Edition.AUDIO_MEDIUM)
 
-        results = self.search.query_works("pride and prejudice", book_lane.media, None, None, None, None, None, None)
+        results = self.search.query_works("pride and prejudice", book_lane.media, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.pride.id), hits[0]["_id"])
 
-        results = self.search.query_works("pride and prejudice", audio_lane.media, None, None, None, None, None, None)
+        results = self.search.query_works("pride and prejudice", audio_lane.media, None, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.pride_audio.id), hits[0]["_id"])
@@ -442,17 +472,17 @@ class TestExternalSearch(DatabaseTest):
         spanish_lane = Lane(self._db, "Spanish", languages="es")
         both_lane = Lane(self._db, "Both", languages=["en", "es"])
 
-        results = self.search.query_works("sherlock", None, english_lane.languages, None, None, None, None, None)
+        results = self.search.query_works("sherlock", None, english_lane.languages, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.sherlock.id), hits[0]["_id"])
 
-        results = self.search.query_works("sherlock", None, spanish_lane.languages, None, None, None, None, None)
+        results = self.search.query_works("sherlock", None, spanish_lane.languages, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.sherlock_spanish.id), hits[0]["_id"])
 
-        results = self.search.query_works("sherlock", None, both_lane.languages, None, None, None, None, None)
+        results = self.search.query_works("sherlock", None, both_lane.languages, None, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
 
@@ -463,17 +493,17 @@ class TestExternalSearch(DatabaseTest):
         no_spanish_lane = Lane(self._db, "Spanish", exclude_languages="es")
         neither_lane = Lane(self._db, "Both", exclude_languages=["en", "es"])
 
-        results = self.search.query_works("sherlock", None, None, no_english_lane.exclude_languages, None, None, None, None)
+        results = self.search.query_works("sherlock", None, None, no_english_lane.exclude_languages, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.sherlock_spanish.id), hits[0]["_id"])
 
-        results = self.search.query_works("sherlock", None, None, no_spanish_lane.exclude_languages, None, None, None, None)
+        results = self.search.query_works("sherlock", None, None, no_spanish_lane.exclude_languages, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.sherlock.id), hits[0]["_id"])
 
-        results = self.search.query_works("sherlock", None, None, neither_lane.exclude_languages, None, None, None, None)
+        results = self.search.query_works("sherlock", None, None, neither_lane.exclude_languages, None, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(0, len(hits))
         
@@ -484,17 +514,17 @@ class TestExternalSearch(DatabaseTest):
         nonfiction_lane = Lane(self._db, "nonfiction", fiction=False)
         both_lane = Lane(self._db, "both", fiction=Lane.BOTH_FICTION_AND_NONFICTION)
 
-        results = self.search.query_works("moby dick", None, None, None, fiction_lane.fiction, None, None, None)
+        results = self.search.query_works("moby dick", None, None, None, fiction_lane.fiction, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.moby_dick.id), hits[0]["_id"])
 
-        results = self.search.query_works("moby dick", None, None, None, nonfiction_lane.fiction, None, None, None)
+        results = self.search.query_works("moby dick", None, None, None, nonfiction_lane.fiction, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.moby_duck.id), hits[0]["_id"])
 
-        results = self.search.query_works("moby dick", None, None, None, both_lane.fiction, None, None, None)
+        results = self.search.query_works("moby dick", None, None, None, both_lane.fiction, None, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
 
@@ -506,22 +536,22 @@ class TestExternalSearch(DatabaseTest):
         children_lane = Lane(self._db, "Children", audiences=Classifier.AUDIENCE_CHILDREN)
         ya_and_children_lane = Lane(self._db, "YA and Children", audiences=[Classifier.AUDIENCE_YOUNG_ADULT, Classifier.AUDIENCE_CHILDREN])
 
-        results = self.search.query_works("alice", None, None, None, None, adult_lane.audiences, None, None)
+        results = self.search.query_works("alice", None, None, None, None, adult_lane.audiences, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.adult_work.id), hits[0]["_id"])
 
-        results = self.search.query_works("alice", None, None, None, None, ya_lane.audiences, None, None)
+        results = self.search.query_works("alice", None, None, None, None, ya_lane.audiences, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.ya_work.id), hits[0]["_id"])
 
-        results = self.search.query_works("alice", None, None, None, None, children_lane.audiences, None, None)
+        results = self.search.query_works("alice", None, None, None, None, children_lane.audiences, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.children_work.id), hits[0]["_id"])
 
-        results = self.search.query_works("alice", None, None, None, None, ya_and_children_lane.audiences, None, None)
+        results = self.search.query_works("alice", None, None, None, None, ya_and_children_lane.audiences, None, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
         work_ids = sorted([unicode(self.ya_work.id), unicode(self.children_work.id)])
@@ -536,14 +566,14 @@ class TestExternalSearch(DatabaseTest):
         age_5_10_lane = Lane(self._db, "Age 5-10", age_range=[5, 10])
         age_8_10_lane = Lane(self._db, "Age 8-10", age_range=[8, 10])
 
-        results = self.search.query_works("president", None, None, None, None, None, age_8_lane.age_range, None)
+        results = self.search.query_works("president", None, None, None, None, None, age_8_lane.age_range, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(3, len(hits))
         work_ids = sorted([unicode(self.no_age.id), unicode(self.obama.id), unicode(self.dodger.id)])
         result_ids = sorted([hit["_id"] for hit in hits])
         eq_(work_ids, result_ids)
 
-        results = self.search.query_works("president", None, None, None, None, None, age_5_8_lane.age_range, None)
+        results = self.search.query_works("president", None, None, None, None, None, age_5_8_lane.age_range, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(4, len(hits))
         work_ids = sorted([unicode(self.no_age.id),
@@ -553,7 +583,7 @@ class TestExternalSearch(DatabaseTest):
         result_ids = sorted([hit["_id"] for hit in hits])
         eq_(work_ids, result_ids)
 
-        results = self.search.query_works("president", None, None, None, None, None, age_5_10_lane.age_range, None)
+        results = self.search.query_works("president", None, None, None, None, None, age_5_10_lane.age_range, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(5, len(hits))
         work_ids = sorted([unicode(self.no_age.id),
@@ -564,7 +594,7 @@ class TestExternalSearch(DatabaseTest):
         result_ids = sorted([hit["_id"] for hit in hits])
         eq_(work_ids, result_ids)
 
-        results = self.search.query_works("president", None, None, None, None, None, age_8_10_lane.age_range, None)
+        results = self.search.query_works("president", None, None, None, None, None, age_8_10_lane.age_range, None, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(4, len(hits))
         work_ids = sorted([unicode(self.no_age.id),
@@ -581,20 +611,87 @@ class TestExternalSearch(DatabaseTest):
         fantasy_lane = Lane(self._db, "Fantasy", genres=["Fantasy"])
         both_lane = Lane(self._db, "Both", genres=["Biography & Memoir", "Fantasy"], fiction=Lane.BOTH_FICTION_AND_NONFICTION)
 
-        results = self.search.query_works("lincoln", None, None, None, None, None, None, biography_lane.genre_ids)
+        results = self.search.query_works("lincoln", None, None, None, None, None, None, biography_lane.genre_ids, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.lincoln.id), hits[0]["_id"])
 
-        results = self.search.query_works("lincoln", None, None, None, None, None, None, fantasy_lane.genre_ids)
+        results = self.search.query_works("lincoln", None, None, None, None, None, None, fantasy_lane.genre_ids, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(1, len(hits))
         eq_(unicode(self.lincoln_vampire.id), hits[0]["_id"])
 
-        results = self.search.query_works("lincoln", None, None, None, None, None, None, both_lane.genre_ids)
+        results = self.search.query_works("lincoln", None, None, None, None, None, None, both_lane.genre_ids, only_deliverable=False)
         hits = results["hits"]["hits"]
         eq_(2, len(hits))
 
+
+        # Filters out works that aren't deliverable if only_deliverable is True
+
+        # Suppressed works aren't deliverable
+
+        results = self.search.query_works("suppressed", None, None, None, None, None, None, None, only_deliverable=True)
+        hits = results["hits"]["hits"]
+        eq_(0, len(hits))
+
+        results = self.search.query_works("suppressed", None, None, None, None, None, None, None, only_deliverable=False)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        # Works with no licenses owned aren't deliverable
+
+        results = self.search.query_works("nolicensesowned", None, None, None, None, None, None, None, only_deliverable=True)
+        hits = results["hits"]["hits"]
+        eq_(0, len(hits))
+
+        results = self.search.query_works("nolicensesowned", None, None, None, None, None, None, None, only_deliverable=False)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        # Open access works are always deliverable
+
+        results = self.search.query_works("openaccess", None, None, None, None, None, None, None, only_deliverable=True)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        results = self.search.query_works("openaccess", None, None, None, None, None, None, None, only_deliverable=False)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        # Works with licenses owned and available are deliverable
+
+        results = self.search.query_works("lotsoflicenses", None, None, None, None, None, None, None, only_deliverable=True)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        results = self.search.query_works("lotsoflicenses", None, None, None, None, None, None, None, only_deliverable=False)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        # Works with licenses owned but not available may be deliverable, depending on the hold policy
+
+        results = self.search.query_works("nolicensesavailable", None, None, None, None, None, None, None, only_deliverable=True)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        results = self.search.query_works("nolicensesavailable", None, None, None, None, None, None, None, only_deliverable=False)
+        hits = results["hits"]["hits"]
+        eq_(1, len(hits))
+
+        with temp_config() as config:
+            config[Configuration.POLICIES] = {
+                Configuration.HOLD_POLICY: Configuration.HOLD_POLICY_HIDE
+            }
+
+            results = self.search.query_works("nolicensesavailable", None, None, None, None, None, None, None, only_deliverable=True)
+            hits = results["hits"]["hits"]
+            eq_(0, len(hits))
+            
+            results = self.search.query_works("nolicensesavailable", None, None, None, None, None, None, None, only_deliverable=False)
+            hits = results["hits"]["hits"]
+            eq_(1, len(hits))
+
+        
 class TestSearchQuery(DatabaseTest):
     def test_make_query(self):
 
@@ -750,9 +847,9 @@ class TestSearchQuery(DatabaseTest):
         assert "5" not in remaining_query['query']
         assert "years" not in remaining_query['query']
 
-class TestSearchFilterFromLane(DatabaseTest):
+class TestSearchFilter(DatabaseTest):
         
-    def test_query_works_from_lane_definition_handles_age_range(self):
+    def test_filter_from_lane_definition_handles_age_range(self):
         search = DummyExternalSearchIndex()
 
         lane = Lane(
@@ -763,6 +860,7 @@ class TestSearchFilterFromLane(DatabaseTest):
             lane.media, lane.languages, lane.exclude_languages,
             lane.fiction, list(lane.audiences), lane.age_range,
             lane.genre_ids,
+            only_deliverable=False,
         )
 
         medium_filter, audience_filter, target_age_filter = filter['and']
@@ -772,7 +870,7 @@ class TestSearchFilterFromLane(DatabaseTest):
         eq_(expect_upper, upper_filter)
         eq_(expect_lower, lower_filter)
 
-    def test_query_works_from_lane_definition_handles_languages(self):
+    def test_filter_from_lane_definition_handles_languages(self):
         search = DummyExternalSearchIndex()
 
         lane = Lane(
@@ -783,6 +881,7 @@ class TestSearchFilterFromLane(DatabaseTest):
             lane.media, lane.languages, lane.exclude_languages,
             lane.fiction, list(lane.audiences), lane.age_range,
             lane.genre_ids,
+            only_deliverable=False,
         )
         
         languages_filter, medium_filter = filter['and']
@@ -791,7 +890,7 @@ class TestSearchFilterFromLane(DatabaseTest):
         assert 'language' in languages_filter['terms']
         eq_(expect_languages, sorted(languages_filter['terms']['language']))
 
-    def test_query_works_from_lane_definition_handles_exclude_languages(self):
+    def test_filter_from_lane_definition_handles_exclude_languages(self):
         search = DummyExternalSearchIndex()
 
         lane = Lane(
@@ -802,6 +901,7 @@ class TestSearchFilterFromLane(DatabaseTest):
             lane.media, lane.languages, lane.exclude_languages,
             lane.fiction, list(lane.audiences), lane.age_range,
             lane.genre_ids,
+            only_deliverable=False,
         )
         
         exclude_languages_filter, medium_filter = filter['and']
@@ -810,3 +910,50 @@ class TestSearchFilterFromLane(DatabaseTest):
         assert 'terms' in exclude_languages_filter['not']
         assert 'language' in exclude_languages_filter['not']['terms']
         eq_(expect_exclude_languages, sorted(exclude_languages_filter['not']['terms']['language']))
+
+    def test_filter_handles_only_deliverable(self):
+        search = DummyExternalSearchIndex()
+
+        filter = search.make_filter(None, None, None, None, None, None, None, only_deliverable=True)
+        [deliverable_filter] = filter['and']
+        assert 'and' in deliverable_filter
+        suppressed_filter, licenses_owned_filter = deliverable_filter['and']
+
+        assert 'term' in suppressed_filter
+        assert 'license_pools.suppressed' in suppressed_filter['term']
+        eq_(False, suppressed_filter['term']['license_pools.suppressed'])
+        
+        assert 'or' in licenses_owned_filter
+        licenses_owned_gte_filter, open_access_filter = licenses_owned_filter['or']
+
+        assert 'range' in licenses_owned_gte_filter
+        assert 'license_pools.licenses_owned' in licenses_owned_gte_filter['range']
+        assert 'gte' in licenses_owned_gte_filter['range']['license_pools.licenses_owned']
+        eq_(1, licenses_owned_gte_filter['range']['license_pools.licenses_owned']['gte'])
+
+        assert 'term' in open_access_filter
+        assert 'license_pools.open_access' in open_access_filter['term']
+        eq_(True, open_access_filter['term']['license_pools.open_access'])
+
+        with temp_config() as config:
+            config[Configuration.POLICIES] = {
+                Configuration.HOLD_POLICY: Configuration.HOLD_POLICY_HIDE
+            }
+
+            filter = search.make_filter(None, None, None, None, None, None, None, only_deliverable=True)
+            [deliverable_filter] = filter['and']
+            assert 'and' in deliverable_filter
+            available_filter, suppressed_filter, licenses_owned_filter = deliverable_filter['and']
+
+            assert 'or' in available_filter
+            licenses_available_filter, open_access_filter = available_filter['or']
+
+            assert 'range' in licenses_available_filter
+            assert 'license_pools.licenses_available' in licenses_available_filter['range']
+            assert 'gte' in licenses_available_filter['range']['license_pools.licenses_available']
+            eq_(1, licenses_available_filter['range']['license_pools.licenses_available']['gte'])
+            
+            assert 'term' in open_access_filter
+            assert 'license_pools.open_access' in open_access_filter['term']
+            eq_(True, open_access_filter['term']['license_pools.open_access'])
+

@@ -4007,10 +4007,35 @@ class Work(Base):
         ).where(
             Work.id==literal_column(works_alias.name + "." + works_alias.c.work_id.name)
         ).alias('target_age_subquery')
+
         # Create the target age json object.
         target_age_json = select(
             [func.row_to_json(literal_column(target_age.name))]
         ).select_from(target_age)
+
+
+        # Subquery for availability info.
+        pools = select(
+            [LicensePool.availability_time,
+             LicensePool.superceded,
+             LicensePool.suppressed,
+             LicensePool.open_access,
+             LicensePool.licenses_owned,
+             LicensePool.licenses_available,
+             LicensePool.licenses_reserved,
+            ]
+        ).where(
+            LicensePool.work_id==literal_column(works_alias.name + "." + works_alias.c.work_id.name)
+        ).alias("pools_query")
+
+        # Create the availability json.
+        pools_json = select(
+            [func.array_to_json(
+                    func.array_agg(
+                        func.row_to_json(
+                            literal_column(pools.name)
+                        )))]
+        ).select_from(pools)
 
 
         # Now, create a query that brings together everything we need for the final
@@ -4048,6 +4073,7 @@ class Work(Base):
              subjects_json.label("classifications"),
              genres_json.label('genres'),
              target_age_json.label('target_age'),
+             pools_json.label("license_pools"),
             ]
         ).select_from(
             works_alias

@@ -135,13 +135,14 @@ class ExternalSearchIndex(object):
                 
 
     def query_works(self, query_string, media, languages, exclude_languages, fiction, audience,
-                    age_range, in_any_of_these_genres=[], fields=None, size=30, offset=0):
+                    age_range, in_any_of_these_genres=[], fields=None, size=30, offset=0, only_deliverable=True):
         if not self.works_index:
             return []
 
         filter = self.make_filter(
             media, languages, exclude_languages, fiction, audience,
-            age_range, in_any_of_these_genres
+            age_range, in_any_of_these_genres,
+            only_deliverable=only_deliverable,
         )
         q = dict(
             filtered=dict(
@@ -385,13 +386,42 @@ class ExternalSearchIndex(object):
             }
         }
         
-    def make_filter(self, media, languages, exclude_languages, fiction, audience, age_range, genres):
+    def make_filter(self, media, languages, exclude_languages, fiction, audience, age_range, genres, only_deliverable=True):
         def _f(s):
             if not s:
                 return s
             return s.lower().replace(" ", "")
 
         clauses = []
+
+        if only_deliverable:
+            deliverable_clauses = []
+
+            hold_policy = Configuration.hold_policy()
+            if hold_policy == Configuration.HOLD_POLICY_HIDE:
+                available_clause = {
+                    "or" : [
+                        {"range": {"license_pools.licenses_available": {"gte": 1}}},
+                        {"term": {"license_pools.open_access": True}},
+                    ]
+                }
+                deliverable_clauses.append(available_clause)
+
+            deliverable_clauses.append({
+                "term": {"license_pools.suppressed": False}
+            })
+            deliverable_clauses.append({
+                "or" : [
+                    {"range": {"license_pools.licenses_owned": {"gte": 1}}},
+                    {"term": {"license_pools.open_access": True}},
+                ]
+            })
+            
+            deliverable_clause = {
+                "and": deliverable_clauses
+            }
+            clauses.append(deliverable_clause)
+            
         if languages:
             clauses.append(dict(terms=dict(language=list(languages))))
         if exclude_languages:
