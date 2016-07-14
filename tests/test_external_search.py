@@ -219,7 +219,7 @@ class TestExternalSearch(DatabaseTest):
 
             self.search.bulk_update(works)
 
-            time.sleep(1)
+            time.sleep(5)
 
     def teardown(self):
         if self.search:
