@@ -1133,6 +1133,7 @@ class Lane(object):
                     fields=["_id", "title", "author", "license_pool_id"],
                     size=pagination.size,
                     offset=pagination.offset,
+                    only_deliverable=True,
                 )
             except elasticsearch.exceptions.ConnectionError, e:
                 logging.error(
@@ -1157,7 +1158,6 @@ class Lane(object):
                         lazyload(mw.license_pool, LicensePool.identifier),
                         lazyload(mw.license_pool, LicensePool.presentation_edition),
                     )
-                    q = self.only_show_ready_deliverable_works(q, mw)
                     q = self._defer_unused_opds_entry(q, work_model=mw)
                     work_by_id = dict()
                     a = time.time()
