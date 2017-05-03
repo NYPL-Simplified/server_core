@@ -51,7 +51,7 @@ class Configuration(object):
     COPYRIGHT = "copyright"
     ABOUT = "about"
     LICENSE = "license"
-    
+
     # Logging
     LOGGING = "logging"
     LOG_LEVEL = "level"
@@ -97,10 +97,10 @@ class Configuration(object):
     DEFAULT_OPDS_FORMAT = "verbose_opds_entry"
     CACHE_FOREVER = 'forever'
 
-    PAGE_MAX_AGE_POLICY = "default_page_max_age" 
+    PAGE_MAX_AGE_POLICY = "default_page_max_age"
     DEFAULT_PAGE_MAX_AGE = 1200
 
-    GROUPS_MAX_AGE_POLICY = "default_groups_max_age" 
+    GROUPS_MAX_AGE_POLICY = "default_groups_max_age"
     DEFAULT_GROUPS_MAX_AGE = CACHE_FOREVER
 
     # Loan policies
@@ -140,6 +140,7 @@ class Configuration(object):
     ONECLICK_INTEGRATION = "OneClick"
     OVERDRIVE_INTEGRATION = "Overdrive"
     THREEM_INTEGRATION = "3M"
+    #ENKI_INTEGRATION = "Enki"
 
     MINIMUM_FEATURED_QUALITY = "minimum_featured_quality"
     FEATURED_LANE_SIZE = "featured_lane_size"
@@ -254,7 +255,7 @@ class Configuration(object):
     @classmethod
     def license_url(cls):
         return cls.link(cls.LICENSE)
-    
+
     @classmethod
     def hold_policy(cls):
         return cls.policy(cls.HOLD_POLICY, cls.HOLD_POLICY_ALLOW)
@@ -318,7 +319,7 @@ class Configuration(object):
     def localization_languages(cls):
         languages = cls.policy(cls.LOCALIZATION_LANGUAGES, default=["eng"])
         return [LanguageCodes.three_to_two[l] for l in languages]
-    
+
     @classmethod
     def load(cls):
         cfv = 'SIMPLIFIED_CONFIGURATION_FILE'
