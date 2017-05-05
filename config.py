@@ -140,7 +140,7 @@ class Configuration(object):
     ONECLICK_INTEGRATION = "OneClick"
     OVERDRIVE_INTEGRATION = "Overdrive"
     THREEM_INTEGRATION = "3M"
-    #ENKI_INTEGRATION = "Enki"
+    ENKI_INTEGRATION = "Enki"
 
     MINIMUM_FEATURED_QUALITY = "minimum_featured_quality"
     FEATURED_LANE_SIZE = "featured_lane_size"

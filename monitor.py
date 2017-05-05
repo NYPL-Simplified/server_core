@@ -69,7 +69,8 @@ class Monitor(object):
 
         while not self.stop_running:
             cutoff = datetime.datetime.utcnow()           
-            new_timestamp = self.run_once(start, cutoff) or cutoff
+            print "Chris was here, too, at new_timestamp"
+	    new_timestamp = self.run_once(start, cutoff) or cutoff
             duration = datetime.datetime.utcnow() - cutoff
             to_sleep = self.interval_seconds-duration.seconds-1
             self.cleanup()
