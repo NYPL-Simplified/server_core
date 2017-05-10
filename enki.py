@@ -96,7 +96,7 @@ class EnkiAPI(object):
 	if len([x for x in values if not x]):
 	    cls.log.info( "No Enki client configured" )
 	    return None
-        return cls(_db)	
+        return cls(_db)
 
     @property
     def source(self):
@@ -161,8 +161,10 @@ class EnkiAPI(object):
             args['patronId'] = patron_id
         if title_ids:
             args['titleIds'] = ','.join(title_ids)"""
-	args['method'] = "getUpdateTitles"
+	args['method'] = "getAllTitles"
 	args['id'] = "secontent"
+        args['strt'] = 0
+        args['qty'] = 7000
 	print "Making a request to %s" % url
 	response = self.request(url, params=args)
 	if response:
@@ -344,7 +346,9 @@ class BibliographicParser(EnkiParser):
             sort_name=author, roles=role)
 
     def extract_bibliographic(self, element, ns):
-        primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
+        identifiers = []
+	identifiers.append(element["isbn"])
+	primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
 	metadata = Metadata(
             data_source=DataSource.ENKI,
             title=element["title"],
@@ -355,7 +359,7 @@ class BibliographicParser(EnkiParser):
             #imprint=imprint,
             #published=publication_date,
             primary_identifier=primary_identifier,
-            #identifiers=identifiers,
+            identifiers=identifiers,
             #subjects=subjects,
             #contributors=contributors,
         )
