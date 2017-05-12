@@ -161,8 +161,8 @@ class EnkiAPI(object):
             args['patronId'] = patron_id
         if title_ids:
             args['titleIds'] = ','.join(title_ids)"""
-	args['method'] = "getAllTitles"
-	args['id'] = "secontent"
+        args['method'] = "getAllTitles"
+        args['id'] = "secontent"
         args['strt'] = 0
         args['qty'] = 7000
 	print "Making a request to %s" % url
@@ -347,12 +347,22 @@ class BibliographicParser(EnkiParser):
 
     def extract_bibliographic(self, element, ns):
         identifiers = []
-	identifiers.append(element["isbn"])
-	primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
+        contributors = []
+        identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
+        sort_name = element["author"]
+        """# Uncertain whether the CM takes care of this already, but just to be certain...
+        if "," in sort_name:
+            n = sort_name.split(",")
+            display_name = n[1] + " " + n[0]
+        else:
+            display_name = sort_name"""
+        #contributors.append(ContributorData(sort_name=element["author"], display_name=display_name))
+	contributors.append(ContributorData(sort_name=element["author"]))
+        primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
 	metadata = Metadata(
             data_source=DataSource.ENKI,
             title=element["title"],
-            #language="ENGLISH",
+            language="ENGLISH",
             medium=Edition.BOOK_MEDIUM,
             #series=series,
             publisher=element["publisher"],
@@ -361,7 +371,7 @@ class BibliographicParser(EnkiParser):
             primary_identifier=primary_identifier,
             identifiers=identifiers,
             #subjects=subjects,
-            #contributors=contributors,
+            contributors=contributors,
         )
 
         circulationdata = CirculationData(
