@@ -267,16 +267,15 @@ class EnkiParser(JSONParser):
     pass
 
 class BibliographicParser(EnkiParser):
-    pass
     #TODO Copied straight from Axis360. Needs work to get enki_monitor to run.
-    DELIVERY_DATA_FOR_AXIS_FORMAT = {
+    DELIVERY_DATA_FOR_ENKI_FORMAT = {
         "Blio" : None,
         "Acoustik" : None,
-        "ePub" : (Representation.EPUB_MEDIA_TYPE, DeliveryMechanism.ADOBE_DRM),
-        "PDF" : (Representation.PDF_MEDIA_TYPE, DeliveryMechanism.ADOBE_DRM),
+        "ePub" : (Representation.EPUB_MEDIA_TYPE, DeliveryMechanism.NO_DRM),
+        "PDF" : None,
     }
 
-    log = logging.getLogger("Axis 360 Bibliographic Parser")
+    log = logging.getLogger("Enki Bibliographic Parser")
 
     @classmethod
     def parse_list(self, l):
@@ -293,7 +292,7 @@ class BibliographicParser(EnkiParser):
 
     def process_all(self, string):
         for i in super(BibliographicParser, self).process_all(
-                string, "//axis:title"):#, self.NS):
+                string, "//enki:title"):#, self.NS):
             yield i
 
     def extract_availability(self, circulation_data, element, ns):
@@ -350,8 +349,8 @@ class BibliographicParser(EnkiParser):
         contributors = []
         identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
         sort_name = element["author"]
-        """# Uncertain whether the CM takes care of this already, but just to be certain...
-        if "," in sort_name:
+        # Can the CM take a sort_name and turn it into a display_name? If it can't, then do this:
+        """if "," in sort_name:
             n = sort_name.split(",")
             display_name = n[1] + " " + n[0]
         else:
@@ -373,11 +372,14 @@ class BibliographicParser(EnkiParser):
             #subjects=subjects,
             contributors=contributors,
         )
+        #TODO: Make formats more robust
+        formats = []
+        formats.append(FormatData(content_type=Representation.EPUB_MEDIA_TYPE, drm_scheme=DeliveryMechanism.ADOBE_DRM))
 
         circulationdata = CirculationData(
             data_source=DataSource.ENKI,
             primary_identifier=primary_identifier,
-            #formats=formats,
+            formats=formats,
         )
 
         metadata.circulation = circulationdata
