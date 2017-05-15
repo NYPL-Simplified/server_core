@@ -151,7 +151,6 @@ class EnkiAPI(object):
     def availability(self, patron_id=None, since=None, title_ids=[]):
         url = self.base_url + self.availability_endpoint
         args = dict()
-	#TODO Args for API calls go here
         """if since:
             since = since.strftime(self.DATE_FORMAT)
             args['updatedDate'] = since
@@ -261,7 +260,7 @@ class EnkiBibliographicCoverageProvider(BibliographicCoverageProvider):
         return results[0]
 
 class EnkiParser(JSONParser):
-    #TODO
+    # Additional Enki parsing stuff would go here.
     pass
 
 class BibliographicParser(EnkiParser):
@@ -299,7 +298,7 @@ class BibliographicParser(EnkiParser):
                 data_source=DataSource.ENKI,
                 primary_identifier=primary_identifier,
             )
-
+        # For now, assume there is a license available for each item.
         circulation_data.licenses_owned=1
         circulation_data.licenses_available=1
         circulation_data.licenses_reserved=0
@@ -346,13 +345,13 @@ class BibliographicParser(EnkiParser):
         contributors = []
         identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
         sort_name = element["author"]
-        # Can the CM take a sort_name and turn it into a display_name? If it can't, then do this:
-        """if "," in sort_name:
+        """ # Can the CM take a sort_name and turn it into a display_name? If it can't, then do this:
+        if "," in sort_name:
             n = sort_name.split(",")
             display_name = n[1] + " " + n[0]
         else:
-            display_name = sort_name"""
-        #contributors.append(ContributorData(sort_name=element["author"], display_name=display_name))
+            display_name = sort_name
+        contributors.append(ContributorData(sort_name=element["author"], display_name=display_name))"""
 	contributors.append(ContributorData(sort_name=element["author"]))
         primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
 	metadata = Metadata(
@@ -369,7 +368,8 @@ class BibliographicParser(EnkiParser):
             #subjects=subjects,
             contributors=contributors,
         )
-        #TODO: Make formats more robust
+        #TODO: This should parse the content type and look it up in the Enki Delivery Data above. Currently,
+        # we assume everything is an ePub that uses Adobe DRM, which is a safe assumption only for now.
         formats = []
         formats.append(FormatData(content_type=Representation.EPUB_MEDIA_TYPE, drm_scheme=DeliveryMechanism.ADOBE_DRM))
 
