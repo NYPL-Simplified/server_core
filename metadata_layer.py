@@ -784,7 +784,6 @@ class CirculationData(MetaToModelUtility):
             )
         license_pool = None
         is_new = False
-	print "The primary identifier is %s" % self.primary_identifier
         
         identifier_obj, ignore = self.primary_identifier.load(_db)
         data_source = self.data_source(_db)

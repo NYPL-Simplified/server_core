@@ -74,9 +74,7 @@ class EnkiAPI(object):
 
     @classmethod
     def environment_values(cls):
-	print "---------------\nIN DEF ENVIRONMENT_VALUES"
         config = Configuration.integration('Enki')
-	print "Config is %s" % config
         values = []
         for name in [
                 'library_id',
@@ -165,12 +163,12 @@ class EnkiAPI(object):
         args['id'] = "secontent"
         args['strt'] = 0
         args['qty'] = 7000
-	print "Making a request to %s" % url
+        #print "Making a request to %s" % url
 	response = self.request(url, params=args)
-	if response:
+	"""if response:
             print "We got a response!"
         else:
-            print "There was no response!"
+            print "There was no response!"""
         return response
 
     @classmethod
