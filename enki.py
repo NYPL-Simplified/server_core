@@ -265,11 +265,10 @@ class EnkiParser(JSONParser):
     pass
 
 class BibliographicParser(EnkiParser):
-    #TODO Copied straight from Axis360. Needs work to get enki_monitor to run.
     DELIVERY_DATA_FOR_ENKI_FORMAT = {
         "Blio" : None,
         "Acoustik" : None,
-        "ePub" : (Representation.EPUB_MEDIA_TYPE, DeliveryMechanism.NO_DRM),
+        "ePub" : (Representation.EPUB_MEDIA_TYPE, DeliveryMechanism.ADOBE_DRM),
         "PDF" : None,
     }
 
