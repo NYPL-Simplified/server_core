@@ -157,7 +157,7 @@ class EnkiAPI(object):
         args['strt'] = 0
         args['qty'] = 7000
 	response = self.request(url, params=args)
-    return response
+        return response
 
     @classmethod
     def create_identifier_strings(cls, identifiers):
@@ -380,21 +380,21 @@ class BibliographicParser(EnkiParser):
         contributors = []
         identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
         sort_name = element["author"]
-	    contributors.append(ContributorData(sort_name=element["author"]))
+	contributors.append(ContributorData(sort_name=element["author"]))
         primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
-	    metadata = Metadata(
-            data_source=DataSource.ENKI,
-            title=element["title"],
-            language="ENGLISH",
-            medium=Edition.BOOK_MEDIUM,
-            #series=series,
-            publisher=element["publisher"],
-            #imprint=imprint,
-            #published=publication_date,
-            primary_identifier=primary_identifier,
-            identifiers=identifiers,
-            #subjects=subjects,
-            contributors=contributors,
+	metadata = Metadata(
+        data_source=DataSource.ENKI,
+        title=element["title"],
+        language="ENGLISH",
+        medium=Edition.BOOK_MEDIUM,
+        #series=series,
+        publisher=element["publisher"],
+        #imprint=imprint,
+        #published=publication_date,
+        primary_identifier=primary_identifier,
+        identifiers=identifiers,
+        #subjects=subjects,
+        contributors=contributors,
         )
         #TODO: This should parse the content type and look it up in the Enki Delivery Data above. Currently,
         # we assume everything is an ePub that uses Adobe DRM, which is a safe assumption only for now.
