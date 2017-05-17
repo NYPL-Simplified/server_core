@@ -151,23 +151,12 @@ class EnkiAPI(object):
     def availability(self, patron_id=None, since=None, title_ids=[]):
         url = self.base_url + self.availability_endpoint
         args = dict()
-        """if since:
-            since = since.strftime(self.DATE_FORMAT)
-            args['updatedDate'] = since
-        if patron_id:
-            args['patronId'] = patron_id
-        if title_ids:
-            args['titleIds'] = ','.join(title_ids)"""
-        args['method'] = "getAllTitles"
-        args['id'] = "secontent"
+	#TODO Args for API calls go here
+	args['method'] = "getAllTitles"
+	args['id'] = "secontent"
         args['strt'] = 0
         args['qty'] = 7000
-        #print "Making a request to %s" % url
 	response = self.request(url, params=args)
-	"""if response:
-            print "We got a response!"
-        else:
-            print "There was no response!"""
         return response
 
     @classmethod
@@ -196,8 +185,53 @@ class EnkiAPI(object):
         )
 
 class MockEnkiAPI(EnkiAPI):
-    #TODO
-    pass
+    def __init__(self, _db, *args, **kwargs):
+        self.responses = []
+        self.requests = []
+
+        library = Library.instance(_db)
+        collection, ignore = get_one_or_create(
+            _db, Collection,
+            name="Test Enki Collection",
+            protocol=Collection.ENKI, create_method_kwargs=dict(
+                external_account_id=u'c',
+            )
+        )
+        collection.external_integration.username = u'a'
+        collection.external_integration.password = u'b'
+        collection.external_integration.url = "http://enki.test/"
+        library.collections.append(collection)
+        super(MockEnkiAPI, self).__init__(
+            _db, collection, *args, **kwargs
+        )
+
+    def queue_response(self, status_code, headers={}, content=None):
+        from testing import MockRequestsResponse
+        self.responses.insert(
+            0, MockRequestsResponse(status_code, headers, content)
+        )
+
+    def _make_request(self, url, *args, **kwargs):
+        self.requests.append([url, args, kwargs])
+        response = self.responses.pop()
+        return HTTP._process_response(
+            url, response, kwargs.get('allowed_response_codes'),
+            kwargs.get('disallowed_response_codes')
+        )
+
+    def _request_with_timeout(self, method, url, *args, **kwargs):
+        """Simulate HTTP.request_with_timeout."""
+        self.requests.append([method, url, args, kwargs])
+        response = self.responses.pop()
+        return HTTP._process_response(
+            url, response, kwargs.get('allowed_response_codes'),
+            kwargs.get('disallowed_response_codes')
+        )
+
+    def _simple_http_get(self, url, headers, *args, **kwargs):
+        """Simulate Representation.simple_http_get."""
+        response = self._request_with_timeout('GET', url, *args, **kwargs)
+        return response.status_code, response.headers, response.content
 
 class EnkiBibliographicCoverageProvider(BibliographicCoverageProvider):
     #TODO
@@ -264,11 +298,12 @@ class EnkiParser(JSONParser):
     pass
 
 class BibliographicParser(EnkiParser):
-    DELIVERY_DATA_FOR_ENKI_FORMAT = {
+    #TODO Copied straight from Axis360. Needs work to get enki_monitor to run.
+    DELIVERY_DATA_FOR_AXIS_FORMAT = {
         "Blio" : None,
         "Acoustik" : None,
         "ePub" : (Representation.EPUB_MEDIA_TYPE, DeliveryMechanism.ADOBE_DRM),
-        "PDF" : None,
+        "PDF" : (Representation.PDF_MEDIA_TYPE, DeliveryMechanism.ADOBE_DRM),
     }
 
     log = logging.getLogger("Enki Bibliographic Parser")
@@ -345,28 +380,21 @@ class BibliographicParser(EnkiParser):
         contributors = []
         identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
         sort_name = element["author"]
-        """ # Can the CM take a sort_name and turn it into a display_name? If it can't, then do this:
-        if "," in sort_name:
-            n = sort_name.split(",")
-            display_name = n[1] + " " + n[0]
-        else:
-            display_name = sort_name
-        contributors.append(ContributorData(sort_name=element["author"], display_name=display_name))"""
 	contributors.append(ContributorData(sort_name=element["author"]))
         primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
 	metadata = Metadata(
-            data_source=DataSource.ENKI,
-            title=element["title"],
-            language="ENGLISH",
-            medium=Edition.BOOK_MEDIUM,
-            #series=series,
-            publisher=element["publisher"],
-            #imprint=imprint,
-            #published=publication_date,
-            primary_identifier=primary_identifier,
-            identifiers=identifiers,
-            #subjects=subjects,
-            contributors=contributors,
+        data_source=DataSource.ENKI,
+        title=element["title"],
+        language="ENGLISH",
+        medium=Edition.BOOK_MEDIUM,
+        #series=series,
+        publisher=element["publisher"],
+        #imprint=imprint,
+        #published=publication_date,
+        primary_identifier=primary_identifier,
+        identifiers=identifiers,
+        #subjects=subjects,
+        contributors=contributors,
         )
         #TODO: This should parse the content type and look it up in the Enki Delivery Data above. Currently,
         # we assume everything is an ePub that uses Adobe DRM, which is a safe assumption only for now.
