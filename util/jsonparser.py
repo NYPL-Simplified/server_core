@@ -7,6 +7,9 @@ class JSONParser(object):
 	returned_titles = data["result"]["titles"]
 	titles = returned_titles
 	for book in returned_titles:
+            print "A book titled '%s'" % book["title"]		
+            print book		
+            print "\n"
 	    data = self.process_one(book, namespaces)
             if data:
                 yield data

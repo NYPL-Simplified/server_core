@@ -148,14 +148,15 @@ class EnkiAPI(object):
         else:
             return response
 
-    def availability(self, patron_id=None, since=None, title_ids=[]):
-        url = self.base_url + self.availability_endpoint
+    def availability(self, patron_id=None, since=None, title_ids=[], strt=0, qty=2000):
+        print "requesting : "+ str(qty) + " books starting at econtentRecord" +  str(strt)
+        url = str(self.base_url) + str(self.availability_endpoint)
         args = dict()
 	#TODO Args for API calls go here
 	args['method'] = "getAllTitles"
 	args['id'] = "secontent"
-        args['strt'] = 0
-        args['qty'] = 7000
+        args['strt'] = strt
+        args['qty'] = qty
 	response = self.request(url, params=args)
         return response
 
@@ -380,7 +381,9 @@ class BibliographicParser(EnkiParser):
         contributors = []
         identifiers.append(IdentifierData(Identifier.ISBN, element["isbn"]))
         sort_name = element["author"]
-	contributors.append(ContributorData(sort_name=element["author"]))
+        if not sort_name:
+            sort_name = "Unknown"
+ 	contributors.append(ContributorData(sort_name=sort_name))
         primary_identifier = IdentifierData(Identifier.ENKI_ID, element["id"])
 	metadata = Metadata(
         data_source=DataSource.ENKI,
