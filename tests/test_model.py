@@ -6173,4 +6173,3 @@ class TestAdmin(DatabaseTest):
 
         admin2.password = "password2"
         eq_(set([admin, admin2]), set(Admin.with_password(self._db).all()))
-        
