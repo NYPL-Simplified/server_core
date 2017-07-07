@@ -68,8 +68,6 @@ from util.personal_names import (
     is_corporate_name
 )
 
-
-from enki import EnkiBibliographicCoverageProvider
 from axis import Axis360BibliographicCoverageProvider
 
 class Script(object):
