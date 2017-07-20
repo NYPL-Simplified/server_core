@@ -86,29 +86,28 @@ class ExternalSearchIndex(object):
         except Exception, e:
             found_index = False
 
-        if found_index:
-            # The alias exists as an index. This isn't supposed to happen,
-            # but we can avoid a meltdown now by doing nothing.
-            self.log.error(
-                'Supposed alias "%s" already exists, as an index.',
-                current_alias
-            )
-            return
-
         # If the alias doesn't exist at all, create it.
         alias_details = self.indices.get_alias(name=current_alias, ignore=[404])
         found_alias = not (alias_details.get('status')==404 or 'error' in alias_details)
-        found = found_index or found_alias
-        
+
         def _set_works_index(name):
             self.works_index = self.__client.works_index = name
-            
+
         if found_alias:
             # We found an index for the alias in configuration. Assume
             # there is only one.
             _set_works_index(index_details.keys()[0])
         else:
-            if current_alias.endswith(self.CURRENT_ALIAS_SUFFIX):
+            if found_index:
+                # The alias exists, but as an index. This isn't
+                # supposed to happen, but we can avoid a meltdown now by
+                # doing nothing.
+                self.log.error(
+                    'Supposed alias "%s" already exists, as an index.',
+                    current_alias
+                )
+                _set_works_index(current_alias)
+            elif current_alias.endswith(self.CURRENT_ALIAS_SUFFIX):
                 # The alias culled from configuration is intended to be
                 # a current alias, but an index with that alias wasn't
                 # found. Find or create an appropriate index.
@@ -122,7 +121,8 @@ class ExternalSearchIndex(object):
 
         if not self.indices.exists(self.works_index):
             self.setup_index()
-        self.setup_current_alias()
+        if not found_index:
+            self.setup_current_alias()
 
     def setup_current_alias(self):
         """Finds or creates a works_alias based on the base works_index
