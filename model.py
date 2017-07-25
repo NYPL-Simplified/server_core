@@ -791,6 +791,7 @@ class DataSource(Base):
         u"3M" : BIBLIOTHECA
     }
     THREEM = BIBLIOTHECA
+    ENKI = u"Enki"
     
     # Some sources of open-access ebooks are better than others. This
     # list shows which sources we prefer, in ascending order of
@@ -1004,7 +1005,8 @@ class DataSource(Base):
                 (cls.PRESENTATION_EDITION, False, False, None, None),
                 (cls.INTERNAL_PROCESSING, False, False, None, None),
                 (cls.FEEDBOOKS, True, False, Identifier.URI, None),
-                (cls.BIBBLIO, False, True, Identifier.BIBBLIO_CONTENT_ITEM_ID, None)
+                (cls.BIBBLIO, False, True, Identifier.BIBBLIO_CONTENT_ITEM_ID, None),
+		(cls.ENKI, True, False, Identifier.ENKI_ID, 0)
         ):
 
             extra = dict()
@@ -1325,7 +1327,7 @@ class Identifier(Base):
     DOI = u"DOI"
     UPC = u"UPC"
     BIBBLIO_CONTENT_ITEM_ID = u"Bibblio Content Item ID"
-
+    ENKI_ID = u"Enki ID"
     DEPRECATED_NAMES = {
         u"3M ID" : BIBLIOTHECA_ID
     }
@@ -1333,7 +1335,7 @@ class Identifier(Base):
 
     LICENSE_PROVIDING_IDENTIFIER_TYPES = [
         BIBLIOTHECA_ID, OVERDRIVE_ID, AXIS_360_ID,
-        GUTENBERG_ID, ELIB_ID
+        GUTENBERG_ID, ELIB_ID, ENKI_ID
     ]
 
     URN_SCHEME_PREFIX = "urn:librarysimplified.org/terms/id/"
@@ -8672,8 +8674,8 @@ class Collection(Base):
     BIBLIOTHECA = DataSource.BIBLIOTHECA
     AXIS_360 = DataSource.AXIS_360
     ONE_CLICK = DataSource.ONECLICK
-
-    PROTOCOLS = [OPDS_IMPORT, OVERDRIVE, BIBLIOTHECA, AXIS_360, ONE_CLICK]
+    ENKI = DataSource.ENKI
+    PROTOCOLS = [OPDS_IMPORT, OVERDRIVE, BIBLIOTHECA, AXIS_360, ONE_CLICK, ENKI]
     
     # How does the provider of this collection distinguish it from
     # other collections it provides? On the other side this is usually

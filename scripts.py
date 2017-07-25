@@ -71,8 +71,6 @@ from util.personal_names import (
     is_corporate_name
 )
 
-
-
 class Script(object):
 
     @property
