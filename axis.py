@@ -42,7 +42,10 @@ from metadata_layer import (
     Metadata,
 )
 
-from config import Configuration
+from config import (
+    CannotLoadConfiguration,
+    Configuration,
+)
 from coverage import BibliographicCoverageProvider
 
 class Axis360API(object):
