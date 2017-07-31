@@ -424,6 +424,7 @@ class MockOverdriveAPI(OverdriveAPI):
             collection.external_integration.username = u'a'
             collection.external_integration.password = u'b'
             collection.external_integration.set_setting('website_id', 'd')
+            collection.external_integration.set_setting('ils_name', 'f')
             library.collections.append(collection)
         
         # The constructor will always make a request for the collection token.
