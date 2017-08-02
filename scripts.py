@@ -61,7 +61,11 @@ from external_search import ExternalSearchIndex
 from monitor import SubjectAssignmentMonitor
 from nyt import NYTBestSellerAPI
 from opds_import import OPDSImportMonitor
-from oneclick import OneClickAPI, MockOneClickAPI
+from oneclick import (
+    OneClickAPI,
+    OneClickBibliographicCoverageProvider,
+    MockOneClickAPI,
+)
 from overdrive import OverdriveBibliographicCoverageProvider
 from threem import ThreeMBibliographicCoverageProvider
 from util.opds_writer import OPDSFeed
@@ -510,6 +514,7 @@ class BibliographicRefreshScript(RunCoverageProviderScript):
             # if something actually changes.
             for provider_class in (
                     ThreeMBibliographicCoverageProvider,
+                    OneClickBibliographicCoverageProvider,
                     OverdriveBibliographicCoverageProvider,
                     Axis360BibliographicCoverageProvider
             ):
@@ -525,7 +530,7 @@ class BibliographicRefreshScript(RunCoverageProviderScript):
                     )
                     provider = None
                 try:
-                    if provider:
+                    if provider and provider.api:
                         provider.run()
                 except Exception, e:
                     self.log.error(

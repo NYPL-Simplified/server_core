@@ -127,15 +127,17 @@ class OverdriveAPI(object):
         self.client_key = collection.external_integration.username.encode("utf8")
         self.client_secret = collection.external_integration.password.encode("utf8")
         self.website_id = collection.external_integration.setting('website_id').value.encode("utf8")
-        self.ils_name = collection.external_integration.setting('ils_name').value.encode("utf8")
+
+        self.ils_name = collection.external_integration.setting('ils_name').value
+        if not self.ils_name:
+            self.ils_name = "default"
+        self.ils_name.encode("utf8")
 
         if (not self.client_key or not self.client_secret or not self.website_id
             or not self.library_id):
             raise CannotLoadConfiguration(
                 "Overdrive configuration is incomplete."
             )
-        if not self.ils_name:
-            ils_name = "default"
 
         # Get set up with up-to-date credentials from the API.
         self.check_creds()
@@ -1037,8 +1039,7 @@ class OverdriveBibliographicCoverageProvider(BibliographicCoverageProvider):
         :param input_identifiers: Passed in by RunCoverageProviderScript, specific identifiers to get coverage for.
         """
 
-        overdrive_api = overdrive_api or OverdriveAPI(_db)
-
+        overdrive_api = overdrive_api or OverdriveAPI.from_environment(_db)
         super(OverdriveBibliographicCoverageProvider, self).__init__(
             _db, overdrive_api, DataSource.OVERDRIVE,
             batch_size=10, metadata_replacement_policy=metadata_replacement_policy, **kwargs

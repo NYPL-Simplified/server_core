@@ -254,6 +254,8 @@ class Axis360BibliographicCoverageProvider(BibliographicCoverageProvider):
         :param input_identifiers: Passed in by RunCoverageProviderScript, specific identifiers to get coverage for.
         """
         self.parser = BibliographicParser()
+        axis_360_api = axis_360_api or Axis360API.from_environment(_db)
+
         super(Axis360BibliographicCoverageProvider, self).__init__(
             _db, axis_360_api, DataSource.AXIS_360,
             batch_size=25, 

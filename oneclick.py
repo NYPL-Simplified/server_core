@@ -108,7 +108,7 @@ class OneClickAPI(object):
 
 
     @classmethod
-    def from_config(cls, _db):
+    def from_environment(cls, _db):
         """Load a OneClickAPI instance for the 'default' OneClick
         collection.
         """
@@ -827,7 +827,7 @@ class OneClickBibliographicCoverageProvider(BibliographicCoverageProvider):
             Ex: '9781449880927', '9781449878955', etc..
         """
         
-        oneclick_api = oneclick_api or OneClickAPI.from_config(_db)
+        oneclick_api = oneclick_api or OneClickAPI.from_environment(_db)
         super(OneClickBibliographicCoverageProvider, self).__init__(
             _db, oneclick_api, DataSource.ONECLICK,
             batch_size=25, 

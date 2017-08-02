@@ -435,7 +435,7 @@ class ThreeMBibliographicCoverageProvider(BibliographicCoverageProvider):
         :param input_identifier_types: Passed in by RunCoverageProviderScript, data sources to get coverage for.
         :param input_identifiers: Passed in by RunCoverageProviderScript, specific identifiers to get coverage for.
         """
-        threem_api = threem_api or ThreeMAPI(_db)
+        threem_api = threem_api or ThreeMAPI.from_environment(_db)
         super(ThreeMBibliographicCoverageProvider, self).__init__(
             _db, threem_api, DataSource.THREEM,
             batch_size=25, metadata_replacement_policy=metadata_replacement_policy, **kwargs
