@@ -165,8 +165,10 @@ class DatabaseTest(object):
 
         # Remove any database objects cached in the model classes but
         # associated with the now-rolled-back session.
+        Collection.reset_cache()
         ConfigurationSetting.reset_cache()
         DataSource.reset_cache()
+        ExternalIntegration.reset_cache()
         Genre.reset_cache()
         Library.reset_cache()
         
