@@ -312,9 +312,11 @@ class SessionManager(object):
 
     MATERIALIZED_VIEW_WORKS = 'mv_works_editions_datasources_identifiers'
     MATERIALIZED_VIEW_WORKS_WORKGENRES = 'mv_works_editions_workgenres_datasources_identifiers'
+    MATERIALIZED_VIEW_LANES = 'mv_works_for_lanes'
     MATERIALIZED_VIEWS = {
         MATERIALIZED_VIEW_WORKS : 'materialized_view_works.sql',
         MATERIALIZED_VIEW_WORKS_WORKGENRES : 'materialized_view_works_workgenres.sql',
+        MATERIALIZED_VIEW_LANES : 'materialized_view_for_lanes.sql',
     }
 
     # A function that calculates recursively equivalent identifiers
@@ -387,7 +389,7 @@ class SessionManager(object):
 
         class MaterializedWorkWithGenre(Base, BaseMaterializedWork):
             __table__ = Table(
-                cls.MATERIALIZED_VIEW_WORKS_WORKGENRES,
+                cls.MATERIALIZED_VIEW_LANES,
                 Base.metadata,
                 Column('works_id', Integer, primary_key=True),
                 Column('workgenres_id', Integer, primary_key=True),
@@ -400,26 +402,6 @@ class SessionManager(object):
                 primaryjoin="LicensePool.id==MaterializedWorkWithGenre.license_pool_id",
                 foreign_keys=LicensePool.id, lazy='joined', uselist=False)
 
-        class MaterializedWork(Base, BaseMaterializedWork):
-            __table__ = Table(
-                cls.MATERIALIZED_VIEW_WORKS,
-                Base.metadata,
-                Column('works_id', Integer, primary_key=True),
-                Column('license_pool_id', Integer, ForeignKey('licensepools.id')),
-              autoload=True,
-                autoload_with=engine
-            )
-            license_pool = relationship(
-                LicensePool,
-                primaryjoin="LicensePool.id==MaterializedWork.license_pool_id",
-                foreign_keys=LicensePool.id, lazy='joined', uselist=False)
-
-            def __repr__(self):
-                return (u'%s "%s" (%s) %s' % (
-                    self.works_id, self.sort_title, self.sort_author, self.language,
-                    )).encode("utf8")
-
-        globals()['MaterializedWork'] = MaterializedWork
         globals()['MaterializedWorkWithGenre'] = MaterializedWorkWithGenre
         cls.engine_for_url[url] = engine
         return engine, engine.connect()
