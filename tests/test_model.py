@@ -58,6 +58,7 @@ from model import (
     CustomList,
     CustomListEntry,
     DataSource,
+    DelegatedHold,
     DelegatedPatronIdentifier,
     DeliveryMechanism,
     DRMDeviceIdentifier,
@@ -7886,6 +7887,67 @@ class TestAdmin(DatabaseTest):
         eq_(None, Admin.authenticate(self._db, "example@nypl.org", "password"))
 
 
+class TestDelegatedHold(DatabaseTest):
+
+    def test_position(self):
+        pool = self._licensepool(None)
+        pool.licenses_reserved = 0
+        hold, ignore = create(self._db, DelegatedHold, license_pool=pool, patron_id=self._str,
+                              start_date=datetime.datetime.now())
+
+        # When there's only one hold and no licenses reserved, the patron
+        # is at the beginning of the queue.
+        eq_(1, hold.position)
+
+        # If a license is reserved, the book is available to check out and
+        # the position is 0.
+        pool.licenses_reserved = 1
+        eq_(0, hold.position)
+
+        # If another hold was placed after this one, it doesn't affect the queue
+        # position.
+        later_hold, ignore = create(self._db, DelegatedHold, license_pool=pool, patron_id=self._str,
+                                    start_date=datetime.datetime.now() + datetime.timedelta(days=5))
+        pool.licenses_reserved = 0
+        eq_(1, hold.position)
+        pool.licenses_reserved = 1
+        eq_(0, hold.position)
+
+        # A hold on a different pool doesn't affect the queue position.
+        pool2 = self._licensepool(None)
+        different_pool_hold, ignore = create(self._db, DelegatedHold, license_pool=pool2, patron_id=self._str,
+                                             start_date=datetime.datetime.now() - datetime.timedelta(days=5))
+        pool.licenses_reserved = 0
+        eq_(1, hold.position)
+        pool.licenses_reserved = 1
+        eq_(0, hold.position)
+
+        # An earlier hold on the same pool does affect the position.
+        earlier_hold, ignore = create(self._db, DelegatedHold, license_pool=pool, patron_id=self._str,
+                                      start_date=datetime.datetime.now() - datetime.timedelta(days=5))
+        pool.licenses_reserved = 0
+        eq_(2, hold.position)
+        eq_(1, earlier_hold.position)
+
+        pool.licenses_reserved = 1
+        eq_(2, hold.position)
+        eq_(0, earlier_hold.position)
+
+        pool.licenses_reserved = 2
+        eq_(0, hold.position)
+        eq_(0, earlier_hold.position)
+
+        # Create some more earlier holds.
+        for i in range(10):
+            create(self._db, DelegatedHold, license_pool=pool, patron_id=self._str,
+                   start_date=datetime.datetime.now() - datetime.timedelta(days=1))
+
+        pool.licenses_reserved = 0
+        eq_(12, hold.position)
+        pool.licenses_reserved = 5
+        eq_(12, hold.position)
+
+
 class TestTupleToNumericrange(object):
     """Test the tuple_to_numericrange helper function."""
 
@@ -7910,7 +7972,6 @@ class TestTupleToNumericrange(object):
         eq_(10, ten_and_up.lower)
         eq_(None, ten_and_up.upper)
         eq_(False, ten_and_up.upper_inc)
-
 
 
 class MockHasTableCache(HasFullTableCache):
