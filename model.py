@@ -6439,6 +6439,9 @@ class LicensePool(Base):
     # One LicensePool can have many Holds.
     holds = relationship('Hold', backref='license_pool')
 
+    # One LicensePool can have many DelegatedHolds.
+    delegatedholds = relationship('DelegatedHold', backref='license_pool')
+
     # One LicensePool can have many CirculationEvents
     circulation_events = relationship(
         "CirculationEvent", backref="license_pool")
@@ -10953,6 +10956,9 @@ class IntegrationClient(Base):
     created = Column(DateTime)
     last_accessed = Column(DateTime)
 
+    # One IntegrationClient can have many DelegatedHolds.
+    delegatedholds = relationship('DelegatedHold', backref='integration_client')
+
     def __repr__(self):
         return (u"<IntegrationClient: URL=%s ID=%s>" % (self.url, self.id)).encode('utf8')
 
@@ -10992,6 +10998,52 @@ class IntegrationClient(Base):
             _db.commit()
             return client
         return None
+
+class DelegatedHold(Base):
+    """A circulation manager can delegate holds management for
+    certain collections to another circ manager. The circ manager
+    that's in charge of holds for such a collection uses this
+    table to store them.
+
+    Patrons on that circ manager will have entries in the `holds`
+    table as well as this table. Patrons on other circ managers
+    will have entries in this table, and entries in the `holds`
+    table on their own circ managers.
+    """
+    __tablename__ = 'delegatedholds'
+
+    id = Column(Integer, primary_key=True)
+
+    # The integration client representing the foreign circ manager. If null, the hold is for
+    # this circ manager.
+    integration_client_id = Column(Integer, ForeignKey('integrationclients.id'), index=True, nullable=True)
+
+    # The license pool the hold was placed on.
+    license_pool_id = Column(Integer, ForeignKey('licensepools.id'), index=True)
+
+    # The identifier the foreign circ manager has given us for the patron.
+    patron_id = Column(String, index=True)
+
+    # The time the hold was placed.
+    start_date = Column(DateTime, index=True)
+
+    @property
+    def position(self):
+        # Count holds on the license pool that started before this hold.
+        _db = Session.object_session(self)
+        holds_count = _db.query(DelegatedHold).filter(
+            DelegatedHold.license_pool_id==self.license_pool_id
+        ).filter(
+            DelegatedHold.start_date<self.start_date
+        ).count()
+
+        licenses_reserved = self.license_pool.licenses_reserved
+        if licenses_reserved > holds_count:
+            # The hold is ready to check out.
+            return 0
+
+        # Add 1 since position 0 indicates the hold is ready.
+        return holds_count + 1
 
 
 from sqlalchemy.sql import compiler
