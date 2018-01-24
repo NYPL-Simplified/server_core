@@ -10542,6 +10542,14 @@ class Collection(Base, HasFullTableCache):
     # external_account_id.
     parent_id = Column(Integer, ForeignKey('collections.id'), index=True)
 
+    # Some Collections use an ExternalIntegration to mirror books and
+    # cover images they discover. Such a collection should use an
+    # ExternalIntegration to set up its mirroring technique, and keep
+    # a reference to that ExternalIntegration here.
+    mirror_integration_id = Column(
+        Integer, ForeignKey('externalintegrations.id'), nullable=True
+    )
+
     # A collection may have many child collections. For example,
     # An Overdrive collection may have many children corresponding
     # to Overdrive Advantage collections.

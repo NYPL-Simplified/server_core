@@ -23,17 +23,10 @@ from s3 import (
 )
 from config import CannotLoadConfiguration
 
-class TestS3URLGeneration(DatabaseTest):
+class TestInitialization(DatabaseTest):
 
-    def teardown(self):
-        S3Uploader.__buckets__ = S3Uploader.UNINITIALIZED_BUCKETS
-        super(TestS3URLGeneration, self).teardown()
-
-    def test_initializes_with_uninitialized_buckets(self):
-        eq_(S3Uploader.UNINITIALIZED_BUCKETS, S3Uploader.__buckets__)
-
-    def test_from_config(self):
-        # If there's no configuration for S3, S3Uploader.from_config
+    def test_sitewide(self):
+        # If there's no configuration for S3, S3Uploader.sitewide
         # raises an exception.
         assert_raises_regexp(
             CannotLoadConfiguration,
@@ -41,6 +34,30 @@ class TestS3URLGeneration(DatabaseTest):
             S3Uploader.from_config, self._db
         )
         
+        # If there's only one, sitewide() uses it to initialize an
+        # S3Uploader.
+
+        # If there are multiple S3 configurations, no sitewide configuration
+        # can be determined.
+        duplicate = self._external_integration(ExternalIntegration.S3)
+        duplicate.goal = ExternalIntegration.STORAGE_GOAL
+        assert_raises_regexp(
+            CannotLoadConfiguration, 'Multiple S3 ExternalIntegrations configured',
+            S3Uploader.from_config, self._db
+        )
+
+
+    def test_for_collection(self):
+        # This collection has no mirror_integration, so 
+        # there is no S3Uploader for it.
+
+        # This collection has a mirror_integration but it's of the 
+        # wrong type.
+
+        # This collection has a properly configured mirror_integration,
+        # so it can have an S3Uploader.
+
+    def test_constructor(self):
         # If there is a configuration but it's misconfigured, an error
         # is raised.
         integration = self._external_integration(
@@ -56,15 +73,6 @@ class TestS3URLGeneration(DatabaseTest):
         integration.password = 'your-secret-key'
         uploader = S3Uploader.from_config(self._db)
         eq_(True, isinstance(uploader, S3Uploader))
-
-        # Well, unless there are multiple S3 integrations, and it
-        # doesn't know which one to choose!
-        duplicate = self._external_integration(ExternalIntegration.S3)
-        duplicate.goal = ExternalIntegration.STORAGE_GOAL
-        assert_raises_regexp(
-            CannotLoadConfiguration, 'Multiple S3 ExternalIntegrations configured',
-            S3Uploader.from_config, self._db
-        )
 
     def test_get_buckets(self):
         # When no buckets have been set, it raises an error.

@@ -22,53 +22,28 @@ class S3Uploader(MirrorUploader):
     S3_HOSTNAME = "s3.amazonaws.com"
     S3_BASE = "http://%s/" % S3_HOSTNAME
 
-    UNINITIALIZED_BUCKETS = object()
-    __buckets__ = UNINITIALIZED_BUCKETS
-
     @classmethod
-    def from_config(cls, _db):
-        """Create an S3Uploader from site configuration.
+    def sitewide(cls, _db, pool=None):
+        """Create an S3Uploader from a sitewide configuration.
 
         :return: An S3Uploader.
-        :raise: CannotLoadConfiguration if S3 is not configured.
+           
+        :raise: CannotLoadConfiguration if S3 is not configured,
+        or if multiple S3 integrations are configured.
         """
         from config import CannotLoadConfiguration
-        integration = cls.integration(_db)
-        if not integration:
+
+        from model import ExternalIntegration as EI
+        qu = _db.query(EI).filter(
+            EI.protocol==EI.S3, EI.goal==EI.STORAGE_GOAL
+        )
+        integrations = qu.all()
+        if not integrations:
             raise CannotLoadConfiguration(
                 "Required S3 integration is not configured."
             )
             return None
-        cls.initialize_buckets(_db)        
-        return cls(integration.username, integration.password)
-        
-    def __init__(self, access_key=None, secret_key=None, pool=None):
-        from config import CannotLoadConfiguration
-        self.pool = pool
-        if not self.pool:
-            if not (access_key and secret_key):
-                raise CannotLoadConfiguration(
-                    'Cannot create S3Uploader without both'
-                    ' access_key and secret_key.'
-                )
-            self.pool = tinys3.Pool(access_key, secret_key)
 
-    @classmethod
-    def integration(cls, _db):
-        """Find the ExternalIntegration that configures this site's S3
-        uploader.
-
-        :return: None if there is no S3 configuration, otherwise an ExternalIntegration.
-        :raise: CannotLoadConfiguration if there are multiple S3 configurations.
-        """
-        from model import ExternalIntegration as EI
-        integrations = _db.query(EI).filter(
-            EI.protocol==EI.S3, EI.goal==EI.STORAGE_GOAL).all()
-
-        from config import CannotLoadConfiguration
-        if not integrations:
-            return None
-        
         if len(integrations) > 1:
             # Right now the S3Uploader doesn't distinguish usage between
             # S3 accounts. If two account integrations are found, raise
@@ -77,52 +52,73 @@ class S3Uploader(MirrorUploader):
                 'Multiple S3 ExternalIntegrations configured'
             )
 
-        return integrations[0]
+        [integration] = integrations
+        return cls(integration, pool)
 
     @classmethod
-    def initialize_buckets(cls, _db):
-        integration = cls.integration(_db)
+    def for_collection(cls, _db, collection, pool=None):
+        """Create an S3Uploader for the given Collection.
+
+        :param collection: Use the S3 configuration for this Collection.
+
+        :return: An S3Uploader, or None if the Collection is not configured
+        to upload the things it discovers to S3.
+        """
+        from config import CannotLoadConfiguration
+        integration = collection.mirror_integration
         if not integration:
-            # No integration means nothing to initialize.
-            return
-        cls.__buckets__ = dict()
+            # This Collection does not use an S3Uploader.
+            return None
+
+        return cls(integration, pool)
+
+    def __init__(self, integration, pool_class=None):
+        """Instantiate an S3Uploader from an ExternalIntegration.
+
+        :param integration: An ExternalIntegration
+
+        :param pool_class: Mock object (or class) to use (or instantiate)
+            instead of tinys3.Pool.
+        """
+        from config import CannotLoadConfiguration
+        if not pool_class:
+            pool_class = tinys3.Pool
+
+        if callable(pool_class):
+            access_key = integration.username
+            secret_key = integration.password
+            if not (access_key and secret_key):
+                raise CannotLoadConfiguration(
+                    'Cannot create S3Uploader without both'
+                    ' access_key and secret_key.'
+                )
+            self.pool = pool_class(access_key, secret_key)
+
+        # Transfer information about bucket names from the
+        # ExternalIntegration to the S3Uploader object, so we don't
+        # have to keep the ExternalIntegration around.
+        self.buckets = dict()
         for setting in integration.settings:
             if setting.key.endswith('_bucket'):
-                cls.__buckets__[setting.key] = setting.value
+                cls.buckets[setting.key] = setting.value
 
-    @classmethod
-    def get_bucket(cls, bucket_key, sessioned_object=None):
+    def get_bucket(self, bucket_key, sessioned_object=None):
         """Gets the bucket for a particular use based on the given key"""
-        if cls.__buckets__ == cls.UNINITIALIZED_BUCKETS:
-            if not sessioned_object:
-                raise CannotLoadConfiguration(
-                    'S3 buckets have not been initialized and no'
-                    ' database session is available')
-            _db = Session.object_session(sessioned_object)
-            cls.initialize_buckets(_db)
+        return cls.buckets.get(bucket_key)
 
-        if not cls.__buckets__ or not cls.__buckets__.get(bucket_key):
-            raise CannotLoadConfiguration(
-                "No S3 bucket found for '%s'. Use S3Uploader.from_config"
-                " to load S3 bucket settings from database." % bucket_key)
-
-        return cls.__buckets__.get(bucket_key)
-
-    @classmethod
-    def url(cls, bucket, path):
+    def url(self, bucket, path):
         """The URL to a resource on S3 identified by bucket and path."""
         if path.startswith('/'):
             path = path[1:]
         if bucket.startswith('http://') or bucket.startswith('https://'):
             url = bucket
         else:
-            url = cls.S3_BASE + bucket
+            url = self.S3_BASE + bucket
         if not url.endswith('/'):
             url += '/'
         return url + path
 
-    @classmethod
-    def cover_image_root(cls, bucket, data_source, scaled_size=None):
+    def cover_image_root(self, bucket, data_source, scaled_size=None):
         """The root URL to the S3 location of cover images for
         the given data source.
         """
@@ -136,26 +132,24 @@ class S3Uploader(MirrorUploader):
             data_source_name = data_source.name
         data_source_name = urllib.quote(data_source_name)
         path += data_source_name + "/"
-        url = cls.url(bucket, path)
+        url = self.url(bucket, path)
         if not url.endswith('/'):
             url += '/'
         return url
 
-    @classmethod
-    def content_root(cls, bucket, open_access=True):
+    def content_root(self, bucket, open_access=True):
         """The root URL to the S3 location of hosted content of
         the given type.
         """
         if not open_access:
             raise NotImplementedError()
-        return cls.url(bucket, '/')
+        return self.url(bucket, '/')
 
-    @classmethod
-    def book_url(cls, identifier, extension='.epub', open_access=True, 
+    def book_url(self, identifier, extension='.epub', open_access=True, 
                  data_source=None, title=None):
         """The path to the hosted EPUB file for the given identifier."""
-        bucket = cls.get_bucket(cls.OA_CONTENT_BUCKET_KEY, identifier)
-        root = cls.content_root(bucket, open_access)
+        bucket = self.get_bucket(self.OA_CONTENT_BUCKET_KEY, identifier)
+        root = self.content_root(bucket, open_access)
 
         if not extension.startswith('.'):
             extension = '.' + extension
@@ -175,19 +169,17 @@ class S3Uploader(MirrorUploader):
 
         return root + template % tuple(args + [extension])
 
-    @classmethod
-    def cover_image_url(cls, data_source, identifier, filename=None,
+    def cover_image_url(self, data_source, identifier, filename=None,
                         scaled_size=None):
         """The path to the hosted cover image for the given identifier."""
-        bucket = cls.get_bucket(cls.BOOK_COVERS_BUCKET_KEY, identifier)
-        root = cls.cover_image_root(bucket, data_source, scaled_size)
+        bucket = self.get_bucket(self.BOOK_COVERS_BUCKET_KEY, identifier)
+        root = self.cover_image_root(bucket, data_source, scaled_size)
 
         args = [identifier.type, identifier.identifier, filename]
         args = [urllib.quote(x) for x in args]
         return root + "%s/%s/%s" % tuple(args)
 
-    @classmethod
-    def bucket_and_filename(cls, url):
+    def bucket_and_filename(self, url):
         scheme, netloc, path, query, fragment = urlsplit(url)
         if netloc == 's3.amazonaws.com':
             if path.startswith('/'):
@@ -267,7 +259,7 @@ class S3Uploader(MirrorUploader):
 class DummyS3Uploader(S3Uploader):
     """A dummy uploader for use in tests."""
 
-    __buckets__ = {
+    buckets = {
        S3Uploader.BOOK_COVERS_BUCKET_KEY : 'test.cover.bucket',
        S3Uploader.OA_CONTENT_BUCKET_KEY : 'test.content.bucket',
     }
