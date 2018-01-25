@@ -109,10 +109,20 @@ class MirrorUploader(object):
 
     def book_url(self, identifier, extension='.epub', open_access=True, 
                  data_source=None, title=None):
-        """The path to the hosted EPUB file for the given identifier."""
+        """The URL of the hosted EPUB file for the given identifier.
+
+        This does not upload anything to the URL, but it is expected
+        that calling mirror() on a certain Representation object will
+        make that representation end up at that URL.
+        """
         raise NotImplementedError()
 
     def cover_image_url(self, data_source, identifier, filename=None,
                         scaled_size=None):
-        raise NotImplementedError()
+        """The URL of the hosted cover image for the given identifier.
 
+        This does not upload anything to the URL, but it is expected
+        that calling mirror() on a certain Representation object will
+        make that representation end up at that URL.
+        """
+        raise NotImplementedError()
