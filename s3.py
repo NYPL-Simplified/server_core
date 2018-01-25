@@ -206,7 +206,10 @@ class S3Uploader(MirrorUploader):
         for fh in filehandles:
             fh.close()
 
+# MirrorUploader.implementation will instantiate an S3Uploader
+# for storage integrations with protocol 'S3'.
 MirrorUploader.IMPLEMENTATION_REGISTRY[ExternalIntegration.S3] = S3Uploader
+
 
 class DummyS3Uploader(S3Uploader):
     """A dummy uploader for use in tests."""

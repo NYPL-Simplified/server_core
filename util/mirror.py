@@ -106,3 +106,13 @@ class MirrorUploader(object):
 
         for representation in representations:
             self.mirror_one(representation)
+
+    def book_url(self, identifier, extension='.epub', open_access=True, 
+                 data_source=None, title=None):
+        """The path to the hosted EPUB file for the given identifier."""
+        raise NotImplementedError()
+
+    def cover_image_url(self, data_source, identifier, filename=None,
+                        scaled_size=None):
+        raise NotImplementedError()
+
