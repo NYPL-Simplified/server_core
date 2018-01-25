@@ -25,37 +25,14 @@ from config import CannotLoadConfiguration
 
 class TestInitialization(DatabaseTest):
 
-    def test_sitewide(self):
-        # If there's no configuration for S3, S3Uploader.sitewide
-        # raises an exception.
-        assert_raises_regexp(
-            CannotLoadConfiguration,
-            'Required S3 integration is not configured',
-            S3Uploader.from_config, self._db
-        )
-        
-        # If there's only one, sitewide() uses it to initialize an
-        # S3Uploader.
-
-        # If there are multiple S3 configurations, no sitewide configuration
-        # can be determined.
-        duplicate = self._external_integration(ExternalIntegration.S3)
-        duplicate.goal = ExternalIntegration.STORAGE_GOAL
-        assert_raises_regexp(
-            CannotLoadConfiguration, 'Multiple S3 ExternalIntegrations configured',
-            S3Uploader.from_config, self._db
-        )
-
-
-    def test_for_collection(self):
-        # This collection has no mirror_integration, so 
-        # there is no S3Uploader for it.
-
-        # This collection has a mirror_integration but it's of the 
-        # wrong type.
-
-        # This collection has a properly configured mirror_integration,
-        # so it can have an S3Uploader.
+    @property
+    def _integration(self):
+        """Create and configure a simple S3 integration."""
+        integration = self._external_integration(ExternalIntegration.S3)
+        integration.goal = ExternalIntegration.STORAGE_GOAL
+        integration.username = 'username'
+        integration.password = 'password'
+        return integration
 
     def test_constructor(self):
         # If there is a configuration but it's misconfigured, an error
@@ -65,7 +42,7 @@ class TestInitialization(DatabaseTest):
         )
         assert_raises_regexp(
             CannotLoadConfiguration, 'without both access_key and secret_key',
-            S3Uploader.from_config, self._db
+            MirrorUploader.from_config, self._db
         )
 
         # Otherwise, it builds just fine.

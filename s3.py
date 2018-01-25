@@ -8,6 +8,7 @@ from urlparse import urlsplit
 from util.mirror import MirrorUploader
 
 from config import CannotLoadConfiguration
+from model import ExternalIntegration
 from requests.exceptions import (
     ConnectionError,
     HTTPError,
@@ -15,62 +16,11 @@ from requests.exceptions import (
 
 class S3Uploader(MirrorUploader):
 
-
     BOOK_COVERS_BUCKET_KEY = u'book_covers_bucket'
     OA_CONTENT_BUCKET_KEY = u'open_access_content_bucket'
 
     S3_HOSTNAME = "s3.amazonaws.com"
     S3_BASE = "http://%s/" % S3_HOSTNAME
-
-    @classmethod
-    def sitewide(cls, _db, pool=None):
-        """Create an S3Uploader from a sitewide configuration.
-
-        :return: An S3Uploader.
-           
-        :raise: CannotLoadConfiguration if S3 is not configured,
-        or if multiple S3 integrations are configured.
-        """
-        from config import CannotLoadConfiguration
-
-        from model import ExternalIntegration as EI
-        qu = _db.query(EI).filter(
-            EI.protocol==EI.S3, EI.goal==EI.STORAGE_GOAL
-        )
-        integrations = qu.all()
-        if not integrations:
-            raise CannotLoadConfiguration(
-                "Required S3 integration is not configured."
-            )
-            return None
-
-        if len(integrations) > 1:
-            # Right now the S3Uploader doesn't distinguish usage between
-            # S3 accounts. If two account integrations are found, raise
-            # an error.
-            raise CannotLoadConfiguration(
-                'Multiple S3 ExternalIntegrations configured'
-            )
-
-        [integration] = integrations
-        return cls(integration, pool)
-
-    @classmethod
-    def for_collection(cls, _db, collection, pool=None):
-        """Create an S3Uploader for the given Collection.
-
-        :param collection: Use the S3 configuration for this Collection.
-
-        :return: An S3Uploader, or None if the Collection is not configured
-        to upload the things it discovers to S3.
-        """
-        from config import CannotLoadConfiguration
-        integration = collection.mirror_integration
-        if not integration:
-            # This Collection does not use an S3Uploader.
-            return None
-
-        return cls(integration, pool)
 
     def __init__(self, integration, pool_class=None):
         """Instantiate an S3Uploader from an ExternalIntegration.
@@ -80,9 +30,16 @@ class S3Uploader(MirrorUploader):
         :param pool_class: Mock object (or class) to use (or instantiate)
             instead of tinys3.Pool.
         """
-        from config import CannotLoadConfiguration
         if not pool_class:
             pool_class = tinys3.Pool
+
+        if integration.goal != self.STORAGE_GOAL:
+            # This collection's 'mirror integration' isn't intended to
+            # be used to mirror anything.
+            raise CannotLoadConfiguration(
+                "Cannot create an S3Uploader from an integration with goal=%s" %
+                integration.goal
+            )
 
         if callable(pool_class):
             access_key = integration.username
@@ -255,6 +212,7 @@ class S3Uploader(MirrorUploader):
         for fh in filehandles:
             fh.close()
 
+MirrorUploader.SUBCLASS_REGISTRY[ExternalIntegration.S3] = S3Uploader
 
 class DummyS3Uploader(S3Uploader):
     """A dummy uploader for use in tests."""

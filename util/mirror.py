@@ -6,6 +6,78 @@ class MirrorUploader(object):
     a mirror that we control.
     """
 
+    STORAGE_GOAL = u'storage'
+
+    # Depending on the .protocol of an ExternalIntegration with
+    # .goal=STORAGE, a different subclass might be initialized by
+    # sitewide() or for_collection(). A subclass that wants to take
+    # advantage of this should add a mapping here from its .protocol
+    # to itself.
+    SUBCLASS_REGISTRY = {}
+
+    @classmethod
+    def sitewide(cls, _db):
+        """Create a MirrorUploader from a sitewide configuration.
+
+        :return: A MirrorUploader.
+           
+        :raise: CannotLoadConfiguration if no integration with
+        goal==STORAGE_GOAL is configured, or if multiple integrations
+        are so configured.
+        """
+        from config import CannotLoadConfiguration
+
+        from model import ExternalIntegration as EI
+        qu = _db.query(EI).filter(EI.goal==cls.STORAGE_GOAL)
+        integrations = qu.all()
+        if not integrations:
+            raise CannotLoadConfiguration(
+                "No storage integration is configured."
+            )
+            return None
+
+        if len(integrations) > 1:
+            # If there are multiple integrations configured, none of
+            # them can be the 'site-wide' configuration.
+            raise CannotLoadConfiguration(
+                'Multiple storage integrations are configured'
+            )
+
+        [integration] = integrations
+        return cls(integration)
+
+    @classmethod
+    def for_collection(cls, _db, collection):
+        """Create a MirrorUploader for the given Collection.
+
+        :param collection: Use the mirror configuration for this Collection.
+
+        :return: A MirrorUploader, or None if the Collection has no
+            mirror integration.
+        """
+        integration = collection.mirror_integration
+        if not integration:
+            return None
+        return cls(integration)
+
+    def __init__(self, integration):
+        """Instantiate a MirrorUploader from an ExternalIntegration.
+
+        :param integration: An ExternalIntegration configuring the credentials
+           used to upload things.
+        """
+        from config import CannotLoadConfiguration
+        if integration.goal != self.STORAGE_GOAL:
+            # This collection's 'mirror integration' isn't intended to
+            # be used to mirror anything.
+            raise CannotLoadConfiguration(
+                "Cannot create an S3Uploader from an integration with goal=%s" %
+                integration.goal
+            )
+
+        # Subclasses will override this to further configure the client
+        # based on the credentials in the ExternalIntegration.
+
     def do_upload(self, representation):
         raise NotImplementedError()        
 

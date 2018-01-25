@@ -120,6 +120,7 @@ from util import (
     MetadataSimilarity,
     TitleProcessor,
 )
+from util.mirror import MirrorUploader
 from util.http import (
     HTTP,
     RemoteIntegrationException,
@@ -10004,7 +10005,7 @@ class ExternalIntegration(Base, HasFullTableCache):
 
     # These integrations are associated with external services such as
     # S3 that provide access to book covers.
-    STORAGE_GOAL = u'storage'
+    STORAGE_GOAL = MirrorUploader.STORAGE_GOAL
 
     # These integrations are associated with external services like
     # Cloudfront or other CDNs that mirror and/or cache certain domains.
@@ -10137,6 +10138,13 @@ class ExternalIntegration(Base, HasFullTableCache):
     settings = relationship(
         "ConfigurationSetting", backref="external_integration",
         lazy="joined", cascade="all, delete-orphan",
+    )
+
+    # An ExternalIntegration may be used by many Collections
+    # to mirror book covers or other files.
+    mirror_for = relationship(
+        "Collection", backref="mirror_integration",
+        foreign_keys='Collection.mirror_integration_id',
     )
 
     def __repr__(self):
