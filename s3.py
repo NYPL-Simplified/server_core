@@ -33,14 +33,6 @@ class S3Uploader(MirrorUploader):
         if not pool_class:
             pool_class = tinys3.Pool
 
-        if integration.goal != self.STORAGE_GOAL:
-            # This collection's 'mirror integration' isn't intended to
-            # be used to mirror anything.
-            raise CannotLoadConfiguration(
-                "Cannot create an S3Uploader from an integration with goal=%s" %
-                integration.goal
-            )
-
         if callable(pool_class):
             access_key = integration.username
             secret_key = integration.password
@@ -50,6 +42,8 @@ class S3Uploader(MirrorUploader):
                     ' access_key and secret_key.'
                 )
             self.pool = pool_class(access_key, secret_key)
+        else:
+            self.pool = pool_class
 
         # Transfer information about bucket names from the
         # ExternalIntegration to the S3Uploader object, so we don't
@@ -57,11 +51,11 @@ class S3Uploader(MirrorUploader):
         self.buckets = dict()
         for setting in integration.settings:
             if setting.key.endswith('_bucket'):
-                cls.buckets[setting.key] = setting.value
+                self.buckets[setting.key] = setting.value
 
-    def get_bucket(self, bucket_key, sessioned_object=None):
+    def get_bucket(self, bucket_key):
         """Gets the bucket for a particular use based on the given key"""
-        return cls.buckets.get(bucket_key)
+        return self.buckets.get(bucket_key)
 
     def url(self, bucket, path):
         """The URL to a resource on S3 identified by bucket and path."""
@@ -212,7 +206,7 @@ class S3Uploader(MirrorUploader):
         for fh in filehandles:
             fh.close()
 
-MirrorUploader.SUBCLASS_REGISTRY[ExternalIntegration.S3] = S3Uploader
+MirrorUploader.IMPLEMENTATION_REGISTRY[ExternalIntegration.S3] = S3Uploader
 
 class DummyS3Uploader(S3Uploader):
     """A dummy uploader for use in tests."""

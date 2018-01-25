@@ -106,6 +106,7 @@ class TestInitialization(DatabaseTest):
         assert isinstance(uploader, DummyFailureUploader)
         del MirrorUploader.IMPLEMENTATION_REGISTRY["my protocol"]
 
+
 class TestMirrorUploader(DatabaseTest):
     """Test the basic workflow of MirrorUploader."""
 
