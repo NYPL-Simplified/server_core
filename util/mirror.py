@@ -13,7 +13,7 @@ class MirrorUploader(object):
     # sitewide() or for_collection(). A subclass that wants to take
     # advantage of this should add a mapping here from its .protocol
     # to itself.
-    SUBCLASS_REGISTRY = {}
+    IMPLEMENTATION_REGISTRY = {}
 
     @classmethod
     def sitewide(cls, _db):
@@ -44,7 +44,7 @@ class MirrorUploader(object):
             )
 
         [integration] = integrations
-        return cls(integration)
+        return cls.implementation(integration)
 
     @classmethod
     def for_collection(cls, _db, collection):
@@ -58,7 +58,17 @@ class MirrorUploader(object):
         integration = collection.mirror_integration
         if not integration:
             return None
-        return cls(integration)
+        return cls.implementation(integration)
+
+    @classmethod
+    def implementation(cls, integration):
+        """Instantiate the appropriate implementation of MirrorUploader
+        for the given ExternalIntegration.
+        """
+        implementation_class = cls.IMPLEMENTATION_REGISTRY.get(
+            integration.protocol, cls
+        )
+        return implementation_class(integration)
 
     def __init__(self, integration):
         """Instantiate a MirrorUploader from an ExternalIntegration.

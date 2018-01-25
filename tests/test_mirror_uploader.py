@@ -10,7 +10,7 @@ from model import ExternalIntegration
 
 class DummySuccessUploader(MirrorUploader):
 
-    def __init__(self):
+    def __init__(self, integration=None):
         pass
 
     def do_upload(self, representation):
@@ -18,7 +18,7 @@ class DummySuccessUploader(MirrorUploader):
 
 class DummyFailureUploader(MirrorUploader):
 
-    def __init__(self):
+    def __init__(self, integration=None):
         pass
 
     def do_upload(self, representation):
@@ -94,6 +94,17 @@ class TestInitialization(DatabaseTest):
             MirrorUploader, integration
         )
 
+    def test_implementation_registry(self):
+        """The implementation class used for a given ExternalIntegration
+        is controlled by the integration's protocol and the contents
+        of the MirrorUploader's implementation registry.
+        """
+        MirrorUploader.IMPLEMENTATION_REGISTRY["my protocol"] = DummyFailureUploader
+
+        integration = self._integration
+        uploader = MirrorUploader.sitewide(self._db)
+        assert isinstance(uploader, DummyFailureUploader)
+        del MirrorUploader.IMPLEMENTATION_REGISTRY["my protocol"]
 
 class TestMirrorUploader(DatabaseTest):
     """Test the basic workflow of MirrorUploader."""
