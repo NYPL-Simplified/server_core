@@ -57,14 +57,15 @@ class S3Uploader(MirrorUploader):
         """Gets the bucket for a particular use based on the given key"""
         return self.buckets.get(bucket_key)
 
-    def url(self, bucket, path):
+    @classmethod
+    def url(cls, bucket, path):
         """The URL to a resource on S3 identified by bucket and path."""
         if path.startswith('/'):
             path = path[1:]
         if bucket.startswith('http://') or bucket.startswith('https://'):
             url = bucket
         else:
-            url = self.S3_BASE + bucket
+            url = cls.S3_BASE + bucket
         if not url.endswith('/'):
             url += '/'
         return url + path
@@ -237,9 +238,12 @@ class MockS3Uploader(S3Uploader):
                     representation.mirror_url = representation.url
                 representation.set_as_mirrored()
 
+
 class MockS3Response(object):
     def __init__(self, url):
         self.url = url
+        self.status_code = 200
+
 
 class MockS3Pool(object):
     """This pool lets us test the real S3Uploader class with a mocked-up S3
@@ -257,13 +261,9 @@ class MockS3Pool(object):
                **kwargs):
         self.uploads.append((remote_filename, fh.read(), bucket, content_type, 
                              kwargs))
-        # TODO: Instead of generating a fake URL we should be able to
-        # generate the same URL the s3 module would generate in this
-        # situation. Without this, we can't properly test the code at the
-        # end of mirror_batch which calls process_response.
-        response = MockS3Response("http://s3/%s" % self.n)
-        self.n += 1
-        self.in_progress = []
+        url = S3Uploader.url(bucket, remote_filename)
+        response = MockS3Response(url)
+        self.in_progress.append(response)
         return response
 
     def as_completed(self, requests):

@@ -1,5 +1,5 @@
 import os
-import contextlib
+import datetime
 from PIL import Image
 from StringIO import StringIO
 from nose.tools import (
@@ -36,10 +36,11 @@ class S3UploaderTest(DatabaseTest):
         integration.password = 'password'
         return integration
 
-    def _uploader(self, pool_class=None, **settings):
+    def _uploader(self, pool_class=None, uploader_class=None, **settings):
         """Create a simple S3Uploader."""
         integration = self._integration(**settings)
-        return S3Uploader(integration, pool_class=pool_class)
+        uploader_class = uploader_class or S3Uploader
+        return uploader_class(integration, pool_class=pool_class)
 
 
 class TestS3Uploader(S3UploaderTest):
@@ -88,8 +89,7 @@ class TestS3Uploader(S3UploaderTest):
         eq_(uploader.buckets['foo'], result)
 
     def test_url(self):
-        uploader = self._uploader()
-        m = uploader.url
+        m = S3Uploader.url
         eq_("http://s3.amazonaws.com/a-bucket/a-path", m("a-bucket", "a-path"))
         eq_("http://s3.amazonaws.com/a-bucket/a-path", m("a-bucket", "/a-path"))
         eq_("http://a-bucket.com/a-path", m("http://a-bucket.com/", "a-path"))
@@ -177,8 +177,62 @@ class TestS3Uploader(S3UploaderTest):
         eq_(("book-covers.nypl.org", "directory/filename.jpg"),
             m("http://book-covers.nypl.org/directory/filename.jpg"))
 
+    def test_mirror_one(self):
+        """mirror_one just calls mirror_batch on a one-item list."""
+        class Mock(S3Uploader):
+            def mirror_batch(self, batch):
+                self.batch = batch
 
-class TestUpload(S3UploaderTest):
+        uploader = self._uploader(uploader_class=Mock)
+        obj = object()
+        uploader.mirror_one(obj)
+        eq_([obj], uploader.batch)
+
+    def test_mirror_batch(self):
+        edition, pool = self._edition(with_license_pool=True)
+        original_cover_location = "http://example.com/a-cover.png"
+        content = open(self.sample_cover_path("test-book-cover.png")).read()
+        cover, ignore = pool.add_link(
+            Hyperlink.IMAGE, original_cover_location, edition.data_source, 
+            Representation.PNG_MEDIA_TYPE,
+            content=content
+        )
+        cover_rep = cover.resource.representation
+        cover_rep.mirror_url = "http://covers-go/here.png"
+        eq_(None, cover_rep.mirrored_at)
+
+        original_epub_location = "https://books.com/a-book.epub"
+        epub, ignore = pool.add_link(
+            Hyperlink.OPEN_ACCESS_DOWNLOAD, original_epub_location,
+            edition.data_source, Representation.EPUB_MEDIA_TYPE,
+            content="i'm an epub"
+        )
+        epub_rep = epub.resource.representation
+        eq_(None, epub_rep.mirrored_at)
+
+        s3 = self._uploader(MockS3Pool)
+        to_mirror = [
+            cover.resource.representation, epub.resource.representation
+        ]
+        s3.mirror_batch(to_mirror)
+        [[filename1, data1, bucket1, media_type1, ignore1],
+         [filename2, data2, bucket2, media_type2, ignore2],] = s3.pool.uploads
+
+        # Both representations have been mirrored to their .mirror_urls
+        eq_("covers-go", bucket1)
+        eq_("here.png", filename1)
+        eq_(Representation.PNG_MEDIA_TYPE, media_type1)
+        assert data1.startswith(b'\x89')
+        assert (datetime.datetime.utcnow() - cover_rep.mirrored_at).seconds < 10
+
+        # Since the epub_rep didn't have a .mirror_url, the .url was used
+        # instead, and .mirror_url was set to .url.
+        eq_(original_epub_location, epub_rep.mirror_url)
+        eq_("books.com", bucket2)
+        eq_("a-book.epub", filename2)
+        eq_("i'm an epub", data2)
+        eq_(Representation.EPUB_MEDIA_TYPE, media_type2)
+        assert (datetime.datetime.utcnow() - epub_rep.mirrored_at).seconds < 10
 
     def test_automatic_conversion_while_mirroring(self):
         edition, pool = self._edition(with_license_pool=True)
@@ -197,10 +251,9 @@ class TestUpload(S3UploaderTest):
             content=svg)
 
         # 'Upload' it to S3.
-        s3pool = MockS3Pool('username', 'password')
-        s3 = self._uploader(s3pool)
+        s3 = self._uploader(MockS3Pool)
         s3.mirror_one(hyperlink.resource.representation)
-        [[filename, data, bucket, media_type, ignore]] = s3pool.uploads
+        [[filename, data, bucket, media_type, ignore]] = s3.pool.uploads
 
         # The thing that got uploaded was a PNG, not the original SVG
         # file.
