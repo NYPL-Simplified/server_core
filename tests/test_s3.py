@@ -29,9 +29,9 @@ class S3UploaderTest(DatabaseTest):
     def _integration(self, **settings):
         """Create and configure a simple S3 integration."""
         integration = self._external_integration(
-            ExternalIntegration.S3, settings=settings
+            ExternalIntegration.S3, ExternalIntegration.STORAGE_GOAL,
+            settings=settings
         )
-        integration.goal = ExternalIntegration.STORAGE_GOAL
         integration.username = 'username'
         integration.password = 'password'
         return integration
