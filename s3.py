@@ -99,7 +99,7 @@ class S3Uploader(MirrorUploader):
     def book_url(self, identifier, extension='.epub', open_access=True, 
                  data_source=None, title=None):
         """The path to the hosted EPUB file for the given identifier."""
-        bucket = self.get_bucket(self.OA_CONTENT_BUCKET_KEY, identifier)
+        bucket = self.get_bucket(self.OA_CONTENT_BUCKET_KEY)
         root = self.content_root(bucket, open_access)
 
         if not extension.startswith('.'):
@@ -120,17 +120,18 @@ class S3Uploader(MirrorUploader):
 
         return root + template % tuple(args + [extension])
 
-    def cover_image_url(self, data_source, identifier, filename=None,
+    def cover_image_url(self, data_source, identifier, filename,
                         scaled_size=None):
         """The path to the hosted cover image for the given identifier."""
-        bucket = self.get_bucket(self.BOOK_COVERS_BUCKET_KEY, identifier)
+        bucket = self.get_bucket(self.BOOK_COVERS_BUCKET_KEY)
         root = self.cover_image_root(bucket, data_source, scaled_size)
 
         args = [identifier.type, identifier.identifier, filename]
         args = [urllib.quote(x) for x in args]
         return root + "%s/%s/%s" % tuple(args)
 
-    def bucket_and_filename(self, url):
+    @classmethod
+    def bucket_and_filename(cls, url):
         scheme, netloc, path, query, fragment = urlsplit(url)
         if netloc == 's3.amazonaws.com':
             if path.startswith('/'):
@@ -211,7 +212,7 @@ class S3Uploader(MirrorUploader):
 MirrorUploader.IMPLEMENTATION_REGISTRY[ExternalIntegration.S3] = S3Uploader
 
 
-class DummyS3Uploader(S3Uploader):
+class MockS3Uploader(S3Uploader):
     """A dummy uploader for use in tests."""
 
     buckets = {
@@ -245,7 +246,9 @@ class MockS3Pool(object):
     pool.
     """
 
-    def __init__(self):
+    def __init__(self, access_key, secret_key):
+        self.access_key = access_key
+        self.secret_key = secret_key
         self.uploads = []
         self.in_progress = []
         self.n = 0

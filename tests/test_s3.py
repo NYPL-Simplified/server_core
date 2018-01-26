@@ -3,9 +3,10 @@ import contextlib
 from PIL import Image
 from StringIO import StringIO
 from nose.tools import (
-    set_trace,
+    assert_raises,
     assert_raises_regexp,
     eq_,
+    set_trace,
 )
 from . import (
     DatabaseTest
@@ -18,7 +19,6 @@ from model import (
 )
 from s3 import (
     S3Uploader,
-    DummyS3Uploader,
     MockS3Pool,
 )
 from util.mirror import MirrorUploader
@@ -26,18 +26,19 @@ from config import CannotLoadConfiguration
 
 class S3UploaderTest(DatabaseTest):
 
-    @property
-    def _integration(self):
+    def _integration(self, **settings):
         """Create and configure a simple S3 integration."""
-        integration = self._external_integration(ExternalIntegration.S3)
+        integration = self._external_integration(
+            ExternalIntegration.S3, settings=settings
+        )
         integration.goal = ExternalIntegration.STORAGE_GOAL
         integration.username = 'username'
         integration.password = 'password'
         return integration
 
-    def _uploader(self, pool_class=None):
+    def _uploader(self, pool_class=None, **settings):
         """Create a simple S3Uploader."""
-        integration = self._integration
+        integration = self._integration(**settings)
         return S3Uploader(integration, pool_class=pool_class)
 
 
@@ -60,28 +61,41 @@ class TestS3Uploader(S3UploaderTest):
         uploader = MirrorUploader.implementation(integration)
         eq_(True, isinstance(uploader, S3Uploader))
 
+
+    def test_custom_pool_class(self):
+        """You can specify a pool class to use instead of tinys3.Pool."""
+        integration = self._integration()
+        uploader = S3Uploader(integration, MockS3Pool)
+        assert isinstance(uploader.pool, MockS3Pool)
+
     def test_get_bucket(self):
         buckets = {
             S3Uploader.OA_CONTENT_BUCKET_KEY : 'banana',
             S3Uploader.BOOK_COVERS_BUCKET_KEY : 'bucket'
         }
-        integration = self._external_integration(
-            ExternalIntegration.S3, goal=ExternalIntegration.STORAGE_GOAL,
-            username='access', password='secret', settings=buckets
-        )
-
+        buckets_plus_irrelevant_setting = dict(buckets)
+        buckets_plus_irrelevant_setting['not-a-bucket-at-all'] = "value"
+        self._integration(**buckets_plus_irrelevant_setting)
         uploader = MirrorUploader.implementation(integration)
 
-        # This S3Uploader knows about the configured buckets.
+        # This S3Uploader knows about the configured buckets.  It
+        # wasn't informed of the irrelevant 'not-a-bucket-at-all'
+        # setting.
         eq_(buckets, uploader.buckets)
 
-        result = uploader.get_bucket(S3Uploader.OA_CONTENT_BUCKET_KEY)
-        eq_('banana', result)
+        # get_bucket just does a lookup in .buckets
+        uploader.buckets['foo'] = object()
+        result = uploader.get_bucket('foo')
+        eq_(uploader.buckets['foo'], result)
 
-    def test_content_root(self):
-        bucket = u'test-open-access-s3-bucket'
-        eq_("http://s3.amazonaws.com/test-open-access-s3-bucket/",
-            self._uploader().content_root(bucket))
+    def test_url(self):
+        uploader = self._uploader()
+        m = uploader.url
+        eq_("http://s3.amazonaws.com/a-bucket/a-path", m("a-bucket", "a-path"))
+        eq_("http://s3.amazonaws.com/a-bucket/a-path", m("a-bucket", "/a-path"))
+        eq_("http://a-bucket.com/a-path", m("http://a-bucket.com/", "a-path"))
+        eq_("https://a-bucket.com/a-path", 
+            m("https://a-bucket.com/", "/a-path"))
 
     def test_cover_image_root(self):
         bucket = u'test-book-covers-s3-bucket'
@@ -97,6 +111,72 @@ class TestS3Uploader(S3UploaderTest):
             uploader.cover_image_root(bucket, overdrive))
         eq_("http://s3.amazonaws.com/test-book-covers-s3-bucket/scaled/300/Overdrive/",
             uploader.cover_image_root(bucket, overdrive, 300))
+
+    def test_content_root(self):
+        bucket = u'test-open-access-s3-bucket'
+        uploader = self._uploader()
+        m = uploader.content_root
+        eq_(
+            "http://s3.amazonaws.com/test-open-access-s3-bucket/",
+            m(bucket)
+        )
+
+        # There is nowhere to store content that is not open-access.
+        assert_raises(
+            NotImplementedError,
+            m, bucket, open_access=False
+        )
+
+    def test_book_url(self):
+        identifier = self._identifier(foreign_id="ABOOK")
+        buckets = {S3Uploader.OA_CONTENT_BUCKET_KEY : 'thebooks'}
+        uploader = self._uploader(**buckets)
+        m = uploader.book_url
+
+        eq_(u'http://s3.amazonaws.com/thebooks/Gutenberg%20ID/ABOOK.epub',
+            m(identifier))
+
+        # The default extension is .epub, but a custom extension can
+        # be specified.
+        eq_(u'http://s3.amazonaws.com/thebooks/Gutenberg%20ID/ABOOK.pdf', 
+            m(identifier, extension='pdf'))
+
+        eq_(u'http://s3.amazonaws.com/thebooks/Gutenberg%20ID/ABOOK.pdf', 
+            m(identifier, extension='.pdf'))
+
+        # If a data source is provided, the book is stored underneath the
+        # data source.
+        unglueit = DataSource.lookup(self._db, DataSource.UNGLUE_IT)
+        eq_(u'http://s3.amazonaws.com/thebooks/unglue.it/Gutenberg%20ID/ABOOK.epub',
+            m(identifier, data_source=unglueit))
+
+        # If a title is provided, the book's filename incorporates the
+        # title, for the benefit of people who download the book onto
+        # their hard drive.
+        eq_(u'http://s3.amazonaws.com/thebooks/Gutenberg%20ID/ABOOK/On%20Books.epub',
+            m(identifier, title="On Books"))
+
+        # Non-open-access content can't be stored.
+        assert_raises(NotImplementedError, m, identifier, open_access=False)
+
+    def test_cover_image_url(self):
+        identifier = self._identifier(foreign_id="ABOOK")
+        buckets = {S3Uploader.BOOK_COVERS_BUCKET_KEY : 'thecovers'}
+        uploader = self._uploader(**buckets)
+        m = uploader.cover_image_url
+
+        unglueit = DataSource.lookup(self._db, DataSource.UNGLUE_IT)
+        identifier = self._identifier(foreign_id="ABOOK")
+        eq_(u'http://s3.amazonaws.com/thecovers/scaled/601/unglue.it/Gutenberg%20ID/ABOOK/filename',
+            m(unglueit, identifier, "filename", scaled_size=601))
+
+    def test_bucket_and_filename(self):
+        m = S3Uploader.bucket_and_filename
+        eq_(("bucket", "directory/filename.jpg"),
+            m("https://s3.amazonaws.com/bucket/directory/filename.jpg"))
+
+        eq_(("book-covers.nypl.org", "directory/filename.jpg"),
+            m("http://book-covers.nypl.org/directory/filename.jpg"))
 
 
 class TestUpload(S3UploaderTest):
