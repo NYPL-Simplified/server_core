@@ -75,8 +75,7 @@ class TestS3Uploader(S3UploaderTest):
         }
         buckets_plus_irrelevant_setting = dict(buckets)
         buckets_plus_irrelevant_setting['not-a-bucket-at-all'] = "value"
-        self._integration(**buckets_plus_irrelevant_setting)
-        uploader = MirrorUploader.implementation(integration)
+        uploader = self._uploader(**buckets_plus_irrelevant_setting)
 
         # This S3Uploader knows about the configured buckets.  It
         # wasn't informed of the irrelevant 'not-a-bucket-at-all'
@@ -198,7 +197,7 @@ class TestUpload(S3UploaderTest):
             content=svg)
 
         # 'Upload' it to S3.
-        s3pool = MockS3Pool()
+        s3pool = MockS3Pool('username', 'password')
         s3 = self._uploader(s3pool)
         s3.mirror_one(hyperlink.resource.representation)
         [[filename, data, bucket, media_type, ignore]] = s3pool.uploads
