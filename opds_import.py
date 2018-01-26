@@ -420,7 +420,7 @@ class OPDSImporter(object):
             self.log.warn("Metadata Wrangler integration couldn't be loaded, importing without it.")
             self.metadata_client = None
 
-        if not mirror:
+        if collection and not mirror:
             # If this Collection is configured to mirror the assets it
             # discovers to S3, this will create an S3Uploader for that
             # Collection. Otherwise, this will return None.
