@@ -98,23 +98,22 @@ class TestS3Uploader(S3UploaderTest):
 
     def test_cover_image_root(self):
         bucket = u'test-book-covers-s3-bucket'
-        uploader = self._uploader()
+        m = S3Uploader.cover_image_root
 
         gutenberg_illustrated = DataSource.lookup(
             self._db, DataSource.GUTENBERG_COVER_GENERATOR)
         overdrive = DataSource.lookup(self._db, DataSource.OVERDRIVE)
 
         eq_("http://s3.amazonaws.com/test-book-covers-s3-bucket/Gutenberg%20Illustrated/",
-            uploader.cover_image_root(bucket, gutenberg_illustrated))
+            m(bucket, gutenberg_illustrated))
         eq_("http://s3.amazonaws.com/test-book-covers-s3-bucket/Overdrive/",
-            uploader.cover_image_root(bucket, overdrive))
+            m(bucket, overdrive))
         eq_("http://s3.amazonaws.com/test-book-covers-s3-bucket/scaled/300/Overdrive/",
-            uploader.cover_image_root(bucket, overdrive, 300))
+            m(bucket, overdrive, 300))
 
     def test_content_root(self):
         bucket = u'test-open-access-s3-bucket'
-        uploader = self._uploader()
-        m = uploader.content_root
+        m = S3Uploader.content_root
         eq_(
             "http://s3.amazonaws.com/test-open-access-s3-bucket/",
             m(bucket)

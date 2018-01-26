@@ -70,7 +70,8 @@ class S3Uploader(MirrorUploader):
             url += '/'
         return url + path
 
-    def cover_image_root(self, bucket, data_source, scaled_size=None):
+    @classmethod
+    def cover_image_root(cls, bucket, data_source, scaled_size=None):
         """The root URL to the S3 location of cover images for
         the given data source.
         """
@@ -84,18 +85,19 @@ class S3Uploader(MirrorUploader):
             data_source_name = data_source.name
         data_source_name = urllib.quote(data_source_name)
         path += data_source_name + "/"
-        url = self.url(bucket, path)
+        url = cls.url(bucket, path)
         if not url.endswith('/'):
             url += '/'
         return url
 
-    def content_root(self, bucket, open_access=True):
+    @classmethod
+    def content_root(cls, bucket, open_access=True):
         """The root URL to the S3 location of hosted content of
         the given type.
         """
         if not open_access:
             raise NotImplementedError()
-        return self.url(bucket, '/')
+        return cls.url(bucket, '/')
 
     def book_url(self, identifier, extension='.epub', open_access=True, 
                  data_source=None, title=None):
