@@ -58,7 +58,7 @@ from util.opds_writer import (
     OPDSFeed,
     OPDSMessage,
 )
-from s3 import S3Uploader
+from util.mirror import MirrorUploader
 
 
 class AccessNotAuthenticated(Exception):
@@ -422,9 +422,9 @@ class OPDSImporter(object):
 
         if collection and not mirror:
             # If this Collection is configured to mirror the assets it
-            # discovers to S3, this will create an S3Uploader for that
+            # discovers, this will create a MirrorUploader for that
             # Collection. Otherwise, this will return None.
-            mirror = S3Uploader.for_collection(_db, collection)
+            mirror = MirrorUploader.for_collection(_db, collection)
         self.mirror = mirror
         self.content_modifier = content_modifier
         self.http_get = http_get
