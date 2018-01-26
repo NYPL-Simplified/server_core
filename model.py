@@ -120,6 +120,7 @@ from util import (
     MetadataSimilarity,
     TitleProcessor,
 )
+from util.mirror import MirrorUploader
 from util.http import (
     HTTP,
     RemoteIntegrationException,
@@ -3991,7 +3992,7 @@ class Work(Base):
             LicensePool.identifier).join(
                 Identifier.classifications).join(
                     Classification.subject)
-        return qu.filter(Subject.checked==False).distinct()
+        return qu.filter(Subject.checked==False).order_by(Subject.id)
 
     @classmethod
     def open_access_for_permanent_work_id(cls, _db, pwid, medium):
@@ -6219,33 +6220,36 @@ class Subject(Base):
             genre, was_new = Genre.lookup(_db, genredata.name, True)
         else:
             genre = None
+
+        # Create a shorthand way of referring to this Subject in log
+        # messages.
+        parts = [self.type, self.identifier, self.name]
+        shorthand = ":".join(x for x in parts if x)
+
         if genre != self.genre:
             log.info(
-                "%s:%s genre %r=>%r", self.type, self.identifier,
-                self.genre, genre
+                "%s genre %r=>%r", shorthand, self.genre, genre
             )
         self.genre = genre
 
         if audience:
             if self.audience != audience:
                 log.info(
-                    "%s:%s audience %s=>%s", self.type, self.identifier,
-                    self.audience, audience
+                    "%s audience %s=>%s", shorthand, self.audience, audience
                 )
         self.audience = audience
 
         if fiction is not None:
             if self.fiction != fiction:
                 log.info(
-                    "%s:%s fiction %s=>%s", self.type, self.identifier,
-                    self.fiction, fiction
+                    "%s fiction %s=>%s", shorthand, self.fiction, fiction
                 )
         self.fiction = fiction
 
         if (numericrange_to_tuple(self.target_age) != target_age and 
             not (not self.target_age and not target_age)):
             log.info(
-                "%s:%s target_age %r=>%r", self.type, self.identifier,
+                "%s target_age %r=>%r", shorthand,
                 self.target_age, tuple_to_numericrange(target_age)
             )
         self.target_age = tuple_to_numericrange(target_age)
@@ -10001,7 +10005,7 @@ class ExternalIntegration(Base, HasFullTableCache):
 
     # These integrations are associated with external services such as
     # S3 that provide access to book covers.
-    STORAGE_GOAL = u'storage'
+    STORAGE_GOAL = MirrorUploader.STORAGE_GOAL
 
     # These integrations are associated with external services like
     # Cloudfront or other CDNs that mirror and/or cache certain domains.
@@ -10134,6 +10138,13 @@ class ExternalIntegration(Base, HasFullTableCache):
     settings = relationship(
         "ConfigurationSetting", backref="external_integration",
         lazy="joined", cascade="all, delete-orphan",
+    )
+
+    # An ExternalIntegration may be used by many Collections
+    # to mirror book covers or other files.
+    mirror_for = relationship(
+        "Collection", backref="mirror_integration",
+        foreign_keys='Collection.mirror_integration_id',
     )
 
     def __repr__(self):
@@ -10538,6 +10549,14 @@ class Collection(Base, HasFullTableCache):
     # secret as the Overdrive collection, but it has a distinct
     # external_account_id.
     parent_id = Column(Integer, ForeignKey('collections.id'), index=True)
+
+    # Some Collections use an ExternalIntegration to mirror books and
+    # cover images they discover. Such a collection should use an
+    # ExternalIntegration to set up its mirroring technique, and keep
+    # a reference to that ExternalIntegration here.
+    mirror_integration_id = Column(
+        Integer, ForeignKey('externalintegrations.id'), nullable=True
+    )
 
     # A collection may have many child collections. For example,
     # An Overdrive collection may have many children corresponding

@@ -73,7 +73,6 @@ from model import (
     site_configuration_has_changed,
 )
 from monitor import (
-    SubjectAssignmentMonitor,
     CollectionMonitor,
 )
 from opds_import import (
@@ -2660,15 +2659,6 @@ class FixInvisibleWorksScript(CollectionInputScript):
         self.output.write(
             "I would now expect you to be able to find %d works.\n" % mv_works_count
         )
-
-class SubjectAssignmentScript(SubjectInputScript):
-
-    def do_run(self):
-        args = self.parse_command_line(self._db)
-        monitor = SubjectAssignmentMonitor(
-            self._db, args.subject_type, args.subject_filter
-        )
-        monitor.run()
 
 
 class ListCollectionMetadataIdentifiersScript(CollectionInputScript):
