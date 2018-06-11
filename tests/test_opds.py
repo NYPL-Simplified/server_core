@@ -548,7 +548,7 @@ class TestOPDS(DatabaseTest):
         self.add_to_materialized_view([work])
         from model import MaterializedWorkWithGenre
         [mw] = self._db.query(MaterializedWorkWithGenre).all()
-        
+
         mw_uri, mw_title = annotator.group_uri(mw, lp, lp.identifier)
         eq_(mw_uri, expect_uri)
         assert str(mw.works_id) in mw_uri
@@ -577,6 +577,17 @@ class TestOPDS(DatabaseTest):
             gutenberg.name
         )
         assert (1, unicode(feed).count(expect))
+
+        # If the LicensePool is a stand-in produced for internal
+        # processing purposes, it does not represent an actual license for
+        # the book, and the <bibframe:distribution> tag is not
+        # included.
+        internal = DataSource.lookup(self._db, DataSource.INTERNAL_PROCESSING)
+        work.license_pools[0].data_source = internal
+        feed = AcquisitionFeed(self._db, "test", "http://the-url.com/",
+                               [work])
+        assert '<bibframe:distribution' not in unicode(feed)
+
 
     def test_acquisition_feed_includes_author_tag_even_when_no_author(self):
         work = self._work(with_open_access_download=True)
@@ -1336,7 +1347,7 @@ class TestOPDS(DatabaseTest):
 
         feed1 = make_page()
         assert work1.title in feed1
-        cached = get_one(self._db, CachedFeed, lane=fantasy_lane) 
+        cached = get_one(self._db, CachedFeed, lane=fantasy_lane)
         old_timestamp = cached.timestamp
 
         work2 = self._work(
@@ -1786,6 +1797,107 @@ class TestAcquisitionFeed(DatabaseTest):
         eq_([OPDSFeed.ENTRY_TYPE, Representation.TEXT_HTML_MEDIA_TYPE + DeliveryMechanism.STREAMING_PROFILE],
             AcquisitionFeed.format_types(overdrive_streaming_text))
 
+    def test_add_breadcrumbs(self):
+        _db = self._db
+
+        def getElementChildren(feed):
+            f = feed.feed[0]
+            children = f.getchildren()
+            return children
+
+        class MockFeed(AcquisitionFeed):
+            def __init__(self):
+                super(MockFeed, self).__init__(
+                    _db, "", "", [], annotator=TestAnnotator()
+                )
+                self.feed = []
+
+        lane = self._lane()
+        sublane = self._lane(parent=lane)
+        subsublane = self._lane(parent=sublane)
+        ep = AudiobooksEntryPoint
+
+        # The top level with no entrypoint
+        # Top Level Title >
+        feed = MockFeed()
+        feed.add_breadcrumbs(lane)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 1)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+
+        # The top level with an entrypoint
+        # Top Level Title > Audio
+        feed = MockFeed()
+        feed.add_breadcrumbs(lane, entrypoint=ep)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 2)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+        eq_(children[1].attrib.get("href"), TestAnnotator.default_lane_url() + "?entrypoint=" + ep.URI)
+        eq_(children[1].attrib.get("title"), ep.INTERNAL_NAME)
+
+        # One lane level down but with no entrypoint
+        # Top Level Title > 2001
+        feed = MockFeed()
+        feed.add_breadcrumbs(sublane)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 2)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+        assert(("?entrypoint=" + ep.URI) not in children[1].attrib.get("href"))
+        eq_(children[1].attrib.get("title"), lane.display_name)
+
+        # One lane level down and with an entrypoint
+        # Each sublane will have the entrypoint propagated down to its link
+        # Top Level Title > Audio > 2001
+        feed = MockFeed()
+        feed.add_breadcrumbs(sublane, entrypoint=ep)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 3)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+        eq_(children[1].attrib.get("href"), TestAnnotator.default_lane_url() + "?entrypoint=" + ep.URI)
+        eq_(children[1].attrib.get("title"), ep.INTERNAL_NAME)
+        assert(("?entrypoint=" + ep.URI) in children[2].attrib.get("href"))
+        eq_(children[2].attrib.get("title"), lane.display_name)
+
+        # Two lane levels down but no entrypoint
+        # Top Level Title > 2001 > 2002
+        feed = MockFeed()
+        feed.add_breadcrumbs(subsublane)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 3)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+        assert(("?entrypoint=" + ep.URI) not in children[1].attrib.get("href"))
+        eq_(children[1].attrib.get("title"), lane.display_name)
+        assert(("?entrypoint=" + ep.URI) not in children[1].attrib.get("href"))
+        eq_(children[2].attrib.get("title"), sublane.display_name)
+
+        # Two lane levels down after the entrypoint
+        # Each sublane will have the entrypoint propagated down to its link
+        # Top Level Title > Audio > 2001 > 2002
+        feed = MockFeed()
+        feed.add_breadcrumbs(subsublane, entrypoint=ep)
+        children = getElementChildren(feed)
+
+        eq_(len(children), 4)
+        eq_(children[0].attrib.get("href"), TestAnnotator.default_lane_url())
+        eq_(children[0].attrib.get("title"), TestAnnotator.top_level_title())
+        eq_(children[1].attrib.get("href"), TestAnnotator.default_lane_url() + "?entrypoint=" + ep.URI)
+        eq_(children[1].attrib.get("title"), ep.INTERNAL_NAME)
+        assert(("?entrypoint=" + ep.URI) in children[2].attrib.get("href"))
+        eq_(children[2].attrib.get("title"), lane.display_name)
+        assert(("?entrypoint=" + ep.URI) in children[3].attrib.get("href"))
+        eq_(children[3].attrib.get("title"), sublane.display_name)
+
+
     def test_add_breadcrumb_links(self):
 
         class MockFeed(AcquisitionFeed):
@@ -2048,7 +2160,7 @@ class TestEntrypointLinkInsertion(DatabaseTest):
         """When AcquisitionFeed.groups() generates a grouped
         feed, it will link to different entry points into the feed,
         assuming the WorkList has different entry points.
-        """        
+        """
         def run(wl=None, facets=None):
             """Call groups() and see what add_entrypoint_links
             was called with.

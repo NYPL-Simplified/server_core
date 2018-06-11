@@ -121,13 +121,19 @@ class Annotator(object):
             )
 
         if active_license_pool:
-            provider_name_attr = "{%s}ProviderName" % AtomFeed.BIBFRAME_NS
-            kwargs = {provider_name_attr : active_license_pool.data_source.name}
-            data_source_tag = AtomFeed.makeelement(
-                "{%s}distribution" % AtomFeed.BIBFRAME_NS,
-                **kwargs
-            )
-            entry.extend([data_source_tag])
+            data_source = active_license_pool.data_source.name
+            if data_source != DataSource.INTERNAL_PROCESSING:
+                # INTERNAL_PROCESSING indicates a dummy LicensePool
+                # created as a stand-in, e.g. by the metadata wrangler.
+                # This component is not actually distributing the book,
+                # so it should not have a bibframe:distribution tag.
+                provider_name_attr = "{%s}ProviderName" % AtomFeed.BIBFRAME_NS
+                kwargs = {provider_name_attr : data_source}
+                data_source_tag = AtomFeed.makeelement(
+                    "{%s}distribution" % AtomFeed.BIBFRAME_NS,
+                    **kwargs
+                )
+                entry.extend([data_source_tag])
 
             # We use Atom 'published' for the date the book first became
             # available to people using this application.
@@ -859,12 +865,13 @@ class AcquisitionFeed(OPDSFeed):
             parent_title = parent.display_name
         else:
             parent_title = top_level_title
+
         if parent:
             up_uri = annotator.lane_url(parent)
             self.add_link_to_feed(
                 feed=xml, href=up_uri, rel="up", title=parent_title
             )
-            self.add_breadcrumbs(lane, entrypoint)
+        self.add_breadcrumbs(lane, entrypoint=entrypoint)
 
         # Annotate the feed with a simplified:entryPoint for the
         # current EntryPoint.
@@ -1325,6 +1332,8 @@ class AcquisitionFeed(OPDSFeed):
         its own breadcrumb link.
         """
         # Ensure that lane isn't top-level before proceeding
+
+        entrypointQuery = ("?entrypoint=" + entrypoint.URI) if entrypoint != None else ""
         annotator = self.annotator
         if annotator.lane_url(lane) != annotator.default_lane_url():
             breadcrumbs = AtomFeed.makeelement("{%s}breadcrumbs" % AtomFeed.SIMPLIFIED_NS)
@@ -1335,19 +1344,24 @@ class AcquisitionFeed(OPDSFeed):
                 AtomFeed.link(title=annotator.top_level_title(), href=root_url)
             )
 
+            if entrypoint:
+                breadcrumbs.append(
+                    AtomFeed.link(title=entrypoint.INTERNAL_NAME, href=root_url + entrypointQuery)
+                )
+
             # Add links for all visible ancestors that aren't root
             for ancestor in reversed(list(lane.parentage)):
                 lane_url = annotator.lane_url(ancestor)
                 if lane_url != root_url:
                     breadcrumbs.append(
-                        AtomFeed.link(title=ancestor.display_name, href=lane_url)
+                        AtomFeed.link(title=ancestor.display_name, href=lane_url + entrypointQuery)
                     )
 
             # Include link to lane
             # For search, breadcrumbs include the searched lane
             if include_lane:
                 breadcrumbs.append(
-                    AtomFeed.link(title=lane.display_name, href=annotator.lane_url(lane))
+                    AtomFeed.link(title=lane.display_name, href=annotator.lane_url(lane) + entrypointQuery)
                 )
 
             self.feed.append(breadcrumbs)
