@@ -2224,7 +2224,7 @@ class Identifier(Base):
             rights_status = RightsStatus.lookup(_db, rights_status_uri)
         resource, new_resource = get_one_or_create(
             _db, Resource, url=href,
-            create_method_kwargs=dict(data_source=data_source, 
+            create_method_kwargs=dict(data_source=data_source,
                                       rights_status=rights_status,
                                       rights_explanation=rights_explanation)
         )
@@ -3064,6 +3064,9 @@ class Edition(Base):
     ELECTRONIC_FORMAT = u"Electronic"
     CODEX_FORMAT = u"Codex"
 
+    HARDCOVER_FORMAT = u"Hardcover"
+    PAPERBACK_FORMAT = u"Paperback"
+
     # These are the media types currently fulfillable by the default
     # client.
     FULFILLABLE_MEDIA = [BOOK_MEDIUM]
@@ -3076,6 +3079,19 @@ class Edition(Base):
         VIDEO_MEDIUM :  u"http://schema.org/VideoObject",
         IMAGE_MEDIUM: u"http://schema.org/ImageObject",
         COURSEWARE_MEDIUM: u"http://schema.org/Course"
+    }
+
+    medium_to_book_format_type = {
+        BOOK_MEDIUM : u"http://schema.org/EBook",
+        AUDIO_MEDIUM : u"http://schema.org/AudiobookFormat",
+        HARDCOVER_FORMAT: u"http://schema.org/Hardcover",
+        PAPERBACK_FORMAT: u"http://schema.org/Paperback",
+    }
+    medium_to_book_format_type_values = {
+        BOOK_MEDIUM : u"EBook",
+        AUDIO_MEDIUM : u"AudiobookFormat",
+        HARDCOVER_FORMAT: u"Hardcover",
+        PAPERBACK_FORMAT: u"Paperback",
     }
 
     additional_type_to_medium = {}
@@ -7172,7 +7188,7 @@ class LicensePool(Base):
         )
 
     def add_link(self, rel, href, data_source, media_type=None,
-                 content=None, content_path=None, 
+                 content=None, content_path=None,
                  rights_status_uri=None, rights_explanation=None,
                  original_resource=None, transformation_settings=None,
                  ):
