@@ -1,4 +1,4 @@
-DO $$ 
+DO $$
     BEGIN
         BEGIN
             ALTER TABLE customlists ADD COLUMN library_id integer;

@@ -11,6 +11,6 @@ update subjects set identifier=null where name=identifier and name not like '%0'
 -- All existing 'BISAC' subjects should be rechecked with the new rules.
 update subjects set checked=false where type='BISAC';
 
--- Old code incorrectly classified 'Fiction / Urban' as 'Urban Fiction'. 
+-- Old code incorrectly classified 'Fiction / Urban' as 'Urban Fiction'.
 -- All such subjects need to be reevaluated.
 update subjects set checked=false where name ilike 'fiction%urban';

@@ -1,5 +1,5 @@
 -- genres.name should be indexed and unique.
-DO $$ 
+DO $$
     BEGIN
         BEGIN
 create unique index ix_genres_name on genres (name);

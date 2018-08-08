@@ -1,6 +1,6 @@
 create materialized view mv_works_editions_datasources_identifiers
 as
- SELECT 
+ SELECT
     distinct works.id AS works_id,
     editions.id AS editions_id,
     licensepools.data_source_id,
@@ -39,7 +39,7 @@ as
      JOIN identifiers on licensepools.identifier_id = identifiers.id
   WHERE works.presentation_ready = true
     AND works.simple_opds_entry IS NOT NULL
-  
+
   ORDER BY editions.sort_title, editions.sort_author, licensepools.availability_time
   WITH NO DATA;
 

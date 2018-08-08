@@ -3,7 +3,7 @@ drop materialized view mv_works_for_lanes;
 -- Create the materialized view with no data.
 create materialized view mv_works_for_lanes
 as
- SELECT 
+ SELECT
     works.id AS works_id,
     editions.id AS editions_id,
     licensepools.data_source_id,

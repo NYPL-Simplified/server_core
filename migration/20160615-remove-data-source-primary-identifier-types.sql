@@ -1,5 +1,5 @@
 update datasources set primary_identifier_type=NULL where name in (
-       'Library Simplified Open Access Content Server', 
+       'Library Simplified Open Access Content Server',
        'OCLC Classify',
        'OCLC Linked Data',
        'Amazon',
