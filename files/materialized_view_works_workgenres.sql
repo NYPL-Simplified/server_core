@@ -1,6 +1,6 @@
 create materialized view mv_works_editions_workgenres_datasources_identifiers
 as
- SELECT 
+ SELECT
     works.id AS works_id,
     editions.id AS editions_id,
     licensepools.data_source_id,

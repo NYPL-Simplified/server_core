@@ -1,7 +1,7 @@
 -- Find every Overdrive integration that defines an 'ils_name' key,
 -- and copy that key to every library that uses the corresponding
 -- Overdrive collection.
-insert into configurationsettings (external_integration_id, library_id, key, value) 
+insert into configurationsettings (external_integration_id, library_id, key, value)
        select distinct ei.id, cl.library_id, key, value
        from configurationsettings cs
        join externalintegrations ei on cs.external_integration_id=ei.id

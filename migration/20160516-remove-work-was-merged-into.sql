@@ -3,7 +3,7 @@ ALTER TABLE works DROP COLUMN was_merged_into_id CASCADE;
 
 create materialized view mv_works_editions_datasources_identifiers
 as
- SELECT 
+ SELECT
     distinct works.id AS works_id,
     editions.id AS editions_id,
     editions.data_source_id,
@@ -39,7 +39,7 @@ as
      JOIN identifiers on editions.primary_identifier_id = identifiers.id
   WHERE works.presentation_ready = true
     AND works.simple_opds_entry IS NOT NULL
-  
+
   ORDER BY editions.sort_title, editions.sort_author, licensepools.availability_time;
 
 -- Create a unique index so that searches can look up books by work ID.
@@ -112,7 +112,7 @@ create index mv_works_editions_ya_nonfiction_by_availability on mv_works_edition
 
 create materialized view mv_works_editions_workgenres_datasources_identifiers
 as
- SELECT 
+ SELECT
     works.id AS works_id,
     editions.id AS editions_id,
     editions.data_source_id,

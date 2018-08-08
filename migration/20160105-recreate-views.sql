@@ -1,7 +1,7 @@
 drop materialized view mv_works_editions_datasources_identifiers;
 create materialized view mv_works_editions_datasources_identifiers
 as
- SELECT 
+ SELECT
     distinct works.id AS works_id,
     editions.id AS editions_id,
     editions.data_source_id,
@@ -57,7 +57,7 @@ create unique index mv_works_editions_work_id on mv_works_editions_datasources_i
 drop materialized view mv_works_editions_workgenres_datasources_identifiers;
 create materialized view mv_works_editions_workgenres_datasources_identifiers
 as
- SELECT 
+ SELECT
     works.id AS works_id,
     editions.id AS editions_id,
     editions.data_source_id,

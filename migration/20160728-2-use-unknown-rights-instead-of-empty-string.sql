@@ -20,6 +20,6 @@ UPDATE licensepooldeliveries
   SET rightsstatus_id = (SELECT id from rightsstatus WHERE uri = 'http://librarysimplified.org/terms/rights-status/unknown')
   WHERE rightsstatus_id is null;
 
-UPDATE licensepooldeliveries 
+UPDATE licensepooldeliveries
   SET rightsstatus_id = (SELECT id from rightsstatus WHERE uri = 'http://librarysimplified.org/terms/rights-status/unknown')
   WHERE rightsstatus_id = (SELECT id from rightsstatus WHERE uri is null);
