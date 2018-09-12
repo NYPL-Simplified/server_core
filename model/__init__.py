@@ -516,7 +516,8 @@ class SessionManager(object):
         Base.metadata.create_all(engine)
 
         base_path = os.path.split(__file__)[0]
-        resource_path = os.path.join(base_path, "files")
+        folder = os.path.dirname(base_path)
+        resource_path = os.path.join(folder, "files")
 
         connection = None
         for view_name, filename in cls.MATERIALIZED_VIEWS.items():
