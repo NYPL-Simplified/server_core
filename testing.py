@@ -27,6 +27,7 @@ from model import (
     Credential,
     CustomList,
     DataSource,
+    DataSourceConstants,
     DeliveryMechanism,
     DelegatedPatronIdentifier,
     Edition,
@@ -240,7 +241,7 @@ class DatabaseTest(object):
             id = self._str
         return Identifier.for_foreign_id(self._db, identifier_type, id)[0]
 
-    def _edition(self, data_source_name=DataSource.GUTENBERG,
+    def _edition(self, data_source_name=DataSourceConstants.GUTENBERG,
                  identifier_type=Identifier.GUTENBERG_ID,
                  with_license_pool=False, with_open_access_download=False,
                  title=None, language="eng", authors=None, identifier_id=None,
@@ -453,7 +454,7 @@ class DatabaseTest(object):
         return record
 
     def _licensepool(self, edition, open_access=True,
-                     data_source_name=DataSource.GUTENBERG,
+                     data_source_name=DataSourceConstants.GUTENBERG,
                      with_open_access_download=False,
                      set_edition_as_presentation=False,
                      collection=None):
@@ -523,7 +524,7 @@ class DatabaseTest(object):
 
     def _customlist(self, foreign_identifier=None,
                     name=None,
-                    data_source_name=DataSource.NYT, num_entries=1,
+                    data_source_name=DataSourceConstants.NYT, num_entries=1,
                     entries_exist_as_works=True
     ):
         data_source = DataSource.lookup(self._db, data_source_name)
@@ -565,7 +566,7 @@ class DatabaseTest(object):
         )
         return complaint
 
-    def _credential(self, data_source_name=DataSource.GUTENBERG,
+    def _credential(self, data_source_name=DataSourceConstants.GUTENBERG,
                     type=None, patron=None):
         data_source = DataSource.lookup(self._db, data_source_name)
         type = type or self._str
@@ -935,7 +936,7 @@ class MockCoverageProvider(object):
 
     # Whenever a CoverageRecord is created, the data_source of that
     # record will be Project Gutenberg.
-    DATA_SOURCE_NAME = DataSource.GUTENBERG
+    DATA_SOURCE_NAME = DataSourceConstants.GUTENBERG
 
     # For testing purposes, this CoverageProvider will try to cover
     # every identifier in the database.

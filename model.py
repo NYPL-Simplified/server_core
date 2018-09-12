@@ -145,6 +145,161 @@ from sqlalchemy.dialects.postgresql import (
 
 DEBUG = False
 
+class MediaTypeConstants(object):
+
+    EPUB_MEDIA_TYPE = u"application/epub+zip"
+    PDF_MEDIA_TYPE = u"application/pdf"
+    MOBI_MEDIA_TYPE = u"application/x-mobipocket-ebook"
+    AMAZON_KF8_MEDIA_TYPE = u"application/x-mobi8-ebook"
+    TEXT_XML_MEDIA_TYPE = u"text/xml"
+    TEXT_HTML_MEDIA_TYPE = u"text/html"
+    APPLICATION_XML_MEDIA_TYPE = u"application/xml"
+    JPEG_MEDIA_TYPE = u"image/jpeg"
+    PNG_MEDIA_TYPE = u"image/png"
+    GIF_MEDIA_TYPE = u"image/gif"
+    SVG_MEDIA_TYPE = u"image/svg+xml"
+    MP3_MEDIA_TYPE = u"audio/mpeg"
+    MP4_MEDIA_TYPE = u"video/mp4"
+    WMV_MEDIA_TYPE = u"video/x-ms-wmv"
+    SCORM_MEDIA_TYPE = u"application/vnd.librarysimplified.scorm+zip"
+    ZIP_MEDIA_TYPE = u"application/zip"
+    OCTET_STREAM_MEDIA_TYPE = u"application/octet-stream"
+    TEXT_PLAIN = u"text/plain"
+    AUDIOBOOK_MANIFEST_MEDIA_TYPE = u"application/audiobook+json"
+
+    BOOK_MEDIA_TYPES = [
+        EPUB_MEDIA_TYPE,
+        PDF_MEDIA_TYPE,
+        MOBI_MEDIA_TYPE,
+        MP3_MEDIA_TYPE,
+        AMAZON_KF8_MEDIA_TYPE,
+    ]
+
+    # These media types are in the order we would prefer to use them.
+    # e.g. all else being equal, we would prefer a PNG to a JPEG.
+    IMAGE_MEDIA_TYPES = [
+        PNG_MEDIA_TYPE,
+        JPEG_MEDIA_TYPE,
+        GIF_MEDIA_TYPE,
+        SVG_MEDIA_TYPE,
+    ]
+
+    SUPPORTED_BOOK_MEDIA_TYPES = [
+        EPUB_MEDIA_TYPE
+    ]
+
+    # Most of the time, if you believe a resource to be media type A,
+    # but then you make a request and get media type B, then the
+    # actual media type (B) takes precedence over what you thought it
+    # was (A). These media types are the exceptions: they are so
+    # generic that they don't tell you anything, so it's more useful
+    # to stick with A.
+    GENERIC_MEDIA_TYPES = [OCTET_STREAM_MEDIA_TYPE]
+
+    FILE_EXTENSIONS = {
+        EPUB_MEDIA_TYPE: "epub",
+        MOBI_MEDIA_TYPE: "mobi",
+        PDF_MEDIA_TYPE: "pdf",
+        MP3_MEDIA_TYPE: "mp3",
+        MP4_MEDIA_TYPE: "mp4",
+        WMV_MEDIA_TYPE: "wmv",
+        JPEG_MEDIA_TYPE: "jpg",
+        PNG_MEDIA_TYPE: "png",
+        SVG_MEDIA_TYPE: "svg",
+        GIF_MEDIA_TYPE: "gif",
+        ZIP_MEDIA_TYPE: "zip",
+        TEXT_PLAIN: "txt",
+        TEXT_HTML_MEDIA_TYPE: "html",
+        APPLICATION_XML_MEDIA_TYPE: "xml",
+        AUDIOBOOK_MANIFEST_MEDIA_TYPE: "audiobook-manifest",
+        SCORM_MEDIA_TYPE: "zip"
+    }
+
+    COMMON_EBOOK_EXTENSIONS = ['.epub', '.pdf']
+    COMMON_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
+
+    # Invert FILE_EXTENSIONS and add some extra guesses.
+    MEDIA_TYPE_FOR_EXTENSION = {
+        ".htm" : TEXT_HTML_MEDIA_TYPE,
+        ".jpeg" : JPEG_MEDIA_TYPE,
+    }
+    for media_type, extension in FILE_EXTENSIONS.items():
+        MEDIA_TYPE_FOR_EXTENSION['.' + extension] = media_type
+
+class DataSourceConstants(object):
+    GUTENBERG = u"Gutenberg"
+    OVERDRIVE = u"Overdrive"
+    ODILO = u"Odilo"
+    PROJECT_GITENBERG = u"Project GITenberg"
+    STANDARD_EBOOKS = u"Standard Ebooks"
+    UNGLUE_IT = u"unglue.it"
+    BIBLIOTHECA = u"Bibliotheca"
+    OCLC = u"OCLC Classify"
+    OCLC_LINKED_DATA = u"OCLC Linked Data"
+    AMAZON = u"Amazon"
+    XID = u"WorldCat xID"
+    AXIS_360 = u"Axis 360"
+    WEB = u"Web"
+    OPEN_LIBRARY = u"Open Library"
+    CONTENT_CAFE = u"Content Cafe"
+    VIAF = u"VIAF"
+    GUTENBERG_COVER_GENERATOR = u"Gutenberg Illustrated"
+    GUTENBERG_EPUB_GENERATOR = u"Project Gutenberg EPUB Generator"
+    METADATA_WRANGLER = u"Library Simplified metadata wrangler"
+    MANUAL = u"Manual intervention"
+    NOVELIST = u"NoveList Select"
+    NYT = u"New York Times"
+    NYPL_SHADOWCAT = u"NYPL Shadowcat"
+    LIBRARY_STAFF = u"Library staff"
+    ADOBE = u"Adobe DRM"
+    PLYMPTON = u"Plympton"
+    RB_DIGITAL = u"RBdigital"
+    ELIB = u"eLiburutegia"
+    OA_CONTENT_SERVER = u"Library Simplified Open Access Content Server"
+    PRESENTATION_EDITION = u"Presentation edition generator"
+    INTERNAL_PROCESSING = u"Library Simplified Internal Process"
+    FEEDBOOKS = u"FeedBooks"
+    BIBBLIO = u"Bibblio"
+    ENKI = u"Enki"
+
+    DEPRECATED_NAMES = {
+        u"3M" : BIBLIOTHECA,
+        u"OneClick" : RB_DIGITAL,
+    }
+    THREEM = BIBLIOTHECA
+    ONECLICK = RB_DIGITAL
+
+    # Some sources of open-access ebooks are better than others. This
+    # list shows which sources we prefer, in ascending order of
+    # priority. unglue.it is lowest priority because it tends to
+    # aggregate books from other sources. We prefer books from their
+    # original sources.
+    OPEN_ACCESS_SOURCE_PRIORITY = [
+        UNGLUE_IT,
+        GUTENBERG,
+        GUTENBERG_EPUB_GENERATOR,
+        PROJECT_GITENBERG,
+        ELIB,
+        FEEDBOOKS,
+        PLYMPTON,
+        STANDARD_EBOOKS,
+    ]
+
+    # When we're generating the presentation edition for a
+    # LicensePool, editions are processed based on their data source,
+    # in the following order:
+    #
+    # [all other sources] < [source of the license pool] < [metadata
+    # wrangler] < [library staff] < [manual intervention]
+    #
+    # This list keeps track of the high-priority portion of that
+    # ordering.
+    #
+    # "LIBRARY_STAFF" comes from the Admin Interface.
+    # "MANUAL" is not currently used, but will give the option of putting in
+    # software engineer-created system overrides.
+    PRESENTATION_EDITION_PRIORITY = [METADATA_WRANGLER, LIBRARY_STAFF, MANUAL]
+
 def production_session():
     url = Configuration.database_url()
     if url.startswith('"'):
@@ -1009,82 +1164,9 @@ class Annotation(Base):
         self.content = None
         self.timestamp = datetime.datetime.utcnow()
 
-class DataSource(Base, HasFullTableCache):
+class DataSource(Base, HasFullTableCache, DataSourceConstants):
 
     """A source for information about books, and possibly the books themselves."""
-
-    GUTENBERG = u"Gutenberg"
-    OVERDRIVE = u"Overdrive"
-    ODILO = u"Odilo"
-    PROJECT_GITENBERG = u"Project GITenberg"
-    STANDARD_EBOOKS = u"Standard Ebooks"
-    UNGLUE_IT = u"unglue.it"
-    BIBLIOTHECA = u"Bibliotheca"
-    OCLC = u"OCLC Classify"
-    OCLC_LINKED_DATA = u"OCLC Linked Data"
-    AMAZON = u"Amazon"
-    XID = u"WorldCat xID"
-    AXIS_360 = u"Axis 360"
-    WEB = u"Web"
-    OPEN_LIBRARY = u"Open Library"
-    CONTENT_CAFE = u"Content Cafe"
-    VIAF = u"VIAF"
-    GUTENBERG_COVER_GENERATOR = u"Gutenberg Illustrated"
-    GUTENBERG_EPUB_GENERATOR = u"Project Gutenberg EPUB Generator"
-    METADATA_WRANGLER = u"Library Simplified metadata wrangler"
-    MANUAL = u"Manual intervention"
-    NOVELIST = u"NoveList Select"
-    NYT = u"New York Times"
-    NYPL_SHADOWCAT = u"NYPL Shadowcat"
-    LIBRARY_STAFF = u"Library staff"
-    ADOBE = u"Adobe DRM"
-    PLYMPTON = u"Plympton"
-    RB_DIGITAL = u"RBdigital"
-    ELIB = u"eLiburutegia"
-    OA_CONTENT_SERVER = u"Library Simplified Open Access Content Server"
-    PRESENTATION_EDITION = u"Presentation edition generator"
-    INTERNAL_PROCESSING = u"Library Simplified Internal Process"
-    FEEDBOOKS = u"FeedBooks"
-    BIBBLIO = u"Bibblio"
-    ENKI = u"Enki"
-
-    DEPRECATED_NAMES = {
-        u"3M" : BIBLIOTHECA,
-        u"OneClick" : RB_DIGITAL,
-    }
-    THREEM = BIBLIOTHECA
-    ONECLICK = RB_DIGITAL
-
-    # Some sources of open-access ebooks are better than others. This
-    # list shows which sources we prefer, in ascending order of
-    # priority. unglue.it is lowest priority because it tends to
-    # aggregate books from other sources. We prefer books from their
-    # original sources.
-    OPEN_ACCESS_SOURCE_PRIORITY = [
-        UNGLUE_IT,
-        GUTENBERG,
-        GUTENBERG_EPUB_GENERATOR,
-        PROJECT_GITENBERG,
-        ELIB,
-        FEEDBOOKS,
-        PLYMPTON,
-        STANDARD_EBOOKS,
-    ]
-
-    # When we're generating the presentation edition for a
-    # LicensePool, editions are processed based on their data source,
-    # in the following order:
-    #
-    # [all other sources] < [source of the license pool] < [metadata
-    # wrangler] < [library staff] < [manual intervention]
-    #
-    # This list keeps track of the high-priority portion of that
-    # ordering.
-    #
-    # "LIBRARY_STAFF" comes from the Admin Interface.
-    # "MANUAL" is not currently used, but will give the option of putting in
-    # software engineer-created system overrides.
-    PRESENTATION_EDITION_PRIORITY = [METADATA_WRANGLER, LIBRARY_STAFF, MANUAL]
 
     __tablename__ = 'datasources'
     id = Column(Integer, primary_key=True)
@@ -3854,14 +3936,14 @@ class Work(Base):
     # data source, each work is assigned the minimum level of quality
     # necessary to show up in featured feeds.
     default_quality_by_data_source = {
-        DataSource.GUTENBERG: 0,
-        DataSource.RB_DIGITAL: 0.4,
-        DataSource.OVERDRIVE: 0.4,
-        DataSource.BIBLIOTHECA : 0.65,
-        DataSource.AXIS_360: 0.65,
-        DataSource.STANDARD_EBOOKS: 0.8,
-        DataSource.UNGLUE_IT: 0.4,
-        DataSource.PLYMPTON: 0.5,
+        DataSourceConstants.GUTENBERG: 0,
+        DataSourceConstants.RB_DIGITAL: 0.4,
+        DataSourceConstants.OVERDRIVE: 0.4,
+        DataSourceConstants.BIBLIOTHECA : 0.65,
+        DataSourceConstants.AXIS_360: 0.65,
+        DataSourceConstants.STANDARD_EBOOKS: 0.8,
+        DataSourceConstants.UNGLUE_IT: 0.4,
+        DataSourceConstants.PLYMPTON: 0.5,
     }
 
     __tablename__ = 'works'
@@ -5299,8 +5381,8 @@ class Measurement(Base):
     # These values are empirically determined and may change over
     # time.
     POPULARITY_PERCENTILES = {
-        DataSource.OVERDRIVE : [1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 15, 16, 18, 19, 20, 21, 22, 24, 25, 26, 28, 30, 31, 33, 35, 37, 39, 41, 43, 46, 48, 51, 53, 56, 59, 63, 66, 70, 74, 78, 82, 87, 92, 97, 102, 108, 115, 121, 128, 135, 142, 150, 159, 168, 179, 190, 202, 216, 230, 245, 260, 277, 297, 319, 346, 372, 402, 436, 478, 521, 575, 632, 702, 777, 861, 965, 1100, 1248, 1428, 1665, 2020, 2560, 3535, 5805],
-        DataSource.AMAZON : [14937330, 1974074, 1702163, 1553600, 1432635, 1327323, 1251089, 1184878, 1131998, 1075720, 1024272, 978514, 937726, 898606, 868506, 837523, 799879, 770211, 743194, 718052, 693932, 668030, 647121, 627642, 609399, 591843, 575970, 559942, 540713, 524397, 511183, 497576, 483884, 470850, 458438, 444475, 432528, 420088, 408785, 398420, 387895, 377244, 366837, 355406, 344288, 333747, 324280, 315002, 305918, 296420, 288522, 279185, 270824, 262801, 253865, 246224, 238239, 230537, 222611, 215989, 208641, 202597, 195817, 188939, 181095, 173967, 166058, 160032, 153526, 146706, 139981, 133348, 126689, 119201, 112447, 106795, 101250, 96534, 91052, 85837, 80619, 75292, 69957, 65075, 59901, 55616, 51624, 47598, 43645, 39403, 35645, 31795, 27990, 24496, 20780, 17740, 14102, 10498, 7090, 3861],
+        DataSourceConstants.OVERDRIVE : [1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 15, 16, 18, 19, 20, 21, 22, 24, 25, 26, 28, 30, 31, 33, 35, 37, 39, 41, 43, 46, 48, 51, 53, 56, 59, 63, 66, 70, 74, 78, 82, 87, 92, 97, 102, 108, 115, 121, 128, 135, 142, 150, 159, 168, 179, 190, 202, 216, 230, 245, 260, 277, 297, 319, 346, 372, 402, 436, 478, 521, 575, 632, 702, 777, 861, 965, 1100, 1248, 1428, 1665, 2020, 2560, 3535, 5805],
+        DataSourceConstants.AMAZON : [14937330, 1974074, 1702163, 1553600, 1432635, 1327323, 1251089, 1184878, 1131998, 1075720, 1024272, 978514, 937726, 898606, 868506, 837523, 799879, 770211, 743194, 718052, 693932, 668030, 647121, 627642, 609399, 591843, 575970, 559942, 540713, 524397, 511183, 497576, 483884, 470850, 458438, 444475, 432528, 420088, 408785, 398420, 387895, 377244, 366837, 355406, 344288, 333747, 324280, 315002, 305918, 296420, 288522, 279185, 270824, 262801, 253865, 246224, 238239, 230537, 222611, 215989, 208641, 202597, 195817, 188939, 181095, 173967, 166058, 160032, 153526, 146706, 139981, 133348, 126689, 119201, 112447, 106795, 101250, 96534, 91052, 85837, 80619, 75292, 69957, 65075, 59901, 55616, 51624, 47598, 43645, 39403, 35645, 31795, 27990, 24496, 20780, 17740, 14102, 10498, 7090, 3861],
 
         # This is as measured by the criteria defined in
         # ContentCafeSOAPClient.estimate_popularity(), in which
@@ -5308,26 +5390,26 @@ class Measurement(Base):
         # ordered in a single month within the last year, or b)
         # one-half the largest number of books ever ordered in a
         # single month.
-        DataSource.CONTENT_CAFE : [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 11, 14, 18, 25, 41, 125, 387]
+        DataSourceConstants.CONTENT_CAFE : [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 11, 14, 18, 25, 41, 125, 387]
 
         # This is a percentile list of OCLC Work IDs and OCLC Numbers
         # associated with Project Gutenberg texts via OCLC Linked
         # Data.
         #
         # TODO: Calculate a separate distribution for more modern works.
-        # DataSource.OCLC_LINKED_DATA : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 12, 14, 15, 18, 21, 29, 41, 81],
+        # DataSourceConstants.OCLC_LINKED_DATA : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 12, 14, 15, 18, 21, 29, 41, 81],
     }
 
     DOWNLOAD_PERCENTILES = {
-        DataSource.GUTENBERG : [0, 1, 2, 3, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 40, 41, 43, 45, 46, 48, 50, 52, 55, 57, 60, 62, 65, 69, 72, 76, 79, 83, 87, 93, 99, 106, 114, 122, 130, 140, 152, 163, 179, 197, 220, 251, 281, 317, 367, 432, 501, 597, 658, 718, 801, 939, 1065, 1286, 1668, 2291, 4139]
+        DataSourceConstants.GUTENBERG : [0, 1, 2, 3, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 40, 41, 43, 45, 46, 48, 50, 52, 55, 57, 60, 62, 65, 69, 72, 76, 79, 83, 87, 93, 99, 106, 114, 122, 130, 140, 152, 163, 179, 197, 220, 251, 281, 317, 367, 432, 501, 597, 658, 718, 801, 939, 1065, 1286, 1668, 2291, 4139]
     }
 
     RATING_SCALES = {
-        DataSource.OVERDRIVE : [1, 5],
-        DataSource.AMAZON : [1, 5],
-        DataSource.UNGLUE_IT: [1, 5],
-        DataSource.NOVELIST: [0, 5],
-        DataSource.LIBRARY_STAFF: [1, 5],
+        DataSourceConstants.OVERDRIVE : [1, 5],
+        DataSourceConstants.AMAZON : [1, 5],
+        DataSourceConstants.UNGLUE_IT: [1, 5],
+        DataSourceConstants.NOVELIST: [0, 5],
+        DataSourceConstants.LIBRARY_STAFF: [1, 5],
     }
 
     id = Column(Integer, primary_key=True)
@@ -6011,8 +6093,8 @@ class Resource(Base):
         :return: A lower number is better. None means it's not an
         image type or we don't care about it at all.
         """
-        if media_type in Representation.IMAGE_MEDIA_TYPES:
-            return Representation.IMAGE_MEDIA_TYPES.index(media_type)
+        if media_type in MediaTypeConstants.IMAGE_MEDIA_TYPES:
+            return MediaTypeConstants.IMAGE_MEDIA_TYPES.index(media_type)
         return None
 
     @classmethod
@@ -6543,21 +6625,21 @@ class Classification(Base):
         # information about target age, so being careful about how
         # much we trust different data sources can become important.
 
-        DataSource.MANUAL : 1.0,
-        DataSource.LIBRARY_STAFF: 1.0,
-        (DataSource.METADATA_WRANGLER, Subject.AGE_RANGE) : 1.0,
+        DataSourceConstants.MANUAL : 1.0,
+        DataSourceConstants.LIBRARY_STAFF: 1.0,
+        (DataSourceConstants.METADATA_WRANGLER, Subject.AGE_RANGE) : 1.0,
 
         Subject.AXIS_360_AUDIENCE : 0.9,
-        (DataSource.OVERDRIVE, Subject.INTEREST_LEVEL) : 0.9,
-        (DataSource.OVERDRIVE, Subject.OVERDRIVE) : 0.9, # But see below
-        (DataSource.AMAZON, Subject.AGE_RANGE) : 0.85,
-        (DataSource.AMAZON, Subject.GRADE_LEVEL) : 0.85,
+        (DataSourceConstants.OVERDRIVE, Subject.INTEREST_LEVEL) : 0.9,
+        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE) : 0.9, # But see below
+        (DataSourceConstants.AMAZON, Subject.AGE_RANGE) : 0.85,
+        (DataSourceConstants.AMAZON, Subject.GRADE_LEVEL) : 0.85,
 
         # Although Overdrive usually reserves Fiction and Nonfiction
         # for books for adults, it's not as reliable an indicator as
         # other Overdrive classifications.
-        (DataSource.OVERDRIVE, Subject.OVERDRIVE, "Fiction") : 0.7,
-        (DataSource.OVERDRIVE, Subject.OVERDRIVE, "Nonfiction") : 0.7,
+        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE, "Fiction") : 0.7,
+        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE, "Nonfiction") : 0.7,
 
         Subject.AGE_RANGE : 0.6,
         Subject.GRADE_LEVEL : 0.6,
@@ -6569,14 +6651,14 @@ class Classification(Base):
 
         # Tags that come from OCLC Linked Data are of lower quality
         # because they sometimes talk about completely the wrong book.
-        (DataSource.OCLC_LINKED_DATA, Subject.TAG) : 0.3,
+        (DataSourceConstants.OCLC_LINKED_DATA, Subject.TAG) : 0.3,
 
         # These measure reading level, not age appropriateness.
         # However, if the book is a remedial work for adults we won't
         # be calculating a target age in the first place, so it's okay
         # to use reading level as a proxy for age appropriateness in a
         # pinch. (But not outside of a pinch.)
-        (DataSource.OVERDRIVE, Subject.GRADE_LEVEL) : 0.35,
+        (DataSourceConstants.OVERDRIVE, Subject.GRADE_LEVEL) : 0.35,
         Subject.LEXILE_SCORE : 0.1,
         Subject.ATOS_SCORE: 0.1,
     }
@@ -7780,7 +7862,7 @@ class LicensePool(Base):
                     [resource.representation and
                      resource.representation.media_type and
                      resource.representation.media_type.startswith(x)
-                     for x in Representation.SUPPORTED_BOOK_MEDIA_TYPES]):
+                     for x in MediaTypeConstants.SUPPORTED_BOOK_MEDIA_TYPES]):
                 # This representation is not in a media type we
                 # support. We can't serve it, so we won't consider it.
                 continue
@@ -7924,14 +8006,14 @@ class RightsStatus(Base):
     }
 
     DATA_SOURCE_DEFAULT_RIGHTS_STATUS = {
-        DataSource.GUTENBERG: PUBLIC_DOMAIN_USA,
-        DataSource.PLYMPTON: CC_BY_NC,
+        DataSourceConstants.GUTENBERG: PUBLIC_DOMAIN_USA,
+        DataSourceConstants.PLYMPTON: CC_BY_NC,
         # workaround for opds-imported license pools with 'content server' as data source
-        DataSource.OA_CONTENT_SERVER : GENERIC_OPEN_ACCESS,
+        DataSourceConstants.OA_CONTENT_SERVER : GENERIC_OPEN_ACCESS,
 
-        DataSource.OVERDRIVE: IN_COPYRIGHT,
-        DataSource.BIBLIOTHECA: IN_COPYRIGHT,
-        DataSource.AXIS_360: IN_COPYRIGHT,
+        DataSourceConstants.OVERDRIVE: IN_COPYRIGHT,
+        DataSourceConstants.BIBLIOTHECA: IN_COPYRIGHT,
+        DataSourceConstants.AXIS_360: IN_COPYRIGHT,
     }
 
     __tablename__ = 'rightsstatus'
@@ -8357,7 +8439,7 @@ class Timestamp(Base):
     )
 
 
-class Representation(Base):
+class Representation(Base, MediaTypeConstants):
     """A cached document obtained from (and possibly mirrored to) the Web
     at large.
 
@@ -8370,86 +8452,6 @@ class Representation(Base):
     Sometimes it's just a web page that we need a cached local copy
     of.
     """
-
-    EPUB_MEDIA_TYPE = u"application/epub+zip"
-    PDF_MEDIA_TYPE = u"application/pdf"
-    MOBI_MEDIA_TYPE = u"application/x-mobipocket-ebook"
-    AMAZON_KF8_MEDIA_TYPE = u"application/x-mobi8-ebook"
-    TEXT_XML_MEDIA_TYPE = u"text/xml"
-    TEXT_HTML_MEDIA_TYPE = u"text/html"
-    APPLICATION_XML_MEDIA_TYPE = u"application/xml"
-    JPEG_MEDIA_TYPE = u"image/jpeg"
-    PNG_MEDIA_TYPE = u"image/png"
-    GIF_MEDIA_TYPE = u"image/gif"
-    SVG_MEDIA_TYPE = u"image/svg+xml"
-    MP3_MEDIA_TYPE = u"audio/mpeg"
-    MP4_MEDIA_TYPE = u"video/mp4"
-    WMV_MEDIA_TYPE = u"video/x-ms-wmv"
-    SCORM_MEDIA_TYPE = u"application/vnd.librarysimplified.scorm+zip"
-    ZIP_MEDIA_TYPE = u"application/zip"
-    OCTET_STREAM_MEDIA_TYPE = u"application/octet-stream"
-    TEXT_PLAIN = u"text/plain"
-    AUDIOBOOK_MANIFEST_MEDIA_TYPE = u"application/audiobook+json"
-
-    BOOK_MEDIA_TYPES = [
-        EPUB_MEDIA_TYPE,
-        PDF_MEDIA_TYPE,
-        MOBI_MEDIA_TYPE,
-        MP3_MEDIA_TYPE,
-        AMAZON_KF8_MEDIA_TYPE,
-    ]
-
-    # These media types are in the order we would prefer to use them.
-    # e.g. all else being equal, we would prefer a PNG to a JPEG.
-    IMAGE_MEDIA_TYPES = [
-        PNG_MEDIA_TYPE,
-        JPEG_MEDIA_TYPE,
-        GIF_MEDIA_TYPE,
-        SVG_MEDIA_TYPE,
-    ]
-
-    SUPPORTED_BOOK_MEDIA_TYPES = [
-        EPUB_MEDIA_TYPE
-    ]
-
-    # Most of the time, if you believe a resource to be media type A,
-    # but then you make a request and get media type B, then the
-    # actual media type (B) takes precedence over what you thought it
-    # was (A). These media types are the exceptions: they are so
-    # generic that they don't tell you anything, so it's more useful
-    # to stick with A.
-    GENERIC_MEDIA_TYPES = [OCTET_STREAM_MEDIA_TYPE]
-
-    FILE_EXTENSIONS = {
-        EPUB_MEDIA_TYPE: "epub",
-        MOBI_MEDIA_TYPE: "mobi",
-        PDF_MEDIA_TYPE: "pdf",
-        MP3_MEDIA_TYPE: "mp3",
-        MP4_MEDIA_TYPE: "mp4",
-        WMV_MEDIA_TYPE: "wmv",
-        JPEG_MEDIA_TYPE: "jpg",
-        PNG_MEDIA_TYPE: "png",
-        SVG_MEDIA_TYPE: "svg",
-        GIF_MEDIA_TYPE: "gif",
-        ZIP_MEDIA_TYPE: "zip",
-        TEXT_PLAIN: "txt",
-        TEXT_HTML_MEDIA_TYPE: "html",
-        APPLICATION_XML_MEDIA_TYPE: "xml",
-        AUDIOBOOK_MANIFEST_MEDIA_TYPE: "audiobook-manifest",
-        SCORM_MEDIA_TYPE: "zip"
-    }
-
-    COMMON_EBOOK_EXTENSIONS = ['.epub', '.pdf']
-    COMMON_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
-
-    # Invert FILE_EXTENSIONS and add some extra guesses.
-    MEDIA_TYPE_FOR_EXTENSION = {
-        ".htm" : TEXT_HTML_MEDIA_TYPE,
-        ".jpeg" : JPEG_MEDIA_TYPE,
-    }
-    for media_type, extension in FILE_EXTENSIONS.items():
-        MEDIA_TYPE_FOR_EXTENSION['.' + extension] = media_type
-
     __tablename__ = 'representations'
     id = Column(Integer, primary_key=True)
 
@@ -8818,7 +8820,7 @@ class Representation(Base):
             return default
         headers_type = headers['content-type'].lower()
         clean = cls._clean_media_type(headers_type)
-        if clean in Representation.GENERIC_MEDIA_TYPES and default:
+        if clean in MediaTypeConstants.GENERIC_MEDIA_TYPES and default:
             return default
         return headers_type
 
@@ -8856,8 +8858,8 @@ class Representation(Base):
         """
         return any(
             self.media_type in x for x in
-            (Representation.BOOK_MEDIA_TYPES,
-             Representation.IMAGE_MEDIA_TYPES)
+            (MediaTypeConstants.BOOK_MEDIA_TYPES,
+             MediaTypeConstants.IMAGE_MEDIA_TYPES)
         )
 
     def update_image_size(self):
@@ -9266,7 +9268,7 @@ class Representation(Base):
         self.image_width, self.image_height = image.size
 
         # If the image is already a thumbnail-size bitmap, don't bother.
-        if (self.clean_media_type != Representation.SVG_MEDIA_TYPE
+        if (self.clean_media_type != MediaTypeConstants.SVG_MEDIA_TYPE
             and self.image_height <= max_height
             and self.image_width <= max_width):
             self.thumbnails = []
@@ -9435,7 +9437,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
 
     STREAMING_PROFILE = ";profile=http://librarysimplified.org/terms/profiles/streaming-media"
     MEDIA_TYPES_FOR_STREAMING = {
-        STREAMING_TEXT_CONTENT_TYPE: Representation.TEXT_HTML_MEDIA_TYPE
+        STREAMING_TEXT_CONTENT_TYPE: MediaTypeConstants.TEXT_HTML_MEDIA_TYPE
     }
 
     __tablename__ = 'deliverymechanisms'
@@ -9450,9 +9452,9 @@ class DeliveryMechanism(Base, HasFullTableCache):
     # These are the media type/DRM scheme combos known to be supported
     # by the default Library Simplified client.
     default_client_can_fulfill_lookup = set([
-        (Representation.EPUB_MEDIA_TYPE, NO_DRM),
-        (Representation.EPUB_MEDIA_TYPE, ADOBE_DRM),
-        (Representation.EPUB_MEDIA_TYPE, BEARER_TOKEN),
+        (MediaTypeConstants.EPUB_MEDIA_TYPE, NO_DRM),
+        (MediaTypeConstants.EPUB_MEDIA_TYPE, ADOBE_DRM),
+        (MediaTypeConstants.EPUB_MEDIA_TYPE, BEARER_TOKEN),
     ])
 
     license_pool_delivery_mechanisms = relationship(
@@ -9500,8 +9502,8 @@ class DeliveryMechanism(Base, HasFullTableCache):
         available through this DeliveryMechanism?
         """
         if self.content_type in (
-                Representation.EPUB_MEDIA_TYPE,
-                Representation.PDF_MEDIA_TYPE,
+                MediaTypeConstants.EPUB_MEDIA_TYPE,
+                MediaTypeConstants.PDF_MEDIA_TYPE,
                 "Kindle via Amazon",
                 "Streaming Text"):
             return Edition.BOOK_MEDIUM
@@ -10645,16 +10647,16 @@ class ExternalIntegration(Base, HasFullTableCache):
 
     # Supported protocols for ExternalIntegrations with LICENSE_GOAL.
     OPDS_IMPORT = u'OPDS Import'
-    OVERDRIVE = DataSource.OVERDRIVE
-    ODILO = DataSource.ODILO
-    BIBLIOTHECA = DataSource.BIBLIOTHECA
-    AXIS_360 = DataSource.AXIS_360
-    RB_DIGITAL = DataSource.RB_DIGITAL
+    OVERDRIVE = DataSourceConstants.OVERDRIVE
+    ODILO = DataSourceConstants.ODILO
+    BIBLIOTHECA = DataSourceConstants.BIBLIOTHECA
+    AXIS_360 = DataSourceConstants.AXIS_360
+    RB_DIGITAL = DataSourceConstants.RB_DIGITAL
     ONE_CLICK = RB_DIGITAL
     OPDS_FOR_DISTRIBUTORS = u'OPDS for Distributors'
-    ENKI = DataSource.ENKI
-    FEEDBOOKS = DataSource.FEEDBOOKS
-    MANUAL = DataSource.MANUAL
+    ENKI = DataSourceConstants.ENKI
+    FEEDBOOKS = DataSourceConstants.FEEDBOOKS
+    MANUAL = DataSourceConstants.MANUAL
 
     # These protocols were used on the Content Server when mirroring
     # content from a given directory or directly from Project
@@ -10662,7 +10664,7 @@ class ExternalIntegration(Base, HasFullTableCache):
     # MANUAL.  GUTENBERG has yet to be replaced, but will eventually
     # be moved into LICENSE_PROTOCOLS.
     DIRECTORY_IMPORT = "Directory Import"
-    GUTENBERG = DataSource.GUTENBERG
+    GUTENBERG = DataSourceConstants.GUTENBERG
 
     LICENSE_PROTOCOLS = [
         OPDS_IMPORT, OVERDRIVE, ODILO, BIBLIOTHECA, AXIS_360, RB_DIGITAL,
@@ -10672,13 +10674,13 @@ class ExternalIntegration(Base, HasFullTableCache):
     # Some integrations with LICENSE_GOAL imply that the data and
     # licenses come from a specific data source.
     DATA_SOURCE_FOR_LICENSE_PROTOCOL = {
-        OVERDRIVE : DataSource.OVERDRIVE,
-        ODILO : DataSource.ODILO,
-        BIBLIOTHECA : DataSource.BIBLIOTHECA,
-        AXIS_360 : DataSource.AXIS_360,
-        RB_DIGITAL : DataSource.RB_DIGITAL,
-        ENKI : DataSource.ENKI,
-        FEEDBOOKS : DataSource.FEEDBOOKS,
+        OVERDRIVE : DataSourceConstants.OVERDRIVE,
+        ODILO : DataSourceConstants.ODILO,
+        BIBLIOTHECA : DataSourceConstants.BIBLIOTHECA,
+        AXIS_360 : DataSourceConstants.AXIS_360,
+        RB_DIGITAL : DataSourceConstants.RB_DIGITAL,
+        ENKI : DataSourceConstants.ENKI,
+        FEEDBOOKS : DataSourceConstants.FEEDBOOKS,
     }
 
     # Integrations with METADATA_GOAL
