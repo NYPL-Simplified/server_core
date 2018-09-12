@@ -1,5 +1,8 @@
 from nose.tools import set_trace
-from . import *
+from . import (
+    Base,
+    get_one_or_create,
+)
 import datetime
 import logging
 import time
@@ -16,11 +19,6 @@ from sqlalchemy import (
     Unicode,
     UniqueConstraint,
 )
-
-
-
-from sqlalchemy.ext.declarative import declarative_base
-Base = declarative_base()
 
 class CachedFeed(Base):
 

@@ -145,7 +145,7 @@ from sqlalchemy.dialects.postgresql import (
 
 DEBUG = False
 
-class MediaTypeConstants(object):
+class MediaTypes(object):
 
     EPUB_MEDIA_TYPE = u"application/epub+zip"
     PDF_MEDIA_TYPE = u"application/pdf"
@@ -6093,8 +6093,8 @@ class Resource(Base):
         :return: A lower number is better. None means it's not an
         image type or we don't care about it at all.
         """
-        if media_type in MediaTypeConstants.IMAGE_MEDIA_TYPES:
-            return MediaTypeConstants.IMAGE_MEDIA_TYPES.index(media_type)
+        if media_type in MediaTypes.IMAGE_MEDIA_TYPES:
+            return MediaTypes.IMAGE_MEDIA_TYPES.index(media_type)
         return None
 
     @classmethod
@@ -7682,7 +7682,7 @@ class LicensePool(Base):
                     [resource.representation and
                      resource.representation.media_type and
                      resource.representation.media_type.startswith(x)
-                     for x in MediaTypeConstants.SUPPORTED_BOOK_MEDIA_TYPES]):
+                     for x in MediaTypes.SUPPORTED_BOOK_MEDIA_TYPES]):
                 # This representation is not in a media type we
                 # support. We can't serve it, so we won't consider it.
                 continue
@@ -8259,7 +8259,7 @@ class Timestamp(Base):
     )
 
 
-class Representation(Base, MediaTypeConstants):
+class Representation(Base, MediaTypes):
     """A cached document obtained from (and possibly mirrored to) the Web
     at large.
 
@@ -8640,7 +8640,7 @@ class Representation(Base, MediaTypeConstants):
             return default
         headers_type = headers['content-type'].lower()
         clean = cls._clean_media_type(headers_type)
-        if clean in MediaTypeConstants.GENERIC_MEDIA_TYPES and default:
+        if clean in MediaTypes.GENERIC_MEDIA_TYPES and default:
             return default
         return headers_type
 
@@ -8678,8 +8678,8 @@ class Representation(Base, MediaTypeConstants):
         """
         return any(
             self.media_type in x for x in
-            (MediaTypeConstants.BOOK_MEDIA_TYPES,
-             MediaTypeConstants.IMAGE_MEDIA_TYPES)
+            (MediaTypes.BOOK_MEDIA_TYPES,
+             MediaTypes.IMAGE_MEDIA_TYPES)
         )
 
     def update_image_size(self):
@@ -9088,7 +9088,7 @@ class Representation(Base, MediaTypeConstants):
         self.image_width, self.image_height = image.size
 
         # If the image is already a thumbnail-size bitmap, don't bother.
-        if (self.clean_media_type != MediaTypeConstants.SVG_MEDIA_TYPE
+        if (self.clean_media_type != MediaTypes.SVG_MEDIA_TYPE
             and self.image_height <= max_height
             and self.image_width <= max_width):
             self.thumbnails = []
@@ -9257,7 +9257,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
 
     STREAMING_PROFILE = ";profile=http://librarysimplified.org/terms/profiles/streaming-media"
     MEDIA_TYPES_FOR_STREAMING = {
-        STREAMING_TEXT_CONTENT_TYPE: MediaTypeConstants.TEXT_HTML_MEDIA_TYPE
+        STREAMING_TEXT_CONTENT_TYPE: MediaTypes.TEXT_HTML_MEDIA_TYPE
     }
 
     __tablename__ = 'deliverymechanisms'
@@ -9272,9 +9272,9 @@ class DeliveryMechanism(Base, HasFullTableCache):
     # These are the media type/DRM scheme combos known to be supported
     # by the default Library Simplified client.
     default_client_can_fulfill_lookup = set([
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, NO_DRM),
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, ADOBE_DRM),
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, BEARER_TOKEN),
+        (MediaTypes.EPUB_MEDIA_TYPE, NO_DRM),
+        (MediaTypes.EPUB_MEDIA_TYPE, ADOBE_DRM),
+        (MediaTypes.EPUB_MEDIA_TYPE, BEARER_TOKEN),
     ])
 
     license_pool_delivery_mechanisms = relationship(
@@ -9322,8 +9322,8 @@ class DeliveryMechanism(Base, HasFullTableCache):
         available through this DeliveryMechanism?
         """
         if self.content_type in (
-                MediaTypeConstants.EPUB_MEDIA_TYPE,
-                MediaTypeConstants.PDF_MEDIA_TYPE,
+                MediaTypes.EPUB_MEDIA_TYPE,
+                MediaTypes.PDF_MEDIA_TYPE,
                 "Kindle via Amazon",
                 "Streaming Text"):
             return Edition.BOOK_MEDIUM
