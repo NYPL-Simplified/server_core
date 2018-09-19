@@ -145,7 +145,81 @@ from sqlalchemy.dialects.postgresql import (
 
 DEBUG = False
 
-class MediaTypeConstants(object):
+class DataSourceConstants:
+    GUTENBERG = u"Gutenberg"
+    OVERDRIVE = u"Overdrive"
+    ODILO = u"Odilo"
+    PROJECT_GITENBERG = u"Project GITenberg"
+    STANDARD_EBOOKS = u"Standard Ebooks"
+    UNGLUE_IT = u"unglue.it"
+    BIBLIOTHECA = u"Bibliotheca"
+    OCLC = u"OCLC Classify"
+    OCLC_LINKED_DATA = u"OCLC Linked Data"
+    AMAZON = u"Amazon"
+    XID = u"WorldCat xID"
+    AXIS_360 = u"Axis 360"
+    WEB = u"Web"
+    OPEN_LIBRARY = u"Open Library"
+    CONTENT_CAFE = u"Content Cafe"
+    VIAF = u"VIAF"
+    GUTENBERG_COVER_GENERATOR = u"Gutenberg Illustrated"
+    GUTENBERG_EPUB_GENERATOR = u"Project Gutenberg EPUB Generator"
+    METADATA_WRANGLER = u"Library Simplified metadata wrangler"
+    MANUAL = u"Manual intervention"
+    NOVELIST = u"NoveList Select"
+    NYT = u"New York Times"
+    NYPL_SHADOWCAT = u"NYPL Shadowcat"
+    LIBRARY_STAFF = u"Library staff"
+    ADOBE = u"Adobe DRM"
+    PLYMPTON = u"Plympton"
+    RB_DIGITAL = u"RBdigital"
+    ELIB = u"eLiburutegia"
+    OA_CONTENT_SERVER = u"Library Simplified Open Access Content Server"
+    PRESENTATION_EDITION = u"Presentation edition generator"
+    INTERNAL_PROCESSING = u"Library Simplified Internal Process"
+    FEEDBOOKS = u"FeedBooks"
+    BIBBLIO = u"Bibblio"
+    ENKI = u"Enki"
+
+    DEPRECATED_NAMES = {
+        u"3M" : BIBLIOTHECA,
+        u"OneClick" : RB_DIGITAL,
+    }
+    THREEM = BIBLIOTHECA
+    ONECLICK = RB_DIGITAL
+
+    # Some sources of open-access ebooks are better than others. This
+    # list shows which sources we prefer, in ascending order of
+    # priority. unglue.it is lowest priority because it tends to
+    # aggregate books from other sources. We prefer books from their
+    # original sources.
+    OPEN_ACCESS_SOURCE_PRIORITY = [
+        UNGLUE_IT,
+        GUTENBERG,
+        GUTENBERG_EPUB_GENERATOR,
+        PROJECT_GITENBERG,
+        ELIB,
+        FEEDBOOKS,
+        PLYMPTON,
+        STANDARD_EBOOKS,
+    ]
+
+    # When we're generating the presentation edition for a
+    # LicensePool, editions are processed based on their data source,
+    # in the following order:
+    #
+    # [all other sources] < [source of the license pool] < [metadata
+    # wrangler] < [library staff] < [manual intervention]
+    #
+    # This list keeps track of the high-priority portion of that
+    # ordering.
+    #
+    # "LIBRARY_STAFF" comes from the Admin Interface.
+    # "MANUAL" is not currently used, but will give the option of putting in
+    # software engineer-created system overrides.
+    PRESENTATION_EDITION_PRIORITY = [METADATA_WRANGLER, LIBRARY_STAFF, MANUAL]
+
+class MediaTypes(object):
 
     EPUB_MEDIA_TYPE = u"application/epub+zip"
     PDF_MEDIA_TYPE = u"application/pdf"
@@ -225,80 +299,6 @@ class MediaTypeConstants(object):
     }
     for media_type, extension in FILE_EXTENSIONS.items():
         MEDIA_TYPE_FOR_EXTENSION['.' + extension] = media_type
-
-class DataSourceConstants(object):
-    GUTENBERG = u"Gutenberg"
-    OVERDRIVE = u"Overdrive"
-    ODILO = u"Odilo"
-    PROJECT_GITENBERG = u"Project GITenberg"
-    STANDARD_EBOOKS = u"Standard Ebooks"
-    UNGLUE_IT = u"unglue.it"
-    BIBLIOTHECA = u"Bibliotheca"
-    OCLC = u"OCLC Classify"
-    OCLC_LINKED_DATA = u"OCLC Linked Data"
-    AMAZON = u"Amazon"
-    XID = u"WorldCat xID"
-    AXIS_360 = u"Axis 360"
-    WEB = u"Web"
-    OPEN_LIBRARY = u"Open Library"
-    CONTENT_CAFE = u"Content Cafe"
-    VIAF = u"VIAF"
-    GUTENBERG_COVER_GENERATOR = u"Gutenberg Illustrated"
-    GUTENBERG_EPUB_GENERATOR = u"Project Gutenberg EPUB Generator"
-    METADATA_WRANGLER = u"Library Simplified metadata wrangler"
-    MANUAL = u"Manual intervention"
-    NOVELIST = u"NoveList Select"
-    NYT = u"New York Times"
-    NYPL_SHADOWCAT = u"NYPL Shadowcat"
-    LIBRARY_STAFF = u"Library staff"
-    ADOBE = u"Adobe DRM"
-    PLYMPTON = u"Plympton"
-    RB_DIGITAL = u"RBdigital"
-    ELIB = u"eLiburutegia"
-    OA_CONTENT_SERVER = u"Library Simplified Open Access Content Server"
-    PRESENTATION_EDITION = u"Presentation edition generator"
-    INTERNAL_PROCESSING = u"Library Simplified Internal Process"
-    FEEDBOOKS = u"FeedBooks"
-    BIBBLIO = u"Bibblio"
-    ENKI = u"Enki"
-
-    DEPRECATED_NAMES = {
-        u"3M" : BIBLIOTHECA,
-        u"OneClick" : RB_DIGITAL,
-    }
-    THREEM = BIBLIOTHECA
-    ONECLICK = RB_DIGITAL
-
-    # Some sources of open-access ebooks are better than others. This
-    # list shows which sources we prefer, in ascending order of
-    # priority. unglue.it is lowest priority because it tends to
-    # aggregate books from other sources. We prefer books from their
-    # original sources.
-    OPEN_ACCESS_SOURCE_PRIORITY = [
-        UNGLUE_IT,
-        GUTENBERG,
-        GUTENBERG_EPUB_GENERATOR,
-        PROJECT_GITENBERG,
-        ELIB,
-        FEEDBOOKS,
-        PLYMPTON,
-        STANDARD_EBOOKS,
-    ]
-
-    # When we're generating the presentation edition for a
-    # LicensePool, editions are processed based on their data source,
-    # in the following order:
-    #
-    # [all other sources] < [source of the license pool] < [metadata
-    # wrangler] < [library staff] < [manual intervention]
-    #
-    # This list keeps track of the high-priority portion of that
-    # ordering.
-    #
-    # "LIBRARY_STAFF" comes from the Admin Interface.
-    # "MANUAL" is not currently used, but will give the option of putting in
-    # software engineer-created system overrides.
-    PRESENTATION_EDITION_PRIORITY = [METADATA_WRANGLER, LIBRARY_STAFF, MANUAL]
 
 def production_session():
     url = Configuration.database_url()
@@ -516,7 +516,8 @@ class SessionManager(object):
         Base.metadata.create_all(engine)
 
         base_path = os.path.split(__file__)[0]
-        resource_path = os.path.join(base_path, "files")
+        folder = os.path.dirname(base_path)
+        resource_path = os.path.join(folder, "files")
 
         connection = None
         for view_name, filename in cls.MATERIALIZED_VIEWS.items():
@@ -742,6 +743,213 @@ def create(db, model, create_method='',
     return created, True
 
 Base = declarative_base()
+
+class DataSource(Base, HasFullTableCache, DataSourceConstants):
+
+    """A source for information about books, and possibly the books themselves."""
+
+    __tablename__ = 'datasources'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, index=True)
+    offers_licenses = Column(Boolean, default=False)
+    primary_identifier_type = Column(String, index=True)
+    extra = Column(MutableDict.as_mutable(JSON), default={})
+
+    # One DataSource can have one IntegrationClient.
+    integration_client_id = Column(
+        Integer, ForeignKey('integrationclients.id'),
+        unique=True, index=True, nullable=True)
+    integration_client = relationship("IntegrationClient", backref=backref("data_source", uselist=False))
+
+    # One DataSource can generate many Editions.
+    editions = relationship("Edition", backref="data_source")
+
+    # One DataSource can generate many CoverageRecords.
+    coverage_records = relationship("CoverageRecord", backref="data_source")
+
+    # One DataSource can generate many IDEquivalencies.
+    id_equivalencies = relationship("Equivalency", backref="data_source")
+
+    # One DataSource can grant access to many LicensePools.
+    license_pools = relationship(
+        "LicensePool", backref=backref("data_source", lazy='joined'))
+
+    # One DataSource can provide many Hyperlinks.
+    links = relationship("Hyperlink", backref="data_source")
+
+    # One DataSource can provide many Resources.
+    resources = relationship("Resource", backref="data_source")
+
+    # One DataSource can generate many Measurements.
+    measurements = relationship("Measurement", backref="data_source")
+
+    # One DataSource can provide many Classifications.
+    classifications = relationship("Classification", backref="data_source")
+
+    # One DataSource can have many associated Credentials.
+    credentials = relationship("Credential", backref="data_source")
+
+    # One DataSource can generate many CustomLists.
+    custom_lists = relationship("CustomList", backref="data_source")
+
+    # One DataSource can have provide many LicensePoolDeliveryMechanisms.
+    delivery_mechanisms = relationship(
+        "LicensePoolDeliveryMechanism", backref="data_source",
+        foreign_keys=lambda: [LicensePoolDeliveryMechanism.data_source_id]
+    )
+
+    _cache = HasFullTableCache.RESET
+    _id_cache = HasFullTableCache.RESET
+
+    def __repr__(self):
+        return '<DataSource: name="%s">' % (self.name)
+
+    def cache_key(self):
+        return self.name
+
+    @classmethod
+    def lookup(cls, _db, name, autocreate=False, offers_licenses=False,
+               primary_identifier_type=None):
+        # Turn a deprecated name (e.g. "3M" into the current name
+        # (e.g. "Bibliotheca").
+        name = cls.DEPRECATED_NAMES.get(name, name)
+
+        def lookup_hook():
+            """There was no such DataSource in the cache. Look one up or
+            create one.
+            """
+            if autocreate:
+                data_source, is_new = get_one_or_create(
+                    _db, DataSource, name=name,
+                    create_method_kwargs=dict(
+                        offers_licenses=offers_licenses,
+                        primary_identifier_type=primary_identifier_type
+                    )
+                )
+            else:
+                data_source = get_one(_db, DataSource, name=name)
+                is_new = False
+            return data_source, is_new
+
+        # Look up the DataSource in the full-table cache, falling back
+        # to the database if necessary.
+        obj, is_new = cls.by_cache_key(_db, name, lookup_hook)
+        return obj
+
+    URI_PREFIX = u"http://librarysimplified.org/terms/sources/"
+
+    @classmethod
+    def name_from_uri(cls, uri):
+        """Turn a data source URI into a name suitable for passing
+        into lookup().
+        """
+        if not uri.startswith(cls.URI_PREFIX):
+            return None
+        name = uri[len(cls.URI_PREFIX):]
+        return urllib.unquote(name)
+
+    @classmethod
+    def from_uri(cls, _db, uri):
+        return cls.lookup(_db, cls.name_from_uri(uri))
+
+    @property
+    def uri(self):
+        return self.URI_PREFIX + urllib.quote(self.name)
+
+    @classmethod
+    def license_source_for(cls, _db, identifier):
+        """Find the one DataSource that provides licenses for books identified
+        by the given identifier.
+
+        If there is no such DataSource, or there is more than one,
+        raises an exception.
+        """
+        sources = cls.license_sources_for(_db, identifier)
+        return sources.one()
+
+    @classmethod
+    def license_sources_for(cls, _db, identifier):
+        """A query that locates all DataSources that provide licenses for
+        books identified by the given identifier.
+        """
+        if isinstance(identifier, basestring):
+            type = identifier
+        else:
+            type = identifier.type
+        q =_db.query(DataSource).filter(DataSource.offers_licenses==True).filter(
+            DataSource.primary_identifier_type==type)
+        return q
+
+    @classmethod
+    def metadata_sources_for(cls, _db, identifier):
+        """Finds the DataSources that provide metadata for books
+        identified by the given identifier.
+        """
+        if isinstance(identifier, basestring):
+            type = identifier
+        else:
+            type = identifier.type
+
+        if not hasattr(cls, 'metadata_lookups_by_identifier_type'):
+            # This should only happen during testing.
+            list(DataSource.well_known_sources(_db))
+
+        names = cls.metadata_lookups_by_identifier_type[type]
+        return _db.query(DataSource).filter(DataSource.name.in_(names)).all()
+
+    @classmethod
+    def well_known_sources(cls, _db):
+        """Make sure all the well-known sources exist in the database.
+        """
+
+        cls.metadata_lookups_by_identifier_type = defaultdict(list)
+
+        for (name, offers_licenses, offers_metadata_lookup, primary_identifier_type, refresh_rate) in (
+                (cls.GUTENBERG, True, False, Identifier.GUTENBERG_ID, None),
+                (cls.RB_DIGITAL, True, True, Identifier.RB_DIGITAL_ID, None),
+                (cls.OVERDRIVE, True, False, Identifier.OVERDRIVE_ID, 0),
+                (cls.BIBLIOTHECA, True, False, Identifier.BIBLIOTHECA_ID, 60*60*6),
+                (cls.ODILO, True, False, Identifier.ODILO_ID, 0),
+                (cls.AXIS_360, True, False, Identifier.AXIS_360_ID, 0),
+                (cls.OCLC, False, False, None, None),
+                (cls.OCLC_LINKED_DATA, False, False, None, None),
+                (cls.AMAZON, False, False, None, None),
+                (cls.OPEN_LIBRARY, False, False, Identifier.OPEN_LIBRARY_ID, None),
+                (cls.GUTENBERG_COVER_GENERATOR, False, False, Identifier.GUTENBERG_ID, None),
+                (cls.GUTENBERG_EPUB_GENERATOR, False, False, Identifier.GUTENBERG_ID, None),
+                (cls.WEB, True, False, Identifier.URI, None),
+                (cls.VIAF, False, False, None, None),
+                (cls.CONTENT_CAFE, True, True, Identifier.ISBN, None),
+                (cls.MANUAL, False, False, None, None),
+                (cls.NYT, False, False, Identifier.ISBN, None),
+                (cls.LIBRARY_STAFF, False, False, None, None),
+                (cls.METADATA_WRANGLER, False, False, None, None),
+                (cls.PROJECT_GITENBERG, True, False, Identifier.GUTENBERG_ID, None),
+                (cls.STANDARD_EBOOKS, True, False, Identifier.URI, None),
+                (cls.UNGLUE_IT, True, False, Identifier.URI, None),
+                (cls.ADOBE, False, False, None, None),
+                (cls.PLYMPTON, True, False, Identifier.ISBN, None),
+                (cls.ELIB, True, False, Identifier.ELIB_ID, None),
+                (cls.OA_CONTENT_SERVER, True, False, None, None),
+                (cls.NOVELIST, False, True, Identifier.NOVELIST_ID, None),
+                (cls.PRESENTATION_EDITION, False, False, None, None),
+                (cls.INTERNAL_PROCESSING, False, False, None, None),
+                (cls.FEEDBOOKS, True, False, Identifier.URI, None),
+                (cls.BIBBLIO, False, True, Identifier.BIBBLIO_CONTENT_ITEM_ID, None),
+                (cls.ENKI, True, False, Identifier.ENKI_ID, None)
+        ):
+
+            obj = DataSource.lookup(
+                _db, name, autocreate=True,
+                offers_licenses=offers_licenses,
+                primary_identifier_type = primary_identifier_type
+            )
+
+            if offers_metadata_lookup:
+                l = cls.metadata_lookups_by_identifier_type[primary_identifier_type]
+                l.append(obj.name)
+
+            yield obj
 
 class Patron(Base):
 
@@ -1163,213 +1371,6 @@ class Annotation(Base):
         self.active = False
         self.content = None
         self.timestamp = datetime.datetime.utcnow()
-
-class DataSource(Base, HasFullTableCache, DataSourceConstants):
-
-    """A source for information about books, and possibly the books themselves."""
-
-    __tablename__ = 'datasources'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, index=True)
-    offers_licenses = Column(Boolean, default=False)
-    primary_identifier_type = Column(String, index=True)
-    extra = Column(MutableDict.as_mutable(JSON), default={})
-
-    # One DataSource can have one IntegrationClient.
-    integration_client_id = Column(
-        Integer, ForeignKey('integrationclients.id'),
-        unique=True, index=True, nullable=True)
-    integration_client = relationship("IntegrationClient", backref=backref("data_source", uselist=False))
-
-    # One DataSource can generate many Editions.
-    editions = relationship("Edition", backref="data_source")
-
-    # One DataSource can generate many CoverageRecords.
-    coverage_records = relationship("CoverageRecord", backref="data_source")
-
-    # One DataSource can generate many IDEquivalencies.
-    id_equivalencies = relationship("Equivalency", backref="data_source")
-
-    # One DataSource can grant access to many LicensePools.
-    license_pools = relationship(
-        "LicensePool", backref=backref("data_source", lazy='joined'))
-
-    # One DataSource can provide many Hyperlinks.
-    links = relationship("Hyperlink", backref="data_source")
-
-    # One DataSource can provide many Resources.
-    resources = relationship("Resource", backref="data_source")
-
-    # One DataSource can generate many Measurements.
-    measurements = relationship("Measurement", backref="data_source")
-
-    # One DataSource can provide many Classifications.
-    classifications = relationship("Classification", backref="data_source")
-
-    # One DataSource can have many associated Credentials.
-    credentials = relationship("Credential", backref="data_source")
-
-    # One DataSource can generate many CustomLists.
-    custom_lists = relationship("CustomList", backref="data_source")
-
-    # One DataSource can have provide many LicensePoolDeliveryMechanisms.
-    delivery_mechanisms = relationship(
-        "LicensePoolDeliveryMechanism", backref="data_source",
-        foreign_keys=lambda: [LicensePoolDeliveryMechanism.data_source_id]
-    )
-
-    _cache = HasFullTableCache.RESET
-    _id_cache = HasFullTableCache.RESET
-
-    def __repr__(self):
-        return '<DataSource: name="%s">' % (self.name)
-
-    def cache_key(self):
-        return self.name
-
-    @classmethod
-    def lookup(cls, _db, name, autocreate=False, offers_licenses=False,
-               primary_identifier_type=None):
-        # Turn a deprecated name (e.g. "3M" into the current name
-        # (e.g. "Bibliotheca").
-        name = cls.DEPRECATED_NAMES.get(name, name)
-
-        def lookup_hook():
-            """There was no such DataSource in the cache. Look one up or
-            create one.
-            """
-            if autocreate:
-                data_source, is_new = get_one_or_create(
-                    _db, DataSource, name=name,
-                    create_method_kwargs=dict(
-                        offers_licenses=offers_licenses,
-                        primary_identifier_type=primary_identifier_type
-                    )
-                )
-            else:
-                data_source = get_one(_db, DataSource, name=name)
-                is_new = False
-            return data_source, is_new
-
-        # Look up the DataSource in the full-table cache, falling back
-        # to the database if necessary.
-        obj, is_new = cls.by_cache_key(_db, name, lookup_hook)
-        return obj
-
-    URI_PREFIX = u"http://librarysimplified.org/terms/sources/"
-
-    @classmethod
-    def name_from_uri(cls, uri):
-        """Turn a data source URI into a name suitable for passing
-        into lookup().
-        """
-        if not uri.startswith(cls.URI_PREFIX):
-            return None
-        name = uri[len(cls.URI_PREFIX):]
-        return urllib.unquote(name)
-
-    @classmethod
-    def from_uri(cls, _db, uri):
-        return cls.lookup(_db, cls.name_from_uri(uri))
-
-    @property
-    def uri(self):
-        return self.URI_PREFIX + urllib.quote(self.name)
-
-    @classmethod
-    def license_source_for(cls, _db, identifier):
-        """Find the one DataSource that provides licenses for books identified
-        by the given identifier.
-
-        If there is no such DataSource, or there is more than one,
-        raises an exception.
-        """
-        sources = cls.license_sources_for(_db, identifier)
-        return sources.one()
-
-    @classmethod
-    def license_sources_for(cls, _db, identifier):
-        """A query that locates all DataSources that provide licenses for
-        books identified by the given identifier.
-        """
-        if isinstance(identifier, basestring):
-            type = identifier
-        else:
-            type = identifier.type
-        q =_db.query(DataSource).filter(DataSource.offers_licenses==True).filter(
-            DataSource.primary_identifier_type==type)
-        return q
-
-    @classmethod
-    def metadata_sources_for(cls, _db, identifier):
-        """Finds the DataSources that provide metadata for books
-        identified by the given identifier.
-        """
-        if isinstance(identifier, basestring):
-            type = identifier
-        else:
-            type = identifier.type
-
-        if not hasattr(cls, 'metadata_lookups_by_identifier_type'):
-            # This should only happen during testing.
-            list(DataSource.well_known_sources(_db))
-
-        names = cls.metadata_lookups_by_identifier_type[type]
-        return _db.query(DataSource).filter(DataSource.name.in_(names)).all()
-
-    @classmethod
-    def well_known_sources(cls, _db):
-        """Make sure all the well-known sources exist in the database.
-        """
-
-        cls.metadata_lookups_by_identifier_type = defaultdict(list)
-
-        for (name, offers_licenses, offers_metadata_lookup, primary_identifier_type, refresh_rate) in (
-                (cls.GUTENBERG, True, False, Identifier.GUTENBERG_ID, None),
-                (cls.RB_DIGITAL, True, True, Identifier.RB_DIGITAL_ID, None),
-                (cls.OVERDRIVE, True, False, Identifier.OVERDRIVE_ID, 0),
-                (cls.BIBLIOTHECA, True, False, Identifier.BIBLIOTHECA_ID, 60*60*6),
-                (cls.ODILO, True, False, Identifier.ODILO_ID, 0),
-                (cls.AXIS_360, True, False, Identifier.AXIS_360_ID, 0),
-                (cls.OCLC, False, False, None, None),
-                (cls.OCLC_LINKED_DATA, False, False, None, None),
-                (cls.AMAZON, False, False, None, None),
-                (cls.OPEN_LIBRARY, False, False, Identifier.OPEN_LIBRARY_ID, None),
-                (cls.GUTENBERG_COVER_GENERATOR, False, False, Identifier.GUTENBERG_ID, None),
-                (cls.GUTENBERG_EPUB_GENERATOR, False, False, Identifier.GUTENBERG_ID, None),
-                (cls.WEB, True, False, Identifier.URI, None),
-                (cls.VIAF, False, False, None, None),
-                (cls.CONTENT_CAFE, True, True, Identifier.ISBN, None),
-                (cls.MANUAL, False, False, None, None),
-                (cls.NYT, False, False, Identifier.ISBN, None),
-                (cls.LIBRARY_STAFF, False, False, None, None),
-                (cls.METADATA_WRANGLER, False, False, None, None),
-                (cls.PROJECT_GITENBERG, True, False, Identifier.GUTENBERG_ID, None),
-                (cls.STANDARD_EBOOKS, True, False, Identifier.URI, None),
-                (cls.UNGLUE_IT, True, False, Identifier.URI, None),
-                (cls.ADOBE, False, False, None, None),
-                (cls.PLYMPTON, True, False, Identifier.ISBN, None),
-                (cls.ELIB, True, False, Identifier.ELIB_ID, None),
-                (cls.OA_CONTENT_SERVER, True, False, None, None),
-                (cls.NOVELIST, False, True, Identifier.NOVELIST_ID, None),
-                (cls.PRESENTATION_EDITION, False, False, None, None),
-                (cls.INTERNAL_PROCESSING, False, False, None, None),
-                (cls.FEEDBOOKS, True, False, Identifier.URI, None),
-                (cls.BIBBLIO, False, True, Identifier.BIBBLIO_CONTENT_ITEM_ID, None),
-                (cls.ENKI, True, False, Identifier.ENKI_ID, None)
-        ):
-
-            obj = DataSource.lookup(
-                _db, name, autocreate=True,
-                offers_licenses=offers_licenses,
-                primary_identifier_type = primary_identifier_type
-            )
-
-            if offers_metadata_lookup:
-                l = cls.metadata_lookups_by_identifier_type[primary_identifier_type]
-                l.append(obj.name)
-
-            yield obj
 
 class BaseCoverageRecord(object):
     """Contains useful constants used by both CoverageRecord and
@@ -3936,14 +3937,14 @@ class Work(Base):
     # data source, each work is assigned the minimum level of quality
     # necessary to show up in featured feeds.
     default_quality_by_data_source = {
-        DataSourceConstants.GUTENBERG: 0,
-        DataSourceConstants.RB_DIGITAL: 0.4,
-        DataSourceConstants.OVERDRIVE: 0.4,
-        DataSourceConstants.BIBLIOTHECA : 0.65,
-        DataSourceConstants.AXIS_360: 0.65,
-        DataSourceConstants.STANDARD_EBOOKS: 0.8,
-        DataSourceConstants.UNGLUE_IT: 0.4,
-        DataSourceConstants.PLYMPTON: 0.5,
+        DataSource.GUTENBERG: 0,
+        DataSource.RB_DIGITAL: 0.4,
+        DataSource.OVERDRIVE: 0.4,
+        DataSource.BIBLIOTHECA : 0.65,
+        DataSource.AXIS_360: 0.65,
+        DataSource.STANDARD_EBOOKS: 0.8,
+        DataSource.UNGLUE_IT: 0.4,
+        DataSource.PLYMPTON: 0.5,
     }
 
     __tablename__ = 'works'
@@ -5360,6 +5361,7 @@ class Measurement(Base):
     """A  measurement of some numeric quantity associated with a
     Identifier.
     """
+
     __tablename__ = 'measurements'
 
     # Some common measurement types
@@ -5381,8 +5383,8 @@ class Measurement(Base):
     # These values are empirically determined and may change over
     # time.
     POPULARITY_PERCENTILES = {
-        DataSourceConstants.OVERDRIVE : [1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 15, 16, 18, 19, 20, 21, 22, 24, 25, 26, 28, 30, 31, 33, 35, 37, 39, 41, 43, 46, 48, 51, 53, 56, 59, 63, 66, 70, 74, 78, 82, 87, 92, 97, 102, 108, 115, 121, 128, 135, 142, 150, 159, 168, 179, 190, 202, 216, 230, 245, 260, 277, 297, 319, 346, 372, 402, 436, 478, 521, 575, 632, 702, 777, 861, 965, 1100, 1248, 1428, 1665, 2020, 2560, 3535, 5805],
-        DataSourceConstants.AMAZON : [14937330, 1974074, 1702163, 1553600, 1432635, 1327323, 1251089, 1184878, 1131998, 1075720, 1024272, 978514, 937726, 898606, 868506, 837523, 799879, 770211, 743194, 718052, 693932, 668030, 647121, 627642, 609399, 591843, 575970, 559942, 540713, 524397, 511183, 497576, 483884, 470850, 458438, 444475, 432528, 420088, 408785, 398420, 387895, 377244, 366837, 355406, 344288, 333747, 324280, 315002, 305918, 296420, 288522, 279185, 270824, 262801, 253865, 246224, 238239, 230537, 222611, 215989, 208641, 202597, 195817, 188939, 181095, 173967, 166058, 160032, 153526, 146706, 139981, 133348, 126689, 119201, 112447, 106795, 101250, 96534, 91052, 85837, 80619, 75292, 69957, 65075, 59901, 55616, 51624, 47598, 43645, 39403, 35645, 31795, 27990, 24496, 20780, 17740, 14102, 10498, 7090, 3861],
+        DataSource.OVERDRIVE : [1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 15, 16, 18, 19, 20, 21, 22, 24, 25, 26, 28, 30, 31, 33, 35, 37, 39, 41, 43, 46, 48, 51, 53, 56, 59, 63, 66, 70, 74, 78, 82, 87, 92, 97, 102, 108, 115, 121, 128, 135, 142, 150, 159, 168, 179, 190, 202, 216, 230, 245, 260, 277, 297, 319, 346, 372, 402, 436, 478, 521, 575, 632, 702, 777, 861, 965, 1100, 1248, 1428, 1665, 2020, 2560, 3535, 5805],
+        DataSource.AMAZON : [14937330, 1974074, 1702163, 1553600, 1432635, 1327323, 1251089, 1184878, 1131998, 1075720, 1024272, 978514, 937726, 898606, 868506, 837523, 799879, 770211, 743194, 718052, 693932, 668030, 647121, 627642, 609399, 591843, 575970, 559942, 540713, 524397, 511183, 497576, 483884, 470850, 458438, 444475, 432528, 420088, 408785, 398420, 387895, 377244, 366837, 355406, 344288, 333747, 324280, 315002, 305918, 296420, 288522, 279185, 270824, 262801, 253865, 246224, 238239, 230537, 222611, 215989, 208641, 202597, 195817, 188939, 181095, 173967, 166058, 160032, 153526, 146706, 139981, 133348, 126689, 119201, 112447, 106795, 101250, 96534, 91052, 85837, 80619, 75292, 69957, 65075, 59901, 55616, 51624, 47598, 43645, 39403, 35645, 31795, 27990, 24496, 20780, 17740, 14102, 10498, 7090, 3861],
 
         # This is as measured by the criteria defined in
         # ContentCafeSOAPClient.estimate_popularity(), in which
@@ -5390,26 +5392,26 @@ class Measurement(Base):
         # ordered in a single month within the last year, or b)
         # one-half the largest number of books ever ordered in a
         # single month.
-        DataSourceConstants.CONTENT_CAFE : [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 11, 14, 18, 25, 41, 125, 387]
+        DataSource.CONTENT_CAFE : [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8, 9, 10, 11, 14, 18, 25, 41, 125, 387]
 
         # This is a percentile list of OCLC Work IDs and OCLC Numbers
         # associated with Project Gutenberg texts via OCLC Linked
         # Data.
         #
         # TODO: Calculate a separate distribution for more modern works.
-        # DataSourceConstants.OCLC_LINKED_DATA : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 12, 14, 15, 18, 21, 29, 41, 81],
+        # DataSource.OCLC_LINKED_DATA : [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 12, 14, 15, 18, 21, 29, 41, 81],
     }
 
     DOWNLOAD_PERCENTILES = {
-        DataSourceConstants.GUTENBERG : [0, 1, 2, 3, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 40, 41, 43, 45, 46, 48, 50, 52, 55, 57, 60, 62, 65, 69, 72, 76, 79, 83, 87, 93, 99, 106, 114, 122, 130, 140, 152, 163, 179, 197, 220, 251, 281, 317, 367, 432, 501, 597, 658, 718, 801, 939, 1065, 1286, 1668, 2291, 4139]
+        DataSource.GUTENBERG : [0, 1, 2, 3, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 26, 27, 28, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 40, 41, 43, 45, 46, 48, 50, 52, 55, 57, 60, 62, 65, 69, 72, 76, 79, 83, 87, 93, 99, 106, 114, 122, 130, 140, 152, 163, 179, 197, 220, 251, 281, 317, 367, 432, 501, 597, 658, 718, 801, 939, 1065, 1286, 1668, 2291, 4139]
     }
 
     RATING_SCALES = {
-        DataSourceConstants.OVERDRIVE : [1, 5],
-        DataSourceConstants.AMAZON : [1, 5],
-        DataSourceConstants.UNGLUE_IT: [1, 5],
-        DataSourceConstants.NOVELIST: [0, 5],
-        DataSourceConstants.LIBRARY_STAFF: [1, 5],
+        DataSource.OVERDRIVE : [1, 5],
+        DataSource.AMAZON : [1, 5],
+        DataSource.UNGLUE_IT: [1, 5],
+        DataSource.NOVELIST: [0, 5],
+        DataSource.LIBRARY_STAFF: [1, 5],
     }
 
     id = Column(Integer, primary_key=True)
@@ -6093,8 +6095,8 @@ class Resource(Base):
         :return: A lower number is better. None means it's not an
         image type or we don't care about it at all.
         """
-        if media_type in MediaTypeConstants.IMAGE_MEDIA_TYPES:
-            return MediaTypeConstants.IMAGE_MEDIA_TYPES.index(media_type)
+        if media_type in MediaTypes.IMAGE_MEDIA_TYPES:
+            return MediaTypes.IMAGE_MEDIA_TYPES.index(media_type)
         return None
 
     @classmethod
@@ -6625,21 +6627,21 @@ class Classification(Base):
         # information about target age, so being careful about how
         # much we trust different data sources can become important.
 
-        DataSourceConstants.MANUAL : 1.0,
-        DataSourceConstants.LIBRARY_STAFF: 1.0,
-        (DataSourceConstants.METADATA_WRANGLER, Subject.AGE_RANGE) : 1.0,
+        DataSource.MANUAL : 1.0,
+        DataSource.LIBRARY_STAFF: 1.0,
+        (DataSource.METADATA_WRANGLER, Subject.AGE_RANGE) : 1.0,
 
         Subject.AXIS_360_AUDIENCE : 0.9,
-        (DataSourceConstants.OVERDRIVE, Subject.INTEREST_LEVEL) : 0.9,
-        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE) : 0.9, # But see below
-        (DataSourceConstants.AMAZON, Subject.AGE_RANGE) : 0.85,
-        (DataSourceConstants.AMAZON, Subject.GRADE_LEVEL) : 0.85,
+        (DataSource.OVERDRIVE, Subject.INTEREST_LEVEL) : 0.9,
+        (DataSource.OVERDRIVE, Subject.OVERDRIVE) : 0.9, # But see below
+        (DataSource.AMAZON, Subject.AGE_RANGE) : 0.85,
+        (DataSource.AMAZON, Subject.GRADE_LEVEL) : 0.85,
 
         # Although Overdrive usually reserves Fiction and Nonfiction
         # for books for adults, it's not as reliable an indicator as
         # other Overdrive classifications.
-        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE, "Fiction") : 0.7,
-        (DataSourceConstants.OVERDRIVE, Subject.OVERDRIVE, "Nonfiction") : 0.7,
+        (DataSource.OVERDRIVE, Subject.OVERDRIVE, "Fiction") : 0.7,
+        (DataSource.OVERDRIVE, Subject.OVERDRIVE, "Nonfiction") : 0.7,
 
         Subject.AGE_RANGE : 0.6,
         Subject.GRADE_LEVEL : 0.6,
@@ -6651,14 +6653,14 @@ class Classification(Base):
 
         # Tags that come from OCLC Linked Data are of lower quality
         # because they sometimes talk about completely the wrong book.
-        (DataSourceConstants.OCLC_LINKED_DATA, Subject.TAG) : 0.3,
+        (DataSource.OCLC_LINKED_DATA, Subject.TAG) : 0.3,
 
         # These measure reading level, not age appropriateness.
         # However, if the book is a remedial work for adults we won't
         # be calculating a target age in the first place, so it's okay
         # to use reading level as a proxy for age appropriateness in a
         # pinch. (But not outside of a pinch.)
-        (DataSourceConstants.OVERDRIVE, Subject.GRADE_LEVEL) : 0.35,
+        (DataSource.OVERDRIVE, Subject.GRADE_LEVEL) : 0.35,
         Subject.LEXILE_SCORE : 0.1,
         Subject.ATOS_SCORE: 0.1,
     }
@@ -6707,186 +6709,6 @@ class Classification(Base):
             if self.data_source == pool.data_source:
                 return True
         return False
-
-
-class WillNotGenerateExpensiveFeed(Exception):
-    """This exception is raised when a feed is not cached, but it's too
-    expensive to generate.
-    """
-    pass
-
-class CachedFeed(Base):
-
-    __tablename__ = 'cachedfeeds'
-    id = Column(Integer, primary_key=True)
-
-    # Every feed is associated with a lane. If null, this is a feed
-    # for a WorkList. If work_id is also null, it's a feed for the
-    # top-level.
-    lane_id = Column(
-        Integer, ForeignKey('lanes.id'),
-        nullable=True, index=True)
-
-    # Every feed has a timestamp reflecting when it was created.
-    timestamp = Column(DateTime, nullable=True, index=True)
-
-    # A feed is of a certain type--currently either 'page' or 'groups'.
-    type = Column(Unicode, nullable=False)
-
-    # A feed associated with a WorkList can have a unique key.
-    # This should be null if the feed is associated with a Lane.
-    unique_key = Column(Unicode, nullable=True)
-
-    # A 'page' feed is associated with a set of values for the facet
-    # groups.
-    facets = Column(Unicode, nullable=True)
-
-    # A 'page' feed is associated with a set of values for pagination.
-    pagination = Column(Unicode, nullable=False)
-
-    # The content of the feed.
-    content = Column(Unicode, nullable=True)
-
-    # Every feed is associated with a Library.
-    library_id = Column(
-        Integer, ForeignKey('libraries.id'), index=True
-    )
-
-    # A feed may be associated with a Work.
-    work_id = Column(Integer, ForeignKey('works.id'),
-        nullable=True, index=True)
-
-    GROUPS_TYPE = u'groups'
-    PAGE_TYPE = u'page'
-    RECOMMENDATIONS_TYPE = u'recommendations'
-    SERIES_TYPE = u'series'
-    CONTRIBUTOR_TYPE = u'contributor'
-
-    log = logging.getLogger("CachedFeed")
-
-    @classmethod
-    def fetch(cls, _db, lane, type, facets, pagination, annotator,
-              force_refresh=False, max_age=None):
-        from opds import AcquisitionFeed
-        from lane import Lane, WorkList
-        if max_age is None:
-            if type == cls.GROUPS_TYPE:
-                max_age = AcquisitionFeed.grouped_max_age(_db)
-            elif type == cls.PAGE_TYPE:
-                max_age = AcquisitionFeed.nongrouped_max_age(_db)
-            elif hasattr(lane, 'MAX_CACHE_AGE'):
-                max_age = lane.MAX_CACHE_AGE
-            else:
-                max_age = 0
-        if isinstance(max_age, int):
-            max_age = datetime.timedelta(seconds=max_age)
-
-        unique_key = None
-        if lane and isinstance(lane, Lane):
-            lane_id = lane.id
-        else:
-            lane_id = None
-            unique_key = "%s-%s-%s" % (lane.display_name, lane.language_key, lane.audience_key)
-        work = None
-        if lane:
-            work = getattr(lane, 'work', None)
-        library = None
-        if lane and isinstance(lane, Lane):
-            library = lane.library
-        elif lane and isinstance(lane, WorkList):
-            library = lane.get_library(_db)
-
-        if facets:
-            facets_key = unicode(facets.query_string)
-        else:
-            facets_key = u""
-
-        if pagination:
-            pagination_key = unicode(pagination.query_string)
-        else:
-            pagination_key = u""
-
-        # Get a CachedFeed object. We will either return its .content,
-        # or update its .content.
-        constraint_clause = and_(cls.content!=None, cls.timestamp!=None)
-        feed, is_new = get_one_or_create(
-            _db, cls,
-            on_multiple='interchangeable',
-            constraint=constraint_clause,
-            lane_id=lane_id,
-            unique_key=unique_key,
-            library=library,
-            work=work,
-            type=type,
-            facets=facets_key,
-            pagination=pagination_key)
-
-        if force_refresh is True:
-            # No matter what, we've been directed to treat this
-            # cached feed as stale.
-            return feed, False
-
-        if max_age is AcquisitionFeed.CACHE_FOREVER:
-            # This feed is so expensive to generate that it must be cached
-            # forever (unless force_refresh is True).
-            if not is_new and feed.content:
-                # Cacheable!
-                return feed, True
-            else:
-                # We're supposed to generate this feed, but as a group
-                # feed, it's too expensive.
-                #
-                # Rather than generate an error (which will provide a
-                # terrible user experience), fall back to generating a
-                # default page-type feed, which should be cheap to fetch.
-                identifier = None
-                if isinstance(lane, Lane):
-                    identifier = lane.id
-                elif isinstance(lane, WorkList):
-                    identifier = lane.display_name
-                cls.log.warn(
-                    "Could not generate a groups feed for %s, falling back to a page feed.",
-                    identifier
-                )
-                return cls.fetch(
-                    _db, lane, CachedFeed.PAGE_TYPE, facets, pagination,
-                    annotator, force_refresh, max_age=None
-                )
-        else:
-            # This feed is cheap enough to generate on the fly.
-            cutoff = datetime.datetime.utcnow() - max_age
-            fresh = False
-            if feed.timestamp and feed.content:
-                if feed.timestamp >= cutoff:
-                    fresh = True
-            return feed, fresh
-
-        # Either there is no cached feed or it's time to update it.
-        return feed, False
-
-    def update(self, _db, content):
-        self.content = content
-        self.timestamp = datetime.datetime.utcnow()
-        flush(_db)
-
-    def __repr__(self):
-        if self.content:
-            length = len(self.content)
-        else:
-            length = "No content"
-        return "<CachedFeed #%s %s %s %s %s %s %s >" % (
-            self.id, self.lane_id, self.type,
-            self.facets, self.pagination,
-            self.timestamp, length
-        )
-
-
-Index(
-    "ix_cachedfeeds_library_id_lane_id_type_facets_pagination",
-    CachedFeed.library_id, CachedFeed.lane_id, CachedFeed.type,
-    CachedFeed.facets, CachedFeed.pagination
-)
-
 
 class LicensePool(Base):
     """A pool of undifferentiated licenses for a work from a given source.
@@ -7862,7 +7684,7 @@ class LicensePool(Base):
                     [resource.representation and
                      resource.representation.media_type and
                      resource.representation.media_type.startswith(x)
-                     for x in MediaTypeConstants.SUPPORTED_BOOK_MEDIA_TYPES]):
+                     for x in MediaTypes.SUPPORTED_BOOK_MEDIA_TYPES]):
                 # This representation is not in a media type we
                 # support. We can't serve it, so we won't consider it.
                 continue
@@ -7931,7 +7753,6 @@ class RightsStatus(Base):
     This will normally be 'in copyright', or 'public domain', or a
     Creative Commons license.
     """
-
     # Currently in copyright.
     IN_COPYRIGHT = u"http://librarysimplified.org/terms/rights-status/in-copyright"
 
@@ -8006,14 +7827,14 @@ class RightsStatus(Base):
     }
 
     DATA_SOURCE_DEFAULT_RIGHTS_STATUS = {
-        DataSourceConstants.GUTENBERG: PUBLIC_DOMAIN_USA,
-        DataSourceConstants.PLYMPTON: CC_BY_NC,
+        DataSource.GUTENBERG: PUBLIC_DOMAIN_USA,
+        DataSource.PLYMPTON: CC_BY_NC,
         # workaround for opds-imported license pools with 'content server' as data source
-        DataSourceConstants.OA_CONTENT_SERVER : GENERIC_OPEN_ACCESS,
+        DataSource.OA_CONTENT_SERVER : GENERIC_OPEN_ACCESS,
 
-        DataSourceConstants.OVERDRIVE: IN_COPYRIGHT,
-        DataSourceConstants.BIBLIOTHECA: IN_COPYRIGHT,
-        DataSourceConstants.AXIS_360: IN_COPYRIGHT,
+        DataSource.OVERDRIVE: IN_COPYRIGHT,
+        DataSource.BIBLIOTHECA: IN_COPYRIGHT,
+        DataSource.AXIS_360: IN_COPYRIGHT,
     }
 
     __tablename__ = 'rightsstatus'
@@ -8439,7 +8260,7 @@ class Timestamp(Base):
     )
 
 
-class Representation(Base, MediaTypeConstants):
+class Representation(Base, MediaTypes):
     """A cached document obtained from (and possibly mirrored to) the Web
     at large.
 
@@ -8820,7 +8641,7 @@ class Representation(Base, MediaTypeConstants):
             return default
         headers_type = headers['content-type'].lower()
         clean = cls._clean_media_type(headers_type)
-        if clean in MediaTypeConstants.GENERIC_MEDIA_TYPES and default:
+        if clean in MediaTypes.GENERIC_MEDIA_TYPES and default:
             return default
         return headers_type
 
@@ -8858,8 +8679,8 @@ class Representation(Base, MediaTypeConstants):
         """
         return any(
             self.media_type in x for x in
-            (MediaTypeConstants.BOOK_MEDIA_TYPES,
-             MediaTypeConstants.IMAGE_MEDIA_TYPES)
+            (MediaTypes.BOOK_MEDIA_TYPES,
+             MediaTypes.IMAGE_MEDIA_TYPES)
         )
 
     def update_image_size(self):
@@ -9268,7 +9089,7 @@ class Representation(Base, MediaTypeConstants):
         self.image_width, self.image_height = image.size
 
         # If the image is already a thumbnail-size bitmap, don't bother.
-        if (self.clean_media_type != MediaTypeConstants.SVG_MEDIA_TYPE
+        if (self.clean_media_type != MediaTypes.SVG_MEDIA_TYPE
             and self.image_height <= max_height
             and self.image_width <= max_width):
             self.thumbnails = []
@@ -9437,7 +9258,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
 
     STREAMING_PROFILE = ";profile=http://librarysimplified.org/terms/profiles/streaming-media"
     MEDIA_TYPES_FOR_STREAMING = {
-        STREAMING_TEXT_CONTENT_TYPE: MediaTypeConstants.TEXT_HTML_MEDIA_TYPE
+        STREAMING_TEXT_CONTENT_TYPE: MediaTypes.TEXT_HTML_MEDIA_TYPE
     }
 
     __tablename__ = 'deliverymechanisms'
@@ -9452,9 +9273,9 @@ class DeliveryMechanism(Base, HasFullTableCache):
     # These are the media type/DRM scheme combos known to be supported
     # by the default Library Simplified client.
     default_client_can_fulfill_lookup = set([
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, NO_DRM),
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, ADOBE_DRM),
-        (MediaTypeConstants.EPUB_MEDIA_TYPE, BEARER_TOKEN),
+        (MediaTypes.EPUB_MEDIA_TYPE, NO_DRM),
+        (MediaTypes.EPUB_MEDIA_TYPE, ADOBE_DRM),
+        (MediaTypes.EPUB_MEDIA_TYPE, BEARER_TOKEN),
     ])
 
     license_pool_delivery_mechanisms = relationship(
@@ -9502,8 +9323,8 @@ class DeliveryMechanism(Base, HasFullTableCache):
         available through this DeliveryMechanism?
         """
         if self.content_type in (
-                MediaTypeConstants.EPUB_MEDIA_TYPE,
-                MediaTypeConstants.PDF_MEDIA_TYPE,
+                MediaTypes.EPUB_MEDIA_TYPE,
+                MediaTypes.PDF_MEDIA_TYPE,
                 "Kindle via Amazon",
                 "Streaming Text"):
             return Edition.BOOK_MEDIUM
@@ -10596,7 +10417,6 @@ class ExternalIntegration(Base, HasFullTableCache):
     """An external integration contains configuration for connecting
     to a third-party API.
     """
-
     # Possible goals of ExternalIntegrations.
     #
     # These integrations are associated with external services such as
@@ -10647,16 +10467,16 @@ class ExternalIntegration(Base, HasFullTableCache):
 
     # Supported protocols for ExternalIntegrations with LICENSE_GOAL.
     OPDS_IMPORT = u'OPDS Import'
-    OVERDRIVE = DataSourceConstants.OVERDRIVE
-    ODILO = DataSourceConstants.ODILO
-    BIBLIOTHECA = DataSourceConstants.BIBLIOTHECA
-    AXIS_360 = DataSourceConstants.AXIS_360
-    RB_DIGITAL = DataSourceConstants.RB_DIGITAL
+    OVERDRIVE = DataSource.OVERDRIVE
+    ODILO = DataSource.ODILO
+    BIBLIOTHECA = DataSource.BIBLIOTHECA
+    AXIS_360 = DataSource.AXIS_360
+    RB_DIGITAL = DataSource.RB_DIGITAL
     ONE_CLICK = RB_DIGITAL
     OPDS_FOR_DISTRIBUTORS = u'OPDS for Distributors'
-    ENKI = DataSourceConstants.ENKI
-    FEEDBOOKS = DataSourceConstants.FEEDBOOKS
-    MANUAL = DataSourceConstants.MANUAL
+    ENKI = DataSource.ENKI
+    FEEDBOOKS = DataSource.FEEDBOOKS
+    MANUAL = DataSource.MANUAL
 
     # These protocols were used on the Content Server when mirroring
     # content from a given directory or directly from Project
@@ -10664,7 +10484,7 @@ class ExternalIntegration(Base, HasFullTableCache):
     # MANUAL.  GUTENBERG has yet to be replaced, but will eventually
     # be moved into LICENSE_PROTOCOLS.
     DIRECTORY_IMPORT = "Directory Import"
-    GUTENBERG = DataSourceConstants.GUTENBERG
+    GUTENBERG = DataSource.GUTENBERG
 
     LICENSE_PROTOCOLS = [
         OPDS_IMPORT, OVERDRIVE, ODILO, BIBLIOTHECA, AXIS_360, RB_DIGITAL,
@@ -10674,13 +10494,13 @@ class ExternalIntegration(Base, HasFullTableCache):
     # Some integrations with LICENSE_GOAL imply that the data and
     # licenses come from a specific data source.
     DATA_SOURCE_FOR_LICENSE_PROTOCOL = {
-        OVERDRIVE : DataSourceConstants.OVERDRIVE,
-        ODILO : DataSourceConstants.ODILO,
-        BIBLIOTHECA : DataSourceConstants.BIBLIOTHECA,
-        AXIS_360 : DataSourceConstants.AXIS_360,
-        RB_DIGITAL : DataSourceConstants.RB_DIGITAL,
-        ENKI : DataSourceConstants.ENKI,
-        FEEDBOOKS : DataSourceConstants.FEEDBOOKS,
+        OVERDRIVE : DataSource.OVERDRIVE,
+        ODILO : DataSource.ODILO,
+        BIBLIOTHECA : DataSource.BIBLIOTHECA,
+        AXIS_360 : DataSource.AXIS_360,
+        RB_DIGITAL : DataSource.RB_DIGITAL,
+        ENKI : DataSource.ENKI,
+        FEEDBOOKS : DataSource.FEEDBOOKS,
     }
 
     # Integrations with METADATA_GOAL
@@ -12183,6 +12003,184 @@ def directly_modified(obj):
         obj, include_collections=False
     )
 
+class CachedFeed(Base):
+
+    __tablename__ = 'cachedfeeds'
+    id = Column(Integer, primary_key=True)
+
+    # Every feed is associated with a lane. If null, this is a feed
+    # for a WorkList. If work_id is also null, it's a feed for the
+    # top-level.
+    lane_id = Column(
+        Integer, ForeignKey('lanes.id'),
+        nullable=True, index=True)
+
+    # Every feed has a timestamp reflecting when it was created.
+    timestamp = Column(DateTime, nullable=True, index=True)
+
+    # A feed is of a certain type--currently either 'page' or 'groups'.
+    type = Column(Unicode, nullable=False)
+
+    # A feed associated with a WorkList can have a unique key.
+    # This should be null if the feed is associated with a Lane.
+    unique_key = Column(Unicode, nullable=True)
+
+    # A 'page' feed is associated with a set of values for the facet
+    # groups.
+    facets = Column(Unicode, nullable=True)
+
+    # A 'page' feed is associated with a set of values for pagination.
+    pagination = Column(Unicode, nullable=False)
+
+    # The content of the feed.
+    content = Column(Unicode, nullable=True)
+
+    # Every feed is associated with a Library.
+    library_id = Column(
+        Integer, ForeignKey('libraries.id'), index=True
+    )
+
+    # A feed may be associated with a Work.
+    work_id = Column(Integer, ForeignKey('works.id'),
+        nullable=True, index=True)
+
+    GROUPS_TYPE = u'groups'
+    PAGE_TYPE = u'page'
+    RECOMMENDATIONS_TYPE = u'recommendations'
+    SERIES_TYPE = u'series'
+    CONTRIBUTOR_TYPE = u'contributor'
+
+    log = logging.getLogger("CachedFeed")
+
+    @classmethod
+    def fetch(cls, _db, lane, type, facets, pagination, annotator,
+              force_refresh=False, max_age=None):
+        from opds import AcquisitionFeed
+        from lane import Lane, WorkList
+        if max_age is None:
+            if type == cls.GROUPS_TYPE:
+                max_age = AcquisitionFeed.grouped_max_age(_db)
+            elif type == cls.PAGE_TYPE:
+                max_age = AcquisitionFeed.nongrouped_max_age(_db)
+            elif hasattr(lane, 'MAX_CACHE_AGE'):
+                max_age = lane.MAX_CACHE_AGE
+            else:
+                max_age = 0
+        if isinstance(max_age, int):
+            max_age = datetime.timedelta(seconds=max_age)
+
+        unique_key = None
+        if lane and isinstance(lane, Lane):
+            lane_id = lane.id
+        else:
+            lane_id = None
+            unique_key = "%s-%s-%s" % (lane.display_name, lane.language_key, lane.audience_key)
+        work = None
+        if lane:
+            work = getattr(lane, 'work', None)
+        library = None
+        if lane and isinstance(lane, Lane):
+            library = lane.library
+        elif lane and isinstance(lane, WorkList):
+            library = lane.get_library(_db)
+
+        if facets:
+            facets_key = unicode(facets.query_string)
+        else:
+            facets_key = u""
+
+        if pagination:
+            pagination_key = unicode(pagination.query_string)
+        else:
+            pagination_key = u""
+
+        # Get a CachedFeed object. We will either return its .content,
+        # or update its .content.
+        constraint_clause = and_(cls.content!=None, cls.timestamp!=None)
+        feed, is_new = get_one_or_create(
+            _db, cls,
+            on_multiple='interchangeable',
+            constraint=constraint_clause,
+            lane_id=lane_id,
+            unique_key=unique_key,
+            library=library,
+            work=work,
+            type=type,
+            facets=facets_key,
+            pagination=pagination_key)
+
+        if force_refresh is True:
+            # No matter what, we've been directed to treat this
+            # cached feed as stale.
+            return feed, False
+
+        if max_age is AcquisitionFeed.CACHE_FOREVER:
+            # This feed is so expensive to generate that it must be cached
+            # forever (unless force_refresh is True).
+            if not is_new and feed.content:
+                # Cacheable!
+                return feed, True
+            else:
+                # We're supposed to generate this feed, but as a group
+                # feed, it's too expensive.
+                #
+                # Rather than generate an error (which will provide a
+                # terrible user experience), fall back to generating a
+                # default page-type feed, which should be cheap to fetch.
+                identifier = None
+                if isinstance(lane, Lane):
+                    identifier = lane.id
+                elif isinstance(lane, WorkList):
+                    identifier = lane.display_name
+                cls.log.warn(
+                    "Could not generate a groups feed for %s, falling back to a page feed.",
+                    identifier
+                )
+                return cls.fetch(
+                    _db, lane, CachedFeed.PAGE_TYPE, facets, pagination,
+                    annotator, force_refresh, max_age=None
+                )
+        else:
+            # This feed is cheap enough to generate on the fly.
+            cutoff = datetime.datetime.utcnow() - max_age
+            fresh = False
+            if feed.timestamp and feed.content:
+                if feed.timestamp >= cutoff:
+                    fresh = True
+            return feed, fresh
+
+        # Either there is no cached feed or it's time to update it.
+        return feed, False
+
+    def update(self, _db, content):
+        self.content = content
+        self.timestamp = datetime.datetime.utcnow()
+        flush(_db)
+
+    def __repr__(self):
+        if self.content:
+            length = len(self.content)
+        else:
+            length = "No content"
+        return "<CachedFeed #%s %s %s %s %s %s %s >" % (
+            self.id, self.lane_id, self.type,
+            self.facets, self.pagination,
+            self.timestamp, length
+        )
+
+
+Index(
+    "ix_cachedfeeds_library_id_lane_id_type_facets_pagination",
+    CachedFeed.library_id, CachedFeed.lane_id, CachedFeed.type,
+    CachedFeed.facets, CachedFeed.pagination
+)
+
+
+class WillNotGenerateExpensiveFeed(Exception):
+    """This exception is raised when a feed is not cached, but it's too
+    expensive to generate.
+    """
+    pass
 # Most of the time, we can know whether a change to the database is
 # likely to require that the application reload the portion of the
 # configuration it gets from the database. These hooks will call
