@@ -7,6 +7,8 @@ from nose.tools import set_trace
 this_dir = os.path.abspath(os.path.dirname(__file__))
 parent = os.path.split(this_dir)[0]
 sys.path.insert(0, parent)
+grandparent = os.path.split(this_dir)[0]
+sys.path.insert(0, grandparent)
 
 # Having problems with the database not being initialized? This module is
 # being imported twice through two different paths. Uncomment this
