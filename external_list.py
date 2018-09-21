@@ -15,7 +15,7 @@ from metadata_layer import (
     CSVMetadataImporter,
     ReplacementPolicy,
 )
-from model import (
+from core.model import (
     get_one,
     get_one_or_create,
     Classification,

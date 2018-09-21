@@ -26,8 +26,8 @@ from pymarc import MARCReader
 from util import LanguageCodes
 from util.personal_names import name_tidy
 from util.median import median
-from classifier import Classifier
-from model import (
+from core.classifier import Classifier
+from core.model import (
     get_one,
     get_one_or_create,
     CirculationEvent,
@@ -49,7 +49,7 @@ from model import (
     Resource,
     Work,
 )
-from classifier import NO_VALUE, NO_NUMBER
+from core.classifier import NO_VALUE, NO_NUMBER
 from analytics import Analytics
 from util.personal_names import display_name_to_sort_name
 

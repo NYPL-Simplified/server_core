@@ -27,16 +27,16 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.exc import (
     NoResultFound,
 )
-from model import (
+from core.model import (
     get_one,
     Complaint,
     Identifier,
     Patron,
 )
 from cdn import cdnify
-from classifier import Classifier
+from core.classifier import Classifier
 from core.config import Configuration
-from lane import (
+from core.lane import (
     Facets,
     Pagination,
 )

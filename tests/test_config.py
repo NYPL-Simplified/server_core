@@ -4,7 +4,7 @@ from nose.tools import eq_, set_trace
 from testing import DatabaseTest
 
 from core.config import Configuration as BaseConfiguration
-from model import ConfigurationSetting
+from core.model import ConfigurationSetting
 
 
 # Create a configuration object that the tests can run against without

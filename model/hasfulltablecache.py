@@ -1,7 +1,7 @@
 # encoding: utf-8
 # HasFullTableCache
 from nose.tools import set_trace
-from . import get_one
+from core.model import get_one
 
 import logging
 

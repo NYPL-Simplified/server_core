@@ -8,7 +8,7 @@ import pkgutil
 import csv
 from copy import deepcopy
 
-from classifier import Classifier
+from core.classifier import Classifier
 from metadata_layer import (
     CSVFormatError,
     CSVMetadataImporter,
@@ -26,7 +26,7 @@ from metadata_layer import (
 )
 
 import os
-from model import (
+from core.model import (
     Contributor,
     CoverageRecord,
     DataSource,
@@ -47,7 +47,7 @@ from . import (
 )
 
 from s3 import MockS3Uploader
-from classifier import NO_VALUE, NO_NUMBER
+from core.classifier import NO_VALUE, NO_NUMBER
 
 class TestIdentifierData(object):
 

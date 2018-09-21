@@ -21,7 +21,7 @@ from testing import (
     TransientFailureCoverageProvider,
     TransientFailureWorkCoverageProvider,
 )
-from model import (
+from core.model import (
     Collection,
     CollectionMissing,
     Contributor,

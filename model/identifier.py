@@ -2,7 +2,7 @@
 # Identifier, Equivalency
 from nose.tools import set_trace
 
-from . import (
+from core.model import (
     Base,
     create,
     get_one,

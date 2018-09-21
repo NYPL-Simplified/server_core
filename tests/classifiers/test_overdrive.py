@@ -3,8 +3,8 @@ from nose.tools import (
     eq_,
     set_trace,
 )
-from classifier import *
-from classifier.overdrive import OverdriveClassifier as Overdrive
+from core.classifier import *
+from core.classifier.overdrive import OverdriveClassifier as Overdrive
 
 class TestOverdriveClassifier(object):
 

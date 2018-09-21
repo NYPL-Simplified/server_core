@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import (
 import log # This sets the appropriate log format and level.
 from core.config import Configuration
 from coverage import CoverageFailure
-from model import (
+from core.model import (
     get_one,
     get_one_or_create,
     CachedFeed,

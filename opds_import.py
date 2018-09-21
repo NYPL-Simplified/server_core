@@ -36,7 +36,7 @@ from metadata_layer import (
     SubjectData,
     ReplacementPolicy,
 )
-from model import (
+from core.model import (
     get_one,
     Collection,
     CoverageRecord,

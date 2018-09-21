@@ -12,11 +12,11 @@ from nose.tools import set_trace
 from sqlalchemy.orm.session import Session
 from core.config import Configuration
 
-from lane import (
+from core.lane import (
     Lane,
 )
-from model.constants import MediaTypes
-from model import (
+from core.model.constants import MediaTypes
+from core.model import (
     Base,
     Classification,
     IntegrationClient,
@@ -49,7 +49,7 @@ from model import (
     WorkCoverageRecord,
     get_one_or_create,
 )
-from classifier import Classifier
+from core.classifier import Classifier
 from coverage import (
     BibliographicCoverageProvider,
     CollectionCoverageProvider,
@@ -709,7 +709,7 @@ class DatabaseTest(object):
         So we cannot see what's going on by going into postgres and running selects.
         This is the in-test alternative to going into postgres.
 
-        Can be called from model and metadata classes as well as tests.
+        Can be called from core.model and metadata classes as well as tests.
 
         NOTE: The purpose of this method is for debugging.
         Be careful of leaving it in code and potentially outputting

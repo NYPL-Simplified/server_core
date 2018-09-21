@@ -7,12 +7,12 @@ from core.config import (
     Configuration,
     CannotLoadConfiguration,
 )
-from classifier import (
+from core.classifier import (
     KeywordBasedClassifier,
     GradeLevelClassifier,
     AgeClassifier,
 )
-from model import (
+from core.model import (
     ExternalIntegration,
     Work,
     WorkCoverageRecord,

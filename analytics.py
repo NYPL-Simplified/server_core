@@ -3,7 +3,7 @@ import importlib
 import contextlib
 import datetime
 from collections import defaultdict
-from model import ExternalIntegration
+from core.model import ExternalIntegration
 from core.config import CannotLoadConfiguration
 from sqlalchemy.orm.session import Session
 

@@ -13,8 +13,8 @@ from sqlalchemy.sql.expression import Select
 from core.config import Configuration
 from flask_babel import lazy_gettext as _
 
-import classifier
-from classifier import (
+from core import classifier
+from core.classifier import (
     Classifier,
     GenreData,
 )
@@ -45,11 +45,11 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.sql.expression import literal
 
-from entrypoint import (
+from core.entrypoint import (
     EntryPoint,
     EverythingEntryPoint,
 )
-from model import (
+from core.model import (
     directly_modified,
     get_one_or_create,
     numericrange_to_tuple,
@@ -77,7 +77,7 @@ from util import (
     fast_query_count,
     LanguageCodes,
 )
-from util.problem_detail import ProblemDetail
+from core.util.problem_detail import ProblemDetail
 
 import elasticsearch
 
@@ -437,7 +437,7 @@ class Facets(FacetsWithEntryPoint):
         """Turn the name of an order facet into a materialized-view field
         for use in an ORDER BY clause.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         order_facet_to_database_field = {
             cls.ORDER_ADDED_TO_COLLECTION: work_model.availability_time,
             cls.ORDER_WORK_ID : work_model.works_id,
@@ -455,7 +455,7 @@ class Facets(FacetsWithEntryPoint):
         ordered appropriately.
         """
         qu = super(Facets, self).apply(_db, qu)
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         if self.availability == self.AVAILABLE_NOW:
             availability_clause = or_(
                 LicensePool.open_access==True,
@@ -500,7 +500,7 @@ class Facets(FacetsWithEntryPoint):
         """Given these Facets, create a complete ORDER BY clause for queries
         against WorkModelWithGenre.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         work_id = work_model.works_id
         default_sort_order = [
             work_model.sort_author, work_model.sort_title, work_id
@@ -570,7 +570,7 @@ class FeaturedFacets(FacetsWithEntryPoint):
         apply() on a query to get a featured subset of that query,
         this will work.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         qu = super(FeaturedFacets, self).apply(_db, qu)
         quality = self.quality_tier_field()
         qu = qu.order_by(
@@ -600,7 +600,7 @@ class FeaturedFacets(FacetsWithEntryPoint):
         """
         if hasattr(self, '_quality_tier_field'):
             return self._quality_tier_field
-        from model import MaterializedWorkWithGenre as mwg
+        from core.model import MaterializedWorkWithGenre as mwg
         featurable_quality = self.minimum_featured_quality
 
         # Being of featureable quality is great.
@@ -1038,7 +1038,7 @@ class WorkList(object):
         :return: A Query, or None if the WorkList is deemed to be a
            bad idea in the first place.
         """
-        from model import (
+        from core.model import (
             MaterializedWorkWithGenre,
         )
         mw = MaterializedWorkWithGenre
@@ -1100,7 +1100,7 @@ class WorkList(object):
 
         # Get a list of MaterializedWorkWithGenre objects as though we
         # had called works().
-        from model import MaterializedWorkWithGenre as mw
+        from core.model import MaterializedWorkWithGenre as mw
         qu = _db.query(mw).join(
             LicensePool, mw.license_pool_id==LicensePool.id
         ).filter(
@@ -1133,7 +1133,7 @@ class WorkList(object):
         subclass-specific filters defined by
         bibliographic_filter_clause().
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         # In general, we only show books that are ready to be delivered
         # to patrons.
         qu = self.only_show_ready_deliverable_works(_db, qu)
@@ -1177,7 +1177,7 @@ class WorkList(object):
         # WorkLists. (So are genre and collection restrictions, bt those
         # were applied back in works().)
 
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         clauses = self.audience_filter_clauses(_db, qu)
         if self.languages:
             clauses.append(work_model.language.in_(self.languages))
@@ -1207,7 +1207,7 @@ class WorkList(object):
         """
         if not self.audiences:
             return []
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         clauses = [work_model.audience.in_(self.audiences)]
         if (Classifier.AUDIENCE_CHILDREN in self.audiences
             or Classifier.AUDIENCE_YOUNG_ADULT in self.audiences):
@@ -1233,7 +1233,7 @@ class WorkList(object):
         Note that this assumes the query has an active join against
         LicensePool.
         """
-        from model import MaterializedWorkWithGenre as mwg, Collection
+        from core.model import MaterializedWorkWithGenre as mwg, Collection
         return Collection.restrict_to_ready_deliverable_works(
             query, mwg, show_suppressed=show_suppressed,
             collection_ids=self.collection_ids
@@ -1286,7 +1286,7 @@ class WorkList(object):
         """Avoid eager loading of objects that are contained in the
         materialized view.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         return qu.options(
             lazyload(work_model.license_pool, LicensePool.data_source),
             lazyload(work_model.license_pool, LicensePool.identifier),
@@ -1300,7 +1300,7 @@ class WorkList(object):
         we can stop from even being sent over from the
         database.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         if Configuration.DEFAULT_OPDS_FORMAT == "simple_opds_entry":
             return query.options(defer(work_model.verbose_opds_entry))
         else:
@@ -1502,7 +1502,7 @@ class WorkList(object):
         items. There may be more or less; this controls the size of
         the window and the LIMIT on the query.
         """
-        from model import MaterializedWorkWithGenre
+        from core.model import MaterializedWorkWithGenre
         work_model = MaterializedWorkWithGenre
 
         lane_query = self.works(_db, facets=facets)
@@ -1526,7 +1526,7 @@ class WorkList(object):
         """Restrict the given SQLAlchemy query so that it matches
         approximately `target_size` items.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         if query is None:
             return query
         window_start, window_end = self.featured_window(target_size)
@@ -1910,7 +1910,7 @@ class Lane(Base, WorkList):
     def update_size(self, _db):
         """Update the stored estimate of the number of Works in this Lane."""
         query = self.works(_db).limit(None)
-        from model import MaterializedWorkWithGenre as mw
+        from core.model import MaterializedWorkWithGenre as mw
         query = query.distinct(mw.works_id)
         self.size = fast_query_count(query)
 
@@ -2159,7 +2159,7 @@ class Lane(Base, WorkList):
         `statement` is a SQLAlchemy statement suitable for passing
         into filter() or case().
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         qu, superclass_clause = super(
             Lane, self
         ).bibliographic_filter_clause(
@@ -2205,7 +2205,7 @@ class Lane(Base, WorkList):
         """Create a clause that filters out all books not classified as
         suitable for this Lane's age range.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         if self.target_age == None:
             return []
 
@@ -2244,7 +2244,7 @@ class Lane(Base, WorkList):
         `clauses` is a list of SQLAlchemy statements for use in a
         filter() or case() statement.
         """
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         if not self.customlists and not self.list_datasource:
             # This lane does not require that books be on any particular
             # CustomList.

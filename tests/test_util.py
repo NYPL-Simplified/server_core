@@ -9,7 +9,7 @@ from nose.tools import (
     set_trace,
 )
 
-from model import (
+from core.model import (
     Identifier,
     Edition
 )

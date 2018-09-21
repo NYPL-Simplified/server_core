@@ -18,7 +18,7 @@ from metadata_layer import (
     SubjectData,
 )
 
-from model import (
+from core.model import (
     Collection,
     DataSource,
     DeliveryMechanism,

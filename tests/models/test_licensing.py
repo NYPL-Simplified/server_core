@@ -10,21 +10,21 @@ import datetime
 from mock_analytics_provider import MockAnalyticsProvider
 from sqlalchemy.exc import IntegrityError
 from .. import DatabaseTest
-from model import create
-from model.circulationevent import CirculationEvent
-from model.collection import CollectionMissing
-from model.complaint import Complaint
-from model.contributor import Contributor
-from model.datasource import DataSource
-from model.edition import Edition
-from model.identifier import Identifier
-from model.licensing import (
+from core.model import create
+from core.model.circulationevent import CirculationEvent
+from core.model.collection import CollectionMissing
+from core.model.complaint import Complaint
+from core.model.contributor import Contributor
+from core.model.datasource import DataSource
+from core.model.edition import Edition
+from core.model.identifier import Identifier
+from core.model.licensing import (
     DeliveryMechanism,
     LicensePool,
     LicensePoolDeliveryMechanism,
     RightsStatus,
 )
-from model.resource import (
+from core.model.resource import (
     Hyperlink,
     Representation,
 )

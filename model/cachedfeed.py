@@ -2,7 +2,7 @@
 # CachedFeed, WillNotGenerateExpensiveFeed
 from nose.tools import set_trace
 
-from . import (
+from core.model import (
     Base,
     flush,
     get_one_or_create,
@@ -75,7 +75,7 @@ class CachedFeed(Base):
     def fetch(cls, _db, lane, type, facets, pagination, annotator,
               force_refresh=False, max_age=None):
         from opds import AcquisitionFeed
-        from lane import Lane, WorkList
+        from core.lane import Lane, WorkList
         if max_age is None:
             if type == cls.GROUPS_TYPE:
                 max_age = AcquisitionFeed.grouped_max_age(_db)

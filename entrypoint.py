@@ -126,7 +126,7 @@ class MediumEntryPoint(EntryPoint):
         """Modify a query against the mv_works_for_lanes materialized view
         to match only items with the right medium.
         """
-        from model import MaterializedWorkWithGenre as mv
+        from core.model import MaterializedWorkWithGenre as mv
         return qu.filter(mv.medium==cls.INTERNAL_NAME)
 
     @classmethod

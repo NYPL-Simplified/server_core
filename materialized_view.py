@@ -1,4 +1,4 @@
-from model import (
+from core.model import (
     MaterializedWork,
     MaterializedWorkWithGenre,
 )

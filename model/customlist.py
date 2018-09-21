@@ -2,7 +2,7 @@
 # CustomList, CustomListEntry
 from nose.tools import set_trace
 
-from . import (
+from core.model import (
     Base,
     get_one_or_create,
 )

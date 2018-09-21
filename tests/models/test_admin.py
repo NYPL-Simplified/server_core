@@ -5,8 +5,8 @@ from nose.tools import (
     set_trace,
 )
 from .. import DatabaseTest
-from model import create
-from model.admin import (
+from core.model import create
+from core.model.admin import (
     Admin,
     AdminRole,
 )

@@ -41,7 +41,7 @@ from metadata_layer import (
     CirculationData,
     Metadata,
 )
-from model import (
+from core.model import (
     Collection,
     Contributor,
     CoverageRecord,
@@ -787,7 +787,7 @@ class TestOPDSImporter(OPDSImporterTest):
         eq_('7', seven.subject.identifier)
         eq_(100, seven.weight)
         eq_(Subject.AGE_RANGE, seven.subject.type)
-        from classifier import Classifier
+        from core.classifier import Classifier
         classifier = Classifier.classifiers.get(seven.subject.type, None)
         classifier.classify(seven.subject)
 

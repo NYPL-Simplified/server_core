@@ -105,7 +105,7 @@ class SysLogger(Logger):
 
     @classmethod
     def from_configuration(cls, _db, testing=False):
-        from model import (ExternalIntegration, ConfigurationSetting)
+        from core.model import (ExternalIntegration, ConfigurationSetting)
         (internal_log_level, internal_log_format, database_log_level,
             message_template) = cls._defaults(testing)
         app_name = cls.DEFAULT_APP_NAME
@@ -171,7 +171,7 @@ class Loggly(Logger):
     @classmethod
     def from_configuration(cls, _db, testing=False):
         loggly = None
-        from model import (ExternalIntegration, ConfigurationSetting)
+        from core.model import (ExternalIntegration, ConfigurationSetting)
 
         app_name = cls.DEFAULT_APP_NAME
         if _db and not testing:

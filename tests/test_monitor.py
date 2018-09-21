@@ -14,7 +14,7 @@ from testing import (
     BrokenCoverageProvider,
 )
 
-from model import (
+from core.model import (
     CachedFeed,
     Collection,
     CollectionMissing,
