@@ -2,7 +2,7 @@
 # Measurement
 from nose.tools import set_trace
 
-from . import Base
+from core.model import Base
 from constants import DataSourceConstants
 
 import bisect

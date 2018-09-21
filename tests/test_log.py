@@ -18,7 +18,7 @@ from log import (
     Loggly,
     Logger
 )
-from model import (
+from core.model import (
     ExternalIntegration,
     ConfigurationSetting
 )

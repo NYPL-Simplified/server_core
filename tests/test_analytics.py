@@ -10,7 +10,7 @@ from analytics import Analytics
 from mock_analytics_provider import MockAnalyticsProvider
 from local_analytics_provider import LocalAnalyticsProvider
 from . import DatabaseTest
-from model import (
+from core.model import (
     CirculationEvent,
     ExternalIntegration,
     Library,

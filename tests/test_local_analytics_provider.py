@@ -4,7 +4,7 @@ from nose.tools import (
 )
 from local_analytics_provider import LocalAnalyticsProvider
 from . import DatabaseTest
-from model import (
+from core.model import (
     CirculationEvent,
     ExternalIntegration,
     create,

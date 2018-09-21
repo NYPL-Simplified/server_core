@@ -33,7 +33,7 @@ class MirrorUploader(object):
     @classmethod
     def sitewide_integration(cls, _db):
         """Find the ExternalIntegration for the site-wide mirror."""
-        from model import ExternalIntegration
+        from core.model import ExternalIntegration
         qu = _db.query(ExternalIntegration).filter(
             ExternalIntegration.goal==cls.STORAGE_GOAL
         )
@@ -70,7 +70,7 @@ class MirrorUploader(object):
         if not integration:
             if use_sitewide:
                 try:
-                    from model import Session
+                    from core.model import Session
                     _db = Session.object_session(collection)
                     return cls.sitewide(_db)
                 except CannotLoadConfiguration, e:

@@ -9,12 +9,12 @@ from .. import (
     DatabaseTest,
     DummyHTTPClient,
 )
-from model import create
-from model.datasource import DataSource
-from model.edition import Edition
-from model.identifier import Identifier
-from model.licensing import RightsStatus
-from model.resource import (
+from core.model import create
+from core.model.datasource import DataSource
+from core.model.edition import Edition
+from core.model.identifier import Identifier
+from core.model.licensing import RightsStatus
+from core.model.resource import (
     Hyperlink,
     Representation,
     Resource,

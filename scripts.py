@@ -43,14 +43,14 @@ from app_server import ComplaintController
 # from axis import Axis360BibliographicCoverageProvider
 from core.config import Configuration, CannotLoadConfiguration
 from coverage import CollectionCoverageProviderJob
-from lane import Lane
+from core.lane import Lane
 from metadata_layer import (
     LinkData,
     ReplacementPolicy,
     MetaToModelUtility,
 )
 from mirror import MirrorUploader
-from model import (
+from core.model import (
     create,
     get_one,
     get_one_or_create,
@@ -719,7 +719,7 @@ class LaneSweeperScript(LibraryInputScript):
     """Do something to each lane in a library."""
 
     def process_library(self, library):
-        from lane import WorkList
+        from core.lane import WorkList
         top_level = WorkList.top_level_for_library(self._db, library)
         queue = [top_level]
         while queue:
@@ -2941,7 +2941,7 @@ class FixInvisibleWorksScript(CollectionInputScript):
             return
 
         # See how many works are in the materialized view.
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         mv_works = self._db.query(work_model)
 
         if collections:

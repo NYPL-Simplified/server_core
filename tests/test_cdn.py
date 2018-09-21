@@ -6,7 +6,7 @@ from nose.tools import (
 from . import DatabaseTest
 
 from core.config import Configuration, temp_config
-from model import ExternalIntegration
+from core.model import ExternalIntegration
 from cdn import cdnify
 
 

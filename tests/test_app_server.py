@@ -20,9 +20,9 @@ from . import (
 
 from opds import TestAnnotator
 
-from model import Identifier
+from core.model import Identifier
 
-from lane import (
+from core.lane import (
     Facets,
     Pagination,
     WorkList,
@@ -39,7 +39,7 @@ from app_server import (
 
 from core.config import Configuration
 
-from entrypoint import (
+from core.entrypoint import (
     AudiobooksEntryPoint,
     EbooksEntryPoint,
     EntryPoint,

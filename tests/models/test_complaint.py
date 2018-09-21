@@ -6,7 +6,7 @@ from nose.tools import (
 )
 import datetime
 from .. import DatabaseTest
-from model.complaint import Complaint
+from core.model.complaint import Complaint
 
 class TestComplaint(DatabaseTest):
 

@@ -7,9 +7,9 @@ import datetime
 
 from .. import DatabaseTest
 from core.config import Configuration
-import lane
-import model
-from model import (
+from core import lane
+from core import model
+from core.model import (
     CachedFeed,
     ConfigurationSetting,
     create,

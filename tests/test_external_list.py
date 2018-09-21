@@ -12,7 +12,7 @@ from . import (
     DummyMetadataClient,
 )
 
-from model import (
+from core.model import (
     DataSource,
     Edition,
     Identifier,

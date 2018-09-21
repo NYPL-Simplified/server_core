@@ -1,5 +1,5 @@
 from flask_babel import lazy_gettext as _
-from model import Session, CirculationEvent
+from core.model import Session, CirculationEvent
 
 class LocalAnalyticsProvider(object):
     NAME = _("Local Analytics")

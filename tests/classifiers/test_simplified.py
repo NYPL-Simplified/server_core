@@ -1,6 +1,6 @@
 from nose.tools import eq_, set_trace
 import classifier
-from classifier import *
+from core.classifier import *
 
 class TestSimplifiedGenreClassifier(object):
 

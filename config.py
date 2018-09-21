@@ -313,7 +313,7 @@ class Configuration(object):
 
     @classmethod
     def cdns(cls):
-        from model import ExternalIntegration
+        from core.model import ExternalIntegration
         cdns = cls.integration(ExternalIntegration.CDN)
         if cdns == cls.UNINITIALIZED_CDNS:
             raise CannotLoadConfiguration(
@@ -410,7 +410,7 @@ class Configuration(object):
 
     @classmethod
     def load_cdns(cls, _db, config_instance=None):
-        from model import ExternalIntegration as EI
+        from core.model import ExternalIntegration as EI
         cdns = _db.query(EI).filter(EI.goal==EI.CDN_GOAL).all()
         cdn_integration = dict()
         for cdn in cdns:
@@ -472,7 +472,7 @@ class Configuration(object):
         now = datetime.datetime.utcnow()
 
         if _db and timeout is None:
-            from model import ConfigurationSetting
+            from core.model import ConfigurationSetting
             timeout = ConfigurationSetting.sitewide(
                 _db, cls.SITE_CONFIGURATION_TIMEOUT
             ).value
@@ -494,7 +494,7 @@ class Configuration(object):
         # site_configuration_was_changed() (defined in model.py) was
         # called.
         if not known_value:
-            from model import Timestamp
+            from core.model import Timestamp
             known_value = Timestamp.value(
                 _db, cls.SITE_CONFIGURATION_CHANGED, None
             )

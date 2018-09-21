@@ -16,23 +16,23 @@ from classifier import (
     Romance,
     Science_Fiction,
 )
-from model import get_one_or_create
-from model.background import WorkCoverageRecord
-from model.classification import (
+from core.model import get_one_or_create
+from core.model.background import WorkCoverageRecord
+from core.model.classification import (
     Genre,
     Subject,
 )
-from model.complaint import Complaint
-from model.contributor import Contributor
-from model.datasource import DataSource
-from model.edition import Edition
-from model.identifier import Identifier
-from model.licensing import LicensePool
-from model.resource import (
+from core.model.complaint import Complaint
+from core.model.contributor import Contributor
+from core.model.datasource import DataSource
+from core.model.edition import Edition
+from core.model.identifier import Identifier
+from core.model.licensing import LicensePool
+from core.model.resource import (
     Hyperlink,
     Representation,
 )
-from model.work import (
+from core.model.work import (
     Work,
     WorkGenre,
 )
@@ -136,7 +136,7 @@ class TestWork(DatabaseTest):
         # It's possible to filter a field other than Identifier.id.
         # Here, we filter based on the value of
         # mv_works_for_lanes.identifier_id.
-        from model import MaterializedWorkWithGenre as mw
+        from core.model import MaterializedWorkWithGenre as mw
         qu = self._db.query(mw)
         m = lambda: Work.from_identifiers(
             self._db, [lp.identifier], base_query=qu,

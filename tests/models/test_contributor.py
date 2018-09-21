@@ -4,11 +4,11 @@ from nose.tools import (
     set_trace,
 )
 from .. import DatabaseTest
-from model import get_one_or_create
-from model.contributor import Contributor
-from model.datasource import DataSource
-from model.edition import Edition
-from model.identifier import Identifier
+from core.model import get_one_or_create
+from core.model.contributor import Contributor
+from core.model.datasource import DataSource
+from core.model.edition import Edition
+from core.model.identifier import Identifier
 
 class TestContributor(DatabaseTest):
 

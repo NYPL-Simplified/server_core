@@ -10,13 +10,13 @@ from core.config import (
     temp_config,
 )
 
-from model import (
+from core.model import (
     get_one_or_create,
     CachedFeed,
     WillNotGenerateExpensiveFeed,
 )
 
-from lane import (
+from core.lane import (
     Lane,
     Pagination,
     Facets,

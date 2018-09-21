@@ -16,7 +16,7 @@ from nose.tools import (
 from . import (
     DatabaseTest,
 )
-from classifier import Classifier
+from core.classifier import Classifier
 
 from core.config import (
     Configuration,
@@ -24,7 +24,7 @@ from core.config import (
 )
 from external_search import DummyExternalSearchIndex
 from mirror import MirrorUploader
-from model import (
+from core.model import (
     create,
     dump_query,
     get_one,
@@ -46,7 +46,7 @@ from model import (
     Timestamp,
     Work,
 )
-from lane import Lane
+from core.lane import Lane
 from metadata_layer import LinkData
 
 from scripts import (
@@ -2193,7 +2193,7 @@ Here's your problem: your works aren't open access and have no licenses owned.
         work.presentation_ready = False
 
         # It's not in the materialized view.
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         mw_query = self._db.query(work_model)
         eq_(0, mw_query.count())
 
@@ -2263,7 +2263,7 @@ I would now expect you to be able to find 1 works.
         work.presentation_ready = False
 
         # It's not in the materialized view.
-        from model import MaterializedWorkWithGenre as work_model
+        from core.model import MaterializedWorkWithGenre as work_model
         mw_query = self._db.query(work_model)
         eq_(0, mw_query.count())
 

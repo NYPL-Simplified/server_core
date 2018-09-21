@@ -16,7 +16,7 @@ from nose.tools import (
 from . import (
     DatabaseTest
 )
-from model import (
+from core.model import (
     DataSource,
     ExternalIntegration,
     Hyperlink,

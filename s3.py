@@ -13,7 +13,7 @@ from urlparse import urlsplit
 from mirror import MirrorUploader
 
 from core.config import CannotLoadConfiguration
-from model import ExternalIntegration
+from core.model import ExternalIntegration
 from requests.exceptions import (
     ConnectionError,
     HTTPError,

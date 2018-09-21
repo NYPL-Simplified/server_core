@@ -4,7 +4,7 @@ from nose.tools import (
     set_trace,
 )
 
-from model import (
+from core.model import (
     CirculationEvent,
     DataSource,
     get_one_or_create,

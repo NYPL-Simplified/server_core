@@ -18,15 +18,15 @@ from core.config import (
     Configuration,
     temp_config,
 )
-from entrypoint import (
+from core.entrypoint import (
     AudiobooksEntryPoint,
     EbooksEntryPoint,
     EntryPoint,
     EverythingEntryPoint,
 )
-from facets import FacetConstants
-import model
-from model import (
+from core.facets import FacetConstants
+from core import model
+from core.model import (
     CachedFeed,
     ConfigurationSetting,
     Contributor,
@@ -42,9 +42,7 @@ from model import (
     get_one,
 )
 
-from facets import FacetConstants
-
-from lane import (
+from core.lane import (
     Facets,
     FeaturedFacets,
     Lane,
@@ -72,7 +70,7 @@ from util.opds_writer import (
 )
 from opds_import import OPDSXMLParser
 
-from classifier import (
+from core.classifier import (
     Classifier,
     Contemporary_Romance,
     Epic_Fantasy,
@@ -543,7 +541,7 @@ class TestOPDS(DatabaseTest):
         # Verify that the same group_uri is created whether a Work or
         # a MaterializedWorkWithGenre is passed in.
         self.add_to_materialized_view([work])
-        from model import MaterializedWorkWithGenre
+        from core.model import MaterializedWorkWithGenre
         [mw] = self._db.query(MaterializedWorkWithGenre).all()
 
         mw_uri, mw_title = annotator.group_uri(mw, lp, lp.identifier)

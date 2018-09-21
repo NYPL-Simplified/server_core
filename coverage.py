@@ -5,7 +5,7 @@ import logging
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import func
 
-from model import (
+from core.model import (
     get_one,
     get_one_or_create,
     BaseCoverageRecord,

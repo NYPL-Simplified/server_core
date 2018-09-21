@@ -29,10 +29,10 @@ from lxml import builder, etree
 
 from cdn import cdnify
 from core.config import Configuration
-from classifier import Classifier
-from entrypoint import EntryPoint
-from facets import FacetConstants
-from model import (
+from core.classifier import Classifier
+from core.entrypoint import EntryPoint
+from core.facets import FacetConstants
+from core.model import (
     BaseMaterializedWork,
     CachedFeed,
     ConfigurationSetting,
@@ -48,7 +48,7 @@ from model import (
     Subject,
     Work,
 )
-from lane import (
+from core.lane import (
     Facets,
     FacetsWithEntryPoint,
     Lane,

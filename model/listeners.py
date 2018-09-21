@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm.base import NO_VALUE
 from sqlalchemy.orm.session import Session
-from . import (
+from core.model import (
     Base,
 )
 from admin import (
