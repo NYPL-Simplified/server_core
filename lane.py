@@ -155,11 +155,13 @@ class FacetsWithEntryPoint(FacetConstants):
         entrypoint_name = get_argument(
             Facets.ENTRY_POINT_FACET_GROUP_NAME, None
         )
+        valid_entrypoints = list(cls.selectable_entrypoints(facet_config))
         entrypoint = cls.load_entrypoint(
-            entrypoint_name, list(facet_config.entrypoints)
+            entrypoint_name, valid_entrypoints
         )
         if isinstance(entrypoint, ProblemDetail):
             return entrypoint
+
         return cls(entrypoint=entrypoint, **extra_kwargs)
 
     @classmethod
