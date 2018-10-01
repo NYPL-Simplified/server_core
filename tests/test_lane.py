@@ -125,43 +125,69 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         assert isinstance(facets, ExtraFacets)
         eq_("extra value", facets.extra)
 
-    def test__from_request(self):
+     def test__from_request(self):
         """_from_request calls load_entrypoint and instantiates the
         class with the result.
         """
-        self.expect = object()
-        @classmethod
-        def mock_load_entrypoint(cls, entrypoint_name, entrypoints):
-            self.called_with = (entrypoint_name, entrypoints)
-            return self.expect
-        old = FacetsWithEntryPoint.load_entrypoint
-        FacetsWithEntryPoint.load_entrypoint = mock_load_entrypoint
 
-        # The facet group name will be pulled out of the 'request'
-        # and passed into mock_load_entrypoint.
+        # Mock load_entrypoint() to return whatever value we have set up
+        # ahead of time.
+
+        class MockFacetsWithEntryPoint(FacetsWithEntryPoint):
+
+            @classmethod
+            def selectable_entrypoints(cls, facet_config):
+                cls.selectable_entrypoints_called_with = facet_config
+                return ["Selectable entrypoints"]
+
+            @classmethod
+            def load_entrypoint(cls, entrypoint_name, entrypoints):
+                cls.load_entrypoint_called_with = (entrypoint_name, entrypoints)
+                return cls.expect
+
+        # Mock the functions that pull information out of an HTTP
+        # request.
+
+        # EntryPoint.load_entrypoint pulls the facet group name out of
+        # the 'request' and passes it into load_entrypoint().
         def get_argument(key, default):
             eq_(key, Facets.ENTRY_POINT_FACET_GROUP_NAME)
             return "name of the entrypoint"
 
-        mock_worklist = object()
-        config = self.MockFacetConfig
-        facets = FacetsWithEntryPoint._from_request(
-            config, get_argument, mock_worklist
-        )
-        assert isinstance(facets, FacetsWithEntryPoint)
-        eq_(self.expect, facets.entrypoint)
-        eq_(("name of the entrypoint", config.entrypoints), self.called_with)
+        # FacetsWithEntryPoint.load_entrypoint does not use
+        # get_header().
+        def get_header(name):
+            raise Exception("I'll never be called")
 
-        # If load_entrypoint returns a ProblemDetail, that object is
-        # returned instead of the faceting class.
-        self.expect = INVALID_INPUT
+        config = self.MockFacetConfig
+        mock_worklist = object()
+
+        # First, test failure. If load_entrypoint() returns a
+        # ProblemDetail, that object is returned instead of the
+        # faceting class.
+        MockFacetsWithEntryPoint.expect = INVALID_INPUT
         eq_(
-            self.expect,
-            FacetsWithEntryPoint._from_request(
-                config, get_argument, mock_worklist
+            MockFacetsWithEntryPoint.expect,
+            MockFacetsWithEntryPoint._from_request(
+                config, get_argument, get_header, mock_worklist,
+                extra="extra kwarg"
             )
         )
-        FacetsWithEntryPoint.load_entrypoint = old
+
+        # Now, test success. If load_entrypoint() returns an object,
+        # that object is passed as 'entrypoint' into the
+        # FacetsWithEntryPoint constructor.
+        MockFacetsWithEntryPoint.expect = object()
+        config = self.MockFacetConfig
+        facets = MockFacetsWithEntryPoint._from_request(
+            config, get_argument, get_header, mock_worklist,
+            extra="extra kwarg"
+        )
+        assert isinstance(facets, FacetsWithEntryPoint)
+        eq_(MockFacetsWithEntryPoint.expect, facets.entrypoint)
+        eq_(("name of the entrypoint", ["Selectable entrypoints"]), MockFacetsWithEntryPoint.load_entrypoint_called_with)
+        eq_(dict(extra="extra kwarg"), facets.constructor_kwargs)
+        eq_(MockFacetsWithEntryPoint.selectable_entrypoints_called_with, config)
 
     def test_load_entrypoint(self):
         audio = AudiobooksEntryPoint
