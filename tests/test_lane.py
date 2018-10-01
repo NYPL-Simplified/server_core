@@ -125,7 +125,7 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         assert isinstance(facets, ExtraFacets)
         eq_("extra value", facets.extra)
 
-     def test__from_request(self):
+    def test__from_request(self):
         """_from_request calls load_entrypoint and instantiates the
         class with the result.
         """
@@ -154,11 +154,6 @@ class TestFacetsWithEntryPoint(DatabaseTest):
             eq_(key, Facets.ENTRY_POINT_FACET_GROUP_NAME)
             return "name of the entrypoint"
 
-        # FacetsWithEntryPoint.load_entrypoint does not use
-        # get_header().
-        def get_header(name):
-            raise Exception("I'll never be called")
-
         config = self.MockFacetConfig
         mock_worklist = object()
 
@@ -169,7 +164,7 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         eq_(
             MockFacetsWithEntryPoint.expect,
             MockFacetsWithEntryPoint._from_request(
-                config, get_argument, get_header, mock_worklist,
+                config, get_argument, mock_worklist,
                 extra="extra kwarg"
             )
         )
@@ -180,7 +175,7 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         MockFacetsWithEntryPoint.expect = object()
         config = self.MockFacetConfig
         facets = MockFacetsWithEntryPoint._from_request(
-            config, get_argument, get_header, mock_worklist,
+            config, get_argument, mock_worklist,
             extra="extra kwarg"
         )
         assert isinstance(facets, FacetsWithEntryPoint)
