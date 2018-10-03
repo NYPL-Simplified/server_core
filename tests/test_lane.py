@@ -88,7 +88,9 @@ class TestFacetsWithEntryPoint(DatabaseTest):
     def test_navigate(self):
         old_entrypoint = object()
         kwargs = dict(extra_key="extra_value")
-        facets = FacetsWithEntryPoint(old_entrypoint, **kwargs)
+        facets = FacetsWithEntryPoint(
+            old_entrypoint, entrypoint_is_default=True, **kwargs
+        )
         new_entrypoint = object()
         new_facets = facets.navigate(new_entrypoint)
 
@@ -98,7 +100,11 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         # It has the new entry point.
         eq_(new_entrypoint, new_facets.entrypoint)
 
-        # The keyword arguments used to create the origina faceting
+        # Since navigating from one Facets object to another is a choice,
+        # the new Facets object is not using a default EntryPoint.
+        eq_(False, new_facets.entrypoint_is_default)
+
+        # The keyword arguments used to create the original faceting
         # object were propagated to its constructor.
         eq_(kwargs, new_facets.constructor_kwargs)
 
@@ -106,17 +112,32 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         """from_request just calls _from_request."""
         expect = object()
         class Mock(FacetsWithEntryPoint):
+            called_with = None
             @classmethod
             def _from_request(cls, *args, **kwargs):
+                cls.called_with = (args, kwargs)
                 return expect
-        eq_(expect, Mock.from_request(None, None, None, None))
+
+        result = Mock.from_request(
+            "library", "facet config", "get_argument",
+            "worklist", "default entrypoint",
+            extra="extra argument"
+        )
+        # The arguments given to from_request were propagated to _from_request.
+        args, kwargs = Mock.called_with
+        eq_(("facet config", "get_argument",
+             "worklist", "default entrypoint"), args)
+        eq_(dict(extra="extra argument"), kwargs)
+        # The return value of _from_request was propagated through
+        # from_request.
+        eq_(expect, result)
 
     def test_from_request_propagates_extra_kwargs(self):
         """Any keyword arguments passed to from_request() are propagated
         through to the facet constructor.
         """
         class ExtraFacets(FacetsWithEntryPoint):
-            def __init__(self, entrypoint=None, extra=None):
+            def __init__(self, entrypoint=None, entrypoint_is_default=False, extra=None):
                 self.extra = extra
 
         facets = ExtraFacets.from_request(
@@ -126,9 +147,8 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         eq_("extra value", facets.extra)
 
     def test__from_request(self):
-        """_from_request calls load_entrypoint and instantiates the
-        class with the result.
-        """
+        # _from_request calls load_entrypoint and instantiates the
+        # class with the result.
 
         # Mock load_entrypoint() to return whatever value we have set up
         # ahead of time.
@@ -141,8 +161,8 @@ class TestFacetsWithEntryPoint(DatabaseTest):
                 return ["Selectable entrypoints"]
 
             @classmethod
-            def load_entrypoint(cls, entrypoint_name, entrypoints):
-                cls.load_entrypoint_called_with = (entrypoint_name, entrypoints)
+            def load_entrypoint(cls, entrypoint_name, entrypoints, default=None):
+                cls.load_entrypoint_called_with = (entrypoint_name, entrypoints, default)
                 return cls.expect
 
         # Mock the functions that pull information out of an HTTP
@@ -172,15 +192,22 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         # Now, test success. If load_entrypoint() returns an object,
         # that object is passed as 'entrypoint' into the
         # FacetsWithEntryPoint constructor.
-        MockFacetsWithEntryPoint.expect = object()
+        #
+        # The object returned by load_entrypoint() does not need to be a
+        # currently enabled entrypoint for the library.
+        expect_entrypoint = object()
+        expect_is_default = object()
+        MockFacetsWithEntryPoint.expect = (expect_entrypoint, expect_is_default)
         config = self.MockFacetConfig
+        default_entrypoint = object()
         facets = MockFacetsWithEntryPoint._from_request(
             config, get_argument, mock_worklist,
-            extra="extra kwarg"
+            default_entrypoint=default_entrypoint, extra="extra kwarg"
         )
         assert isinstance(facets, FacetsWithEntryPoint)
-        eq_(MockFacetsWithEntryPoint.expect, facets.entrypoint)
-        eq_(("name of the entrypoint", ["Selectable entrypoints"]), MockFacetsWithEntryPoint.load_entrypoint_called_with)
+        eq_(expect_entrypoint, facets.entrypoint)
+        eq_(expect_is_default, facets.entrypoint_is_default)
+        eq_(("name of the entrypoint", ["Selectable entrypoints"], default_entrypoint), MockFacetsWithEntryPoint.load_entrypoint_called_with)
         eq_(dict(extra="extra kwarg"), facets.constructor_kwargs)
         eq_(MockFacetsWithEntryPoint.selectable_entrypoints_called_with, config)
 
@@ -195,20 +222,28 @@ class TestFacetsWithEntryPoint(DatabaseTest):
         worklist = object()
         m = FacetsWithEntryPoint.load_entrypoint
 
-        # This request does not ask for any particular entrypoint,
-        # so it gets the default.
-        eq_(audio, m(None, entrypoints))
+        # This request does not ask for any particular entrypoint, and
+        # it doesn't specify a default, so it gets the first available
+        # entrypoint.
+        audio_default, is_default = m(None, entrypoints)
+        eq_(audio, audio_default)
+        eq_(True, is_default)
+
+        # This request does not ask for any particular entrypoint, so
+        # it gets the specified default.
+        default = object()
+        eq_((default, True), m(None, entrypoints, default))
 
         # This request asks for an entrypoint and gets it.
-        eq_(ebooks, m(ebooks.INTERNAL_NAME, entrypoints))
+        eq_((ebooks, False), m(ebooks.INTERNAL_NAME, entrypoints))
 
         # This request asks for an entrypoint that is not available,
         # and gets the default.
-        eq_(audio, m("no such entrypoint", entrypoints))
+        eq_((audio, True), m("no such entrypoint", entrypoints))
 
         # If no EntryPoints are available, load_entrypoint returns
         # nothing.
-        eq_(None, m(audio.INTERNAL_NAME, []))
+        eq_((None, True), m(audio.INTERNAL_NAME, []))
 
     def test_selectable_entrypoints(self):
         """The default implementation of selectable_entrypoints just returns
@@ -533,7 +568,10 @@ class TestFacets(DatabaseTest):
         eq_(default_collection, facets.collection)
         eq_(default_availability, facets.availability)
         eq_(library, facets.library)
+
+        # The AudiobooksEntryPoint was selected as a default.
         eq_(AudiobooksEntryPoint, facets.entrypoint)
+        eq_(True, facets.entrypoint_is_default)
 
         # Valid object using non-default settings.
         args = dict(
