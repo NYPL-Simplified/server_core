@@ -292,12 +292,18 @@ class TestLoadMethods(DatabaseTest):
             flask.request.library = self._default_library
             facets = load_facets_from_request(worklist=worklist)
             eq_(AudiobooksEntryPoint, facets.entrypoint)
+            eq_(False, facets.entrypoint_is_default)
 
-        # If it's not configured, the default EntryPoint is used.
+        # If the requested EntryPoint not configured, the default
+        # EntryPoint is used.
         with self.app.test_request_context('/?entrypoint=NoSuchEntryPoint'):
             flask.request.library = self._default_library
-            facets = load_facets_from_request(worklist=worklist)
-            eq_(EbooksEntryPoint, facets.entrypoint)
+            default_entrypoint=object()
+            facets = load_facets_from_request(
+                worklist=worklist, default_entrypoint=default_entrypoint
+            )
+            eq_(default_entrypoint, facets.entrypoint)
+            eq_(True, facets.entrypoint_is_default)
 
 
     def test_load_facets_from_request_class_instantiation(self):
