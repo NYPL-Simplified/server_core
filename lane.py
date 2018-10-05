@@ -560,14 +560,14 @@ class FeaturedFacets(FacetsWithEntryPoint):
     """
 
     def __init__(self, minimum_featured_quality, uses_customlists=False,
-                 **kwargs):
+                 entrypoint=None, **kwargs):
         """Set up an object that finds featured books in a given
         WorkList.
 
         :param kwargs: Other arguments may be supplied based on user
             input, but the default implementation is to ignore them.
         """
-        super(FeaturedFacets, self).__init__(**kwargs)
+        super(FeaturedFacets, self).__init__(entrypoint=entrypoint, **kwargs)
         self.minimum_featured_quality = minimum_featured_quality
         self.uses_customlists = uses_customlists
 
