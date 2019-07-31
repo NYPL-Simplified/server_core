@@ -2,8 +2,8 @@
 import os
 import datetime
 from PIL import Image
-from StringIO import StringIO
-import urllib
+from io import StringIO
+import urllib.request, urllib.parse, urllib.error
 from botocore.exceptions import (
     BotoCoreError,
     ClientError,
@@ -121,15 +121,15 @@ class TestS3Uploader(S3UploaderTest):
         # By default, the mirror URL is not modified.
         uploader = self._uploader()
         eq_(S3Uploader.URL_TEMPLATE_DEFAULT, uploader.url_transform)
-        eq_(u'https://s3.amazonaws.com/bucket/the+key',
+        eq_('https://s3.amazonaws.com/bucket/the+key',
             uploader.final_mirror_url("bucket", "the key"))
 
         uploader.url_transform = S3Uploader.URL_TEMPLATE_HTTP
-        eq_(u'http://bucket/the+k%C3%ABy',
+        eq_('http://bucket/the+k%C3%ABy',
             uploader.final_mirror_url("bucket", "the këy"))
 
         uploader.url_transform = S3Uploader.URL_TEMPLATE_HTTPS
-        eq_(u'https://bucket/key',
+        eq_('https://bucket/key',
             uploader.final_mirror_url("bucket", "key"))
 
     def test_key_join(self):
@@ -139,7 +139,7 @@ class TestS3Uploader(S3UploaderTest):
             S3Uploader.key_join(parts))
 
     def test_cover_image_root(self):
-        bucket = u'test-book-covers-s3-bucket'
+        bucket = 'test-book-covers-s3-bucket'
         m = S3Uploader.cover_image_root
 
         gutenberg_illustrated = DataSource.lookup(
@@ -154,7 +154,7 @@ class TestS3Uploader(S3UploaderTest):
             m(bucket, overdrive, 300))
 
     def test_content_root(self):
-        bucket = u'test-open-access-s3-bucket'
+        bucket = 'test-open-access-s3-bucket'
         m = S3Uploader.content_root
         eq_(
             "https://s3.amazonaws.com/test-open-access-s3-bucket/",
@@ -168,7 +168,7 @@ class TestS3Uploader(S3UploaderTest):
         )
 
     def test_marc_file_root(self):
-        bucket = u'test-marc-s3-bucket'
+        bucket = 'test-marc-s3-bucket'
         m = S3Uploader.marc_file_root
         library = self._library(short_name="SHORT")
         eq_("https://s3.amazonaws.com/test-marc-s3-bucket/SHORT/",
@@ -180,27 +180,27 @@ class TestS3Uploader(S3UploaderTest):
         uploader = self._uploader(**buckets)
         m = uploader.book_url
 
-        eq_(u'https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.epub',
+        eq_('https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.epub',
             m(identifier))
 
         # The default extension is .epub, but a custom extension can
         # be specified.
-        eq_(u'https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.pdf',
+        eq_('https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.pdf',
             m(identifier, extension='pdf'))
 
-        eq_(u'https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.pdf',
+        eq_('https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK.pdf',
             m(identifier, extension='.pdf'))
 
         # If a data source is provided, the book is stored underneath the
         # data source.
         unglueit = DataSource.lookup(self._db, DataSource.UNGLUE_IT)
-        eq_(u'https://s3.amazonaws.com/thebooks/unglue.it/Gutenberg+ID/ABOOK.epub',
+        eq_('https://s3.amazonaws.com/thebooks/unglue.it/Gutenberg+ID/ABOOK.epub',
             m(identifier, data_source=unglueit))
 
         # If a title is provided, the book's filename incorporates the
         # title, for the benefit of people who download the book onto
         # their hard drive.
-        eq_(u'https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK/On+Books.epub',
+        eq_('https://s3.amazonaws.com/thebooks/Gutenberg+ID/ABOOK/On+Books.epub',
             m(identifier, title="On Books"))
 
         # Non-open-access content can't be stored.
@@ -214,7 +214,7 @@ class TestS3Uploader(S3UploaderTest):
 
         unglueit = DataSource.lookup(self._db, DataSource.UNGLUE_IT)
         identifier = self._identifier(foreign_id="ABOOK")
-        eq_(u'https://s3.amazonaws.com/thecovers/scaled/601/unglue.it/Gutenberg+ID/ABOOK/filename',
+        eq_('https://s3.amazonaws.com/thecovers/scaled/601/unglue.it/Gutenberg+ID/ABOOK/filename',
             m(unglueit, identifier, "filename", scaled_size=601))
 
     def test_marc_file_url(self):
@@ -225,11 +225,11 @@ class TestS3Uploader(S3UploaderTest):
         m = uploader.marc_file_url
         now = datetime.datetime.utcnow()
         yesterday = now - datetime.timedelta(days=1)
-        eq_(u'https://s3.amazonaws.com/marc/SHORT/%s/Lane.mrc' % urllib.quote_plus(str(now)),
+        eq_('https://s3.amazonaws.com/marc/SHORT/%s/Lane.mrc' % urllib.parse.quote_plus(str(now)),
             m(library, lane, now))
-        eq_(u'https://s3.amazonaws.com/marc/SHORT/%s-%s/Lane.mrc' % (
-                urllib.quote_plus(str(yesterday)),
-                urllib.quote_plus(str(now)),
+        eq_('https://s3.amazonaws.com/marc/SHORT/%s-%s/Lane.mrc' % (
+                urllib.parse.quote_plus(str(yesterday)),
+                urllib.parse.quote_plus(str(now)),
             ),
             m(library, lane, now, yesterday))
 
@@ -303,11 +303,11 @@ class TestS3Uploader(S3UploaderTest):
 
         # In both cases, mirror_url was set to the result of final_mirror_url.
         eq_(
-            u'final_mirror_url was called with bucket books-go, key here.epub',
+            'final_mirror_url was called with bucket books-go, key here.epub',
             epub_rep.mirror_url
         )
         eq_(
-            u'final_mirror_url was called with bucket covers-go, key here.png',
+            'final_mirror_url was called with bucket covers-go, key here.png',
             cover_rep.mirror_url
         )
 

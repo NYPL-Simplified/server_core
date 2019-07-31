@@ -3,7 +3,7 @@ from collections import (
     defaultdict,
 )
 
-from urlparse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 import copy
 import datetime
 import feedparser
@@ -15,7 +15,7 @@ import re
 import site
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from nose.tools import set_trace
 
@@ -27,12 +27,12 @@ import requests
 
 from lxml import builder, etree
 
-from cdn import cdnify
-from config import Configuration
-from classifier import Classifier
-from entrypoint import EntryPoint
-from facets import FacetConstants
-from model import (
+from .cdn import cdnify
+from .config import Configuration
+from .classifier import Classifier
+from .entrypoint import EntryPoint
+from .facets import FacetConstants
+from .model import (
     CachedFeed,
     ConfigurationSetting,
     Contributor,
@@ -48,7 +48,7 @@ from model import (
     Subject,
     Work,
 )
-from lane import (
+from .lane import (
     Facets,
     FacetsWithEntryPoint,
     FeaturedFacets,
@@ -57,7 +57,7 @@ from lane import (
     SearchFacets,
     WorkList,
 )
-from util.opds_writer import (
+from .util.opds_writer import (
     AtomFeed,
     OPDSFeed,
     OPDSMessage,
@@ -159,7 +159,7 @@ class Annotator(object):
         if group_uri:
             OPDSFeed.add_link_to_entry(
                 entry, rel=OPDSFeed.GROUP_REL, href=group_uri,
-                title=unicode(group_title)
+                title=str(group_title)
             )
 
         if not updated and work.last_update_time:
@@ -254,7 +254,7 @@ class Annotator(object):
 
         if simplified_genres:
             categories[Subject.SIMPLIFIED_GENRE] = [
-                dict(term=Subject.SIMPLIFIED_GENRE + urllib.quote(x),
+                dict(term=Subject.SIMPLIFIED_GENRE + urllib.parse.quote(x),
                      label=x)
                 for x in simplified_genres
             ]
@@ -378,7 +378,7 @@ class Annotator(object):
         series_details = dict()
         series_details['name'] = series_name
         if series_position != None:
-            series_details[AtomFeed.schema_('position')] = unicode(series_position)
+            series_details[AtomFeed.schema_('position')] = str(series_position)
         series_tag = AtomFeed.makeelement(AtomFeed.schema_("Series"), **series_details)
         return series_tag
 
@@ -528,7 +528,7 @@ class VerboseAnnotator(Annotator):
 
         # Collapse by_scheme_and_term to by_scheme
         by_scheme = defaultdict(list)
-        for (scheme, term), value in by_scheme_and_term.items():
+        for (scheme, term), value in list(by_scheme_and_term.items()):
             by_scheme[scheme].append(value)
         by_scheme.update(super(VerboseAnnotator, cls).categories(work))
         return by_scheme
@@ -695,7 +695,7 @@ class AcquisitionFeed(OPDSFeed):
         feed.add_breadcrumb_links(lane, facets.entrypoint)
         annotator.annotate_feed(feed, lane)
 
-        content = unicode(feed)
+        content = str(feed)
         if cached and use_cache:
             cached.update(_db, content)
         return content
@@ -785,7 +785,7 @@ class AcquisitionFeed(OPDSFeed):
 
         annotator.annotate_feed(feed, lane)
 
-        content = unicode(feed)
+        content = str(feed)
         if cached and use_cache:
             cached.update(_db, content)
         return content
@@ -981,11 +981,11 @@ class AcquisitionFeed(OPDSFeed):
             AcquisitionFeed.add_link_to_feed(feed=opds_feed.feed, rel="previous", href=previous_url)
 
         # Add "up" link and breadcrumbs
-        AcquisitionFeed.add_link_to_feed(feed=opds_feed.feed, rel="up", href=annotator.lane_url(lane), title=unicode(lane.display_name))
+        AcquisitionFeed.add_link_to_feed(feed=opds_feed.feed, rel="up", href=annotator.lane_url(lane), title=str(lane.display_name))
         opds_feed.add_breadcrumbs(lane, include_lane=True)
 
         annotator.annotate_feed(opds_feed, lane)
-        return unicode(opds_feed)
+        return str(opds_feed)
 
     @classmethod
     def single_entry(cls, _db, work, annotator, force_create=False):
@@ -1119,7 +1119,7 @@ class AcquisitionFeed(OPDSFeed):
                 work, active_license_pool, active_edition, identifier,
                 force_create, use_cache
             )
-        except UnfulfillableWork, e:
+        except UnfulfillableWork as e:
             logging.info(
                 "Work %r is not fulfillable, refusing to create an <entry>.",
                 work,
@@ -1129,7 +1129,7 @@ class AcquisitionFeed(OPDSFeed):
                 403,
                 "I know about this work but can offer no way of fulfilling it."
             )
-        except Exception, e:
+        except Exception as e:
             logging.error(
                 "Exception generating OPDS entry for %r", work,
                 exc_info = e
@@ -1268,11 +1268,11 @@ class AcquisitionFeed(OPDSFeed):
 
         categories_by_scheme = self.annotator.categories(work)
         category_tags = []
-        for scheme, categories in categories_by_scheme.items():
+        for scheme, categories in list(categories_by_scheme.items()):
             for category in categories:
-                if isinstance(category, basestring):
+                if isinstance(category, str):
                     category = dict(term=category)
-                category = dict(map(unicode, (k, v)) for k, v in category.items())
+                category = dict(list(map(str, (k, v))) for k, v in list(category.items()))
                 category_tag = AtomFeed.category(scheme=scheme, **category)
                 category_tags.append(category_tag)
         entry.extend(category_tags)
@@ -1642,7 +1642,7 @@ class LookupAcquisitionFeed(AcquisitionFeed):
             return self._create_entry(
                 work, active_licensepool, edition, identifier
             )
-        except UnfulfillableWork, e:
+        except UnfulfillableWork as e:
             logging.info(
                 "Work %r is not fulfillable, refusing to create an <entry>.",
                 work
@@ -1704,7 +1704,7 @@ class NavigationFeed(OPDSFeed):
 
         annotator.annotate_feed(feed, lane)
 
-        content = unicode(feed)
+        content = str(feed)
         if cached and use_cache:
             cached.update(_db, content)
         return content

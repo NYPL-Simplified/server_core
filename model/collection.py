@@ -8,27 +8,27 @@ from . import (
     get_one,
     get_one_or_create,
 )
-from coverage import (
+from .coverage import (
     CoverageRecord,
     WorkCoverageRecord,
 )
-from configuration import (
+from .configuration import (
     CannotLoadConfiguration,
     ConfigurationSetting,
     ExternalIntegration,
 )
-from constants import EditionConstants
-from datasource import DataSource
-from edition import Edition
-from hasfulltablecache import HasFullTableCache
-from identifier import Identifier
-from integrationclient import IntegrationClient
-from library import Library
-from licensing import (
+from .constants import EditionConstants
+from .datasource import DataSource
+from .edition import Edition
+from .hasfulltablecache import HasFullTableCache
+from .identifier import Identifier
+from .integrationclient import IntegrationClient
+from .library import Library
+from .licensing import (
     LicensePool,
     LicensePoolDeliveryMechanism,
 )
-from work import Work
+from .work import Work
 
 import base64
 from sqlalchemy import (
@@ -66,10 +66,10 @@ class Collection(Base, HasFullTableCache):
 
     name = Column(Unicode, unique=True, nullable=False, index=True)
 
-    DATA_SOURCE_NAME_SETTING = u'data_source'
+    DATA_SOURCE_NAME_SETTING = 'data_source'
 
     # For use in forms that edit Collections.
-    EXTERNAL_ACCOUNT_ID_KEY = u'external_account_id'
+    EXTERNAL_ACCOUNT_ID_KEY = 'external_account_id'
 
     # How does the provider of this collection distinguish it from
     # other collections it provides? On the other side this is usually
@@ -163,7 +163,7 @@ class Collection(Base, HasFullTableCache):
     GLOBAL_COLLECTION_DATA_SOURCES = [DataSource.ENKI]
 
     def __repr__(self):
-        return (u'<Collection "%s"/"%s" ID=%d>' %
+        return ('<Collection "%s"/"%s" ID=%d>' %
                 (self.name, self.protocol, self.id)).encode('utf8')
 
     def cache_key(self):
@@ -200,7 +200,7 @@ class Collection(Base, HasFullTableCache):
         try:
             collection = qu.one()
             is_new = False
-        except NoResultFound, e:
+        except NoResultFound as e:
             # Make a new Collection.
             collection, is_new = get_one_or_create(_db, Collection, name=name)
             if not is_new and collection.protocol != protocol:
@@ -443,7 +443,7 @@ class Collection(Base, HasFullTableCache):
                 Collection.DATA_SOURCE_NAME_SETTING
             )
             if new_value is not None:
-                new_value = unicode(new_value)
+                new_value = str(new_value)
             setting.value = new_value
 
     @property
@@ -509,7 +509,7 @@ class Collection(Base, HasFullTableCache):
 
             if protocol == ExternalIntegration.OPDS_IMPORT:
                 # Share the feed URL so the Metadata Wrangler can find it.
-               collection.external_account_id = unicode(account_id)
+               collection.external_account_id = str(account_id)
 
         if data_source:
             collection.data_source = data_source
@@ -749,7 +749,7 @@ class Collection(Base, HasFullTableCache):
             try:
                 from ..external_search import ExternalSearchIndex
                 search_index = ExternalSearchIndex(_db)
-            except CannotLoadConfiguration, e:
+            except CannotLoadConfiguration as e:
                 # No search index is configured. This is fine -- just skip
                 # that part.
                 pass

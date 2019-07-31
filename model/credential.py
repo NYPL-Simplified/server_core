@@ -56,8 +56,8 @@ class Credential(Base):
     @classmethod
     def lookup(self, _db, data_source, type, patron, refresher_method,
                allow_persistent_token=False, allow_empty_token=False, collection=None):
-        from datasource import DataSource
-        if isinstance(data_source, basestring):
+        from .datasource import DataSource
+        if isinstance(data_source, str):
             data_source = DataSource.lookup(_db, data_source)
         credential, is_new = get_one_or_create(
             _db, Credential, data_source=data_source, type=type, patron=patron, collection=collection)
@@ -178,7 +178,7 @@ class DelegatedPatronIdentifier(Base):
     the SimplyE app.
     Those identifiers are stored here.
     """
-    ADOBE_ACCOUNT_ID = u'Adobe Account ID'
+    ADOBE_ACCOUNT_ID = 'Adobe Account ID'
 
     __tablename__ = 'delegatedpatronidentifiers'
     id = Column(Integer, primary_key=True)

@@ -5,7 +5,7 @@ import random
 import shutil
 import stat
 import tempfile
-from StringIO import StringIO
+from io import StringIO
 
 from nose.tools import (
     assert_raises,
@@ -1119,9 +1119,9 @@ class TestDatabaseMigrationScript(DatabaseMigrationScriptTest):
         def extract_filenames(core=True, extensions=['.py', '.sql']):
             extensions = tuple(extensions)
             if core:
-                pathnames = filter(lambda p: 'core' in p, self.migration_files)
+                pathnames = [p for p in self.migration_files if 'core' in p]
             else:
-                pathnames = filter(lambda p: 'core' not in p, self.migration_files)
+                pathnames = [p for p in self.migration_files if 'core' not in p]
 
             return [os.path.split(p)[1] for p in pathnames if p.endswith(extensions)]
 
@@ -2525,7 +2525,7 @@ class TestListCollectionMetadataIdentifiersScript(DatabaseTest):
 
         def expected(c):
             return '(%s) %s/%s => %s\n' % (
-                unicode(c.id), c.name, c.protocol, c.metadata_identifier
+                str(c.id), c.name, c.protocol, c.metadata_identifier
             )
 
         # In the output, there's a header, a line describing the format,

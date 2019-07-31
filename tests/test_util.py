@@ -44,8 +44,8 @@ class TestLanguageCodes(object):
         eq_("es", c.three_to_two['spa'])
         eq_(['Spanish', 'Castilian'], c.english_names['es'])
         eq_(['Spanish', 'Castilian'], c.english_names['spa'])
-        eq_([u"español", "castellano"], c.native_names['es'])
-        eq_([u"español", "castellano"], c.native_names['spa'])
+        eq_(["español", "castellano"], c.native_names['es'])
+        eq_(["español", "castellano"], c.native_names['spa'])
 
         eq_("chi", c.two_to_three['zh'])
         eq_("zh", c.three_to_two['chi'])
@@ -83,10 +83,10 @@ class TestLanguageCodes(object):
         eq_("", m([]))
         eq_("English", m(["en"]))
         eq_("English", m(["eng"]))
-        eq_(u"español", m(['es']))
-        eq_(u"English/español", m(["eng", "spa"]))
-        eq_(u"español/English", m("spa,eng"))
-        eq_(u"español/English/Chinese", m(["spa","eng","chi"]))
+        eq_("español", m(['es']))
+        eq_("English/español", m(["eng", "spa"]))
+        eq_("español/English", m("spa,eng"))
+        eq_("español/English/Chinese", m(["spa","eng","chi"]))
         assert_raises(ValueError(m, ["eng, nxx"]))
 
 class DummyAuthor(object):
@@ -223,7 +223,7 @@ class TestMetadataSimilarity(object):
         return matches
 
     def test_identical_titles_are_identical(self):
-        t = u"a !@#$@#%& the #FDUSG($E% N%SDAMF_) and #$MI# asdff \N{SNOWMAN}"
+        t = "a !@#$@#%& the #FDUSG($E% N%SDAMF_) and #$MI# asdff \N{SNOWMAN}"
         eq_(1, MetadataSimilarity.title_similarity(t, t))
 
     def test_title_similarity(self):
@@ -418,7 +418,7 @@ class TestEnglishDetector(object):
         dutch = Bigrams.from_string(dutch_text)
         assert dutch.difference_from(english_bigrams) > 1
 
-        french_text = u"Dix récits surtout féminins où s'expriment les heures douloureuses et malgré tout ouvertes à l'espérance des 70 dernières années d'Haïti."
+        french_text = "Dix récits surtout féminins où s'expriment les heures douloureuses et malgré tout ouvertes à l'espérance des 70 dernières années d'Haïti."
         french = Bigrams.from_string(french_text)
         assert french.difference_from(english_bigrams) > 1
 

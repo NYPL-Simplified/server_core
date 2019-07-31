@@ -12,7 +12,7 @@ class SimplifiedGenreClassifier(Classifier):
             return identifier
         if identifier.startswith(cls.SIMPLIFIED_GENRE):
             identifier = identifier[len(cls.SIMPLIFIED_GENRE):]
-            identifier = urllib.unquote(identifier)
+            identifier = urllib.parse.unquote(identifier)
         return Lowercased(identifier)
 
     @classmethod
@@ -52,7 +52,7 @@ class SimplifiedFictionClassifier(Classifier):
             return identifier
         if identifier.startswith(cls.SIMPLIFIED_FICTION_STATUS):
             identifier = identifier[len(cls.SIMPLIFIED_FICTION_STATUS):]
-            identifier = urllib.unquote(identifier)
+            identifier = urllib.parse.unquote(identifier)
         return Lowercased(identifier)
 
     @classmethod

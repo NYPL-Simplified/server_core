@@ -65,7 +65,7 @@ class AtomFeed(object):
     @classmethod
     def add_link_to_entry(cls, entry, children=None, **kwargs):
         if 'title' in kwargs:
-            kwargs['title'] = unicode(kwargs['title'])
+            kwargs['title'] = str(kwargs['title'])
         link = cls.E.link(**kwargs)
         entry.append(link)
         if children:
@@ -137,7 +137,7 @@ class AtomFeed(object):
     def __init__(self, title, url):
         self.feed = self.E.feed(
             self.E.id(url),
-            self.E.title(unicode(title)),
+            self.E.title(str(title)),
             self.E.updated(self._strftime(datetime.datetime.utcnow())),
             self.E.link(href=url, rel="self"),
         )
@@ -219,6 +219,6 @@ class OPDSMessage(object):
         message_tag.append(status_tag)
 
         description_tag = AtomFeed.SCHEMA.description()
-        description_tag.text = unicode(self.message)
+        description_tag.text = str(self.message)
         message_tag.append(description_tag)
         return message_tag

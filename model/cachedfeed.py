@@ -64,14 +64,14 @@ class CachedFeed(Base):
         nullable=True, index=True)
 
     # Distinct types of feeds that might be cached.
-    GROUPS_TYPE = u'groups'
-    PAGE_TYPE = u'page'
-    NAVIGATION_TYPE = u'navigation'
-    CRAWLABLE_TYPE = u'crawlable'
-    RELATED_TYPE = u'related'
-    RECOMMENDATIONS_TYPE = u'recommendations'
-    SERIES_TYPE = u'series'
-    CONTRIBUTOR_TYPE = u'contributor'
+    GROUPS_TYPE = 'groups'
+    PAGE_TYPE = 'page'
+    NAVIGATION_TYPE = 'navigation'
+    CRAWLABLE_TYPE = 'crawlable'
+    RELATED_TYPE = 'related'
+    RECOMMENDATIONS_TYPE = 'recommendations'
+    SERIES_TYPE = 'series'
+    CONTRIBUTOR_TYPE = 'contributor'
 
     log = logging.getLogger("CachedFeed")
 
@@ -105,14 +105,14 @@ class CachedFeed(Base):
             library = lane.get_library(_db)
 
         if facets:
-            facets_key = unicode(facets.query_string)
+            facets_key = str(facets.query_string)
         else:
-            facets_key = u""
+            facets_key = ""
 
         if pagination:
-            pagination_key = unicode(pagination.query_string)
+            pagination_key = str(pagination.query_string)
         else:
-            pagination_key = u""
+            pagination_key = ""
 
         # Get a CachedFeed object. We will either return its .content,
         # or update its .content.

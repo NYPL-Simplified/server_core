@@ -5,8 +5,8 @@ from nose.tools import (
 )
 import datetime
 from pymarc import Record, MARCReader
-from StringIO import StringIO
-import urllib
+from io import StringIO
+import urllib.request, urllib.parse, urllib.error
 
 from . import DatabaseTest
 
@@ -80,7 +80,7 @@ class TestAnnotator(DatabaseTest):
             expected_indicators = [" ", " "]
         [field] = record.get_fields(tag)
         eq_(expected_indicators, field.indicators)
-        for subfield, value in expected_subfields.items():
+        for subfield, value in list(expected_subfields.items()):
             eq_(value, field.get_subfields(subfield)[0])
 
     def test_add_control_fields(self):
@@ -295,7 +295,7 @@ class TestAnnotator(DatabaseTest):
         eq_([], record.get_fields("380"))
 
     def test_add_audience(self):
-        for audience, term in Annotator.AUDIENCE_TERMS.items():
+        for audience, term in list(Annotator.AUDIENCE_TERMS.items()):
             work = self._work(audience=audience)
             record = Record()
             Annotator.add_audience(record, work)
@@ -503,8 +503,8 @@ class TestMARCExporter(DatabaseTest):
         eq_(None, cache.representation.content)
         eq_("https://s3.amazonaws.com/test.marc.bucket/%s/%s/%s.mrc" % (
                 self._default_library.short_name,
-                urllib.quote_plus(str(cache.representation.fetched_at)),
-                urllib.quote_plus(lane.display_name)),
+                urllib.parse.quote_plus(str(cache.representation.fetched_at)),
+                urllib.parse.quote_plus(lane.display_name)),
             mirror.uploaded[0].mirror_url)
         eq_(None, cache.start_time)
         assert cache.end_time > now
@@ -540,8 +540,8 @@ class TestMARCExporter(DatabaseTest):
         eq_(None, cache.representation.content)
         eq_("https://s3.amazonaws.com/test.marc.bucket/%s/%s/%s.mrc" % (
                 self._default_library.short_name,
-                urllib.quote_plus(str(cache.representation.fetched_at)),
-                urllib.quote_plus(worklist.display_name)),
+                urllib.parse.quote_plus(str(cache.representation.fetched_at)),
+                urllib.parse.quote_plus(worklist.display_name)),
             mirror.uploaded[0].mirror_url)
         eq_(None, cache.start_time)
         assert cache.end_time > now
@@ -572,9 +572,9 @@ class TestMARCExporter(DatabaseTest):
         eq_(mirror.uploaded[0], cache.representation)
         eq_(None, cache.representation.content)
         eq_("https://s3.amazonaws.com/test.marc.bucket/%s/%s-%s/%s.mrc" % (
-                self._default_library.short_name, urllib.quote_plus(str(start_time)), 
-                urllib.quote_plus(str(cache.representation.fetched_at)),
-                urllib.quote_plus(lane.display_name)),
+                self._default_library.short_name, urllib.parse.quote_plus(str(start_time)), 
+                urllib.parse.quote_plus(str(cache.representation.fetched_at)),
+                urllib.parse.quote_plus(lane.display_name)),
             mirror.uploaded[0].mirror_url)
         eq_(start_time, cache.start_time)
         assert cache.end_time > now

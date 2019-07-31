@@ -34,7 +34,7 @@ class TestCachedFeed(DatabaseTest):
     def test_lifecycle(self):
         facets = Facets.default(self._default_library)
         pagination = Pagination.default()
-        lane = self._lane(u"My Lane", languages=['eng','chi'])
+        lane = self._lane("My Lane", languages=['eng','chi'])
 
         # Fetch a cached feed from the database--it's empty.
         args = (self._db, lane, CachedFeed.PAGE_TYPE, facets, pagination, None)
@@ -48,7 +48,7 @@ class TestCachedFeed(DatabaseTest):
         eq_(lane.id, feed.lane_id)
 
         # Update the content
-        feed.update(self._db, u"The content")
+        feed.update(self._db, "The content")
         self._db.commit()
 
         # Fetch it again.
@@ -81,7 +81,7 @@ class TestCachedFeed(DatabaseTest):
         eq_(None, feed.lane_id)
 
         # Update the content
-        feed.update(self._db, u"The content")
+        feed.update(self._db, "The content")
         self._db.commit()
 
         # Fetch it again.
@@ -99,15 +99,15 @@ class TestCachedFeed(DatabaseTest):
     def test_fetch_ignores_feeds_without_content(self):
         facets = Facets.default(self._default_library)
         pagination = Pagination.default()
-        lane = self._lane(u"My Lane", languages=['eng', 'chi'])
+        lane = self._lane("My Lane", languages=['eng', 'chi'])
 
         # Create a feed without content (i.e. don't update it)
         contentless_feed = get_one_or_create(
             self._db, CachedFeed,
             lane_id=lane.id,
             type=CachedFeed.PAGE_TYPE,
-            facets=unicode(facets.query_string),
-            pagination=unicode(pagination.query_string))[0]
+            facets=str(facets.query_string),
+            pagination=str(pagination.query_string))[0]
 
         # It's not returned because it hasn't been updated.
         args = (self._db, lane, CachedFeed.PAGE_TYPE, facets,
@@ -117,7 +117,7 @@ class TestCachedFeed(DatabaseTest):
         eq_(False, fresh)
 
         # But if the feed is updated, we get it back.
-        feed.update(self._db, u"Just feedy things")
+        feed.update(self._db, "Just feedy things")
         result, fresh = CachedFeed.fetch(*args)
         eq_(True, fresh)
         eq_(feed, result)
@@ -126,7 +126,7 @@ class TestCachedFeed(DatabaseTest):
 
         facets = Facets.default(self._default_library)
         pagination = Pagination.default()
-        lane = self._lane(u"My Lane", languages=['eng', 'chi'])
+        lane = self._lane("My Lane", languages=['eng', 'chi'])
 
         args = (self._db, lane, CachedFeed.PAGE_TYPE, facets,
                      pagination, None)

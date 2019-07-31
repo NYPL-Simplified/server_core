@@ -14,8 +14,8 @@ from ...model.admin import (
 class TestAdmin(DatabaseTest):
     def setup(self):
         super(TestAdmin, self).setup()
-        self.admin, ignore = create(self._db, Admin, email=u"admin@nypl.org")
-        self.admin.password = u"password"
+        self.admin, ignore = create(self._db, Admin, email="admin@nypl.org")
+        self.admin.password = "password"
 
     def test_password_hashed(self):
         assert_raises(NotImplementedError, lambda: self.admin.password)
@@ -38,12 +38,12 @@ class TestAdmin(DatabaseTest):
         eq_(set([admin, admin2]), set(Admin.with_password(self._db).all()))
 
     def test_has_password(self):
-        eq_(True, self.admin.has_password(u"password"))
-        eq_(False, self.admin.has_password(u"banana"))
+        eq_(True, self.admin.has_password("password"))
+        eq_(False, self.admin.has_password("banana"))
 
     def test_authenticate(self):
-        other_admin, ignore = create(self._db, Admin, email=u"other@nypl.org")
-        other_admin.password = u"banana"
+        other_admin, ignore = create(self._db, Admin, email="other@nypl.org")
+        other_admin.password = "banana"
         eq_(self.admin, Admin.authenticate(self._db, "admin@nypl.org", "password"))
         eq_(None, Admin.authenticate(self._db, "other@nypl.org", "password"))
         eq_(None, Admin.authenticate(self._db, "example@nypl.org", "password"))

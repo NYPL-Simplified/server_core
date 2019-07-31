@@ -63,7 +63,7 @@ def slugify(text, length_limit=None):
 
     if length_limit:
         slug = slug[:length_limit]
-    return unicode(slug)
+    return str(slug)
 
 class LookupTable(dict):
     """Return None on x[key] when 'key' isn't in the dictionary,
@@ -89,7 +89,7 @@ class LanguageCodes(object):
     english_names_to_three = LookupTable()
     native_names = defaultdict(list)
 
-    RAW_DATA = u"""aar||aa|Afar|afar
+    RAW_DATA = """aar||aa|Afar|afar
 abk||ab|Abkhazian|abkhaze
 ace|||Achinese|aceh
 ach|||Acoli|acoli
@@ -577,18 +577,18 @@ zxx|||No linguistic content; Not applicable|pas de contenu linguistique; non app
 zza|||Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki|zaza; dimili; dimli; kirdki; kirmanjki; zazaki"""
 
     NATIVE_NAMES_RAW_DATA =  [
-        {"code":"en","name":"English","nativeName":u"English"},
-        {"code":"fr","name":"French","nativeName":u"français"},
-        {"code":"de","name":"German","nativeName":u"Deutsch"},
-        {"code":"el","name":"Greek, Modern","nativeName":u"Ελληνικά"},
-        {"code":"hu","name":"Hungarian","nativeName":u"Magyar"},
-        {"code":"it","name":"Italian","nativeName":u"Italiano"},
-        {"code":"no","name":"Norwegian","nativeName":u"Norsk"},
-        {"code":"pl","name":"Polish","nativeName":u"polski"},
-        {"code":"pt","name":"Portuguese","nativeName":u"Português"},
-        {"code":"ru","name":"Russian","nativeName":u"русский"},
-        {"code":"es","name":"Spanish, Castilian","nativeName":u"español, castellano"},
-        {"code":"sv","name":"Swedish","nativeName":u"svenska"},
+        {"code":"en","name":"English","nativeName":"English"},
+        {"code":"fr","name":"French","nativeName":"français"},
+        {"code":"de","name":"German","nativeName":"Deutsch"},
+        {"code":"el","name":"Greek, Modern","nativeName":"Ελληνικά"},
+        {"code":"hu","name":"Hungarian","nativeName":"Magyar"},
+        {"code":"it","name":"Italian","nativeName":"Italiano"},
+        {"code":"no","name":"Norwegian","nativeName":"Norsk"},
+        {"code":"pl","name":"Polish","nativeName":"polski"},
+        {"code":"pt","name":"Portuguese","nativeName":"Português"},
+        {"code":"ru","name":"Russian","nativeName":"русский"},
+        {"code":"es","name":"Spanish, Castilian","nativeName":"español, castellano"},
+        {"code":"sv","name":"Swedish","nativeName":"svenska"},
     ]
 
     for i in RAW_DATA.split("\n"):
@@ -649,7 +649,7 @@ zza|||Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki|zaza; dimili; dimli; kirdki
 
     @classmethod
     def name_for_languageset(cls, languages):
-        if isinstance(languages, basestring):
+        if isinstance(languages, str):
             languages = languages.split(",")
         all_names = []
         if not languages:
@@ -716,7 +716,7 @@ class MetadataSimilarity(object):
         if not total:
             total = sum(histogram.values())
         total = float(total)
-        for k, v in histogram.items():
+        for k, v in list(histogram.items()):
             histogram[k] = v/total
         return histogram
 
@@ -750,13 +750,13 @@ class MetadataSimilarity(object):
         differences = []
         # For every item that appears in histogram 1, compare its
         # frequency against the frequency of that item in histogram 2.
-        for k, v in counter1.items():
+        for k, v in list(counter1.items()):
             difference = abs(v - counter2.get(k, 0))
             differences.append(difference)
 
         # Add the frequency of every item that appears in histogram 2
         # titles but not in histogram 1.
-        for k, v in counter2.items():
+        for k, v in list(counter2.items()):
             if k not in counter1:
                 differences.append(abs(v))
 
@@ -888,12 +888,12 @@ class Bigrams(object):
 
     def difference_from(self, other_bigrams):
         total_difference = 0
-        for bigram, proportion in self.proportional.items():
+        for bigram, proportion in list(self.proportional.items()):
             other_proportion = other_bigrams.proportional[bigram]
             difference = abs(other_proportion - proportion)
             total_difference += difference
             # print "%s %.4f-%.4f = %.4f => %.4f" % (bigram, other_proportion, proportion, difference, total_difference)
-        for bigram, proportion in other_bigrams.proportional.items():
+        for bigram, proportion in list(other_bigrams.proportional.items()):
             if bigram not in self.proportional:
                 total_difference += proportion
                 # print "%s MISSING %.4f => %.4f" % (bigram, proportion, total_difference)

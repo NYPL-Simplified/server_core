@@ -4,7 +4,7 @@ from nose.tools import set_trace
 import re
 import unicodedata
 
-from permanent_work_id import WorkIDCalculator;
+from .permanent_work_id import WorkIDCalculator;
 
 
 """Fallback algorithms for dealing with personal names when VIAF fails us."""
@@ -92,7 +92,7 @@ def is_corporate_name(display_name):
         'History', 'Science',
 
         # copyrights and trademarks
-        u'\xa9', 'Copyright', '(C)', '&#169;',
+        '\xa9', 'Copyright', '(C)', '&#169;',
 
         # performing arts collaborations
         'Multiple', 'Various',
@@ -158,12 +158,12 @@ def display_name_to_sort_name(display_name):
     # 'Classy, A. B.' and 'Classy Abe B.' and 'Classy A. Barney' and 'Classy, Abe Barney' and 'Classy, A B'.
     if not name.last:
         # Examples: 'Pope Francis', 'Prince'.
-        sort_name = u' '.join([name.first, name.middle, name.suffix, name.nickname])
+        sort_name = ' '.join([name.first, name.middle, name.suffix, name.nickname])
         if name.title:
-            sort_name = u''.join([name.title, ", ", sort_name])
+            sort_name = ''.join([name.title, ", ", sort_name])
     else:
-        sort_name = u' '.join([name.first, name.middle, name.suffix, name.nickname, name.title])
-        sort_name = u''.join([name.last, ", ", sort_name])
+        sort_name = ' '.join([name.first, name.middle, name.suffix, name.nickname, name.title])
+        sort_name = ''.join([name.last, ", ", sort_name])
 
     sort_name = name_tidy(sort_name)
 
@@ -180,7 +180,7 @@ def name_tidy(name):
     - Does not perform any cleaning that would later need to be reversed,
     such as lowercasing.
     """
-    name = unicodedata.normalize("NFKD", unicode(name))
+    name = unicodedata.normalize("NFKD", str(name))
     name = WorkIDCalculator.consecutiveCharacterStrip.sub(" ", name)
 
     name = name.strip()
@@ -220,7 +220,7 @@ def normalize_contributor_name_for_matching(name):
 
     name = HumanName(name)
     # name has title, first, middle, last, suffix, nickname
-    name = u' '.join([name.title, name.first, name.middle, name.last, name.suffix, name.nickname])
+    name = ' '.join([name.title, name.first, name.middle, name.last, name.suffix, name.nickname])
 
     name = WorkIDCalculator.normalize_author(name)
     return name
@@ -246,7 +246,7 @@ def sort_name_to_display_name(sort_name):
     # name has title, first, middle, last, suffix, nickname
     if name.nickname:
         name.nickname = '(' + name.nickname + ')'
-    display_name = u' '.join([name.title, name.first, name.nickname, name.middle, name.last, name.suffix])
+    display_name = ' '.join([name.title, name.first, name.nickname, name.middle, name.last, name.suffix])
 
     display_name = name_tidy(display_name)
 

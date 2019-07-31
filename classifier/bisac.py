@@ -4,7 +4,7 @@ import os
 import re
 import string
 from . import *
-from keyword import KeywordBasedClassifier
+from .keyword import KeywordBasedClassifier
 
 class CustomMatchToken(object):
     """A custom token used in matching rules."""
@@ -90,7 +90,7 @@ class MatchingRule(object):
                     % special_variables[rule]
                 )
 
-            if isinstance(rule, basestring):
+            if isinstance(rule, str):
                 # It's a string. We do case-insensitive comparisons,
                 # so lowercase it.
                 self.ruleset.append(Lowercased(rule))
@@ -232,7 +232,7 @@ class BISACClassifier(Classifier):
 
     # Map identifiers to human-readable names.
     NAMES = dict(
-        map(string.strip, x)
+        list(map(string.strip, x))
         for x in csv.reader(open(os.path.join(resource_dir, "bisac.csv")))
     )
 

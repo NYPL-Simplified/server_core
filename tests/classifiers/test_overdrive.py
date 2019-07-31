@@ -174,7 +174,7 @@ class TestOverdriveClassifier(object):
 	eq_("Health & Diet", g("Health & Fitness"))
 	eq_("Historical Fiction", g("Historical Fiction"))
 	eq_("History", g("History"))
-	eq_("House & Home", g(u"Home Design & Décor"))
+	eq_("House & Home", g("Home Design & Décor"))
 	eq_("Horror", g("Horror"))
 	eq_(None, g("Human Rights"))
 	eq_("Humorous Fiction", g("Humor (Fiction)"))

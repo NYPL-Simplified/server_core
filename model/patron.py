@@ -6,7 +6,7 @@ from . import (
     Base,
     get_one_or_create,
 )
-from credential import Credential
+from .credential import Credential
 
 import datetime
 from sqlalchemy import (
@@ -375,13 +375,13 @@ class Hold(Base, LoanAndHoldMixin):
 class Annotation(Base):
     # The Web Annotation Data Model defines a basic set of motivations.
     # https://www.w3.org/TR/annotation-model/#motivation-and-purpose
-    OA_NAMESPACE = u"http://www.w3.org/ns/oa#"
+    OA_NAMESPACE = "http://www.w3.org/ns/oa#"
 
     # We need to define some terms of our own.
-    LS_NAMESPACE = u"http://librarysimplified.org/terms/annotation/"
+    LS_NAMESPACE = "http://librarysimplified.org/terms/annotation/"
 
-    IDLING = LS_NAMESPACE + u'idling'
-    BOOKMARKING = OA_NAMESPACE + u'bookmarking'
+    IDLING = LS_NAMESPACE + 'idling'
+    BOOKMARKING = OA_NAMESPACE + 'bookmarking'
 
     MOTIVATIONS = [
         IDLING,

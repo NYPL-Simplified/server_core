@@ -36,7 +36,7 @@ class TestJSONFormatter(object):
         # Cause an exception so we can capture its exc_info()
         try:
             raise ValueError("fake exception")
-        except ValueError, e:
+        except ValueError as e:
             pass
         exception = sys.exc_info()
 

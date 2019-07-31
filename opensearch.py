@@ -43,4 +43,4 @@ class OpenSearchDocument(object):
     @classmethod
     def escape_entities(cls, info):
         """Escape ampersands in the given dictionary's values."""
-        return dict([(k, v.replace("&", "&amp;")) for (k, v) in info.items()])
+        return dict([(k, v.replace("&", "&amp;")) for (k, v) in list(info.items())])

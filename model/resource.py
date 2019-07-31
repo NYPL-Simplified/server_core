@@ -8,20 +8,20 @@ from . import (
     get_one_or_create,
 )
 from ..config import Configuration
-from constants import (
+from .constants import (
     DataSourceConstants,
     IdentifierConstants,
     LinkRelations,
     MediaTypes,
 )
-from edition import Edition
-from licensing import (
+from .edition import Edition
+from .licensing import (
     LicensePool,
     LicensePoolDeliveryMechanism,
 )
 from ..util.http import HTTP
 
-from cStringIO import StringIO
+from io import StringIO
 import datetime
 import json
 import logging
@@ -50,8 +50,8 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 import time
 import traceback
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 class Resource(Base):
     """An external resource that may be mirrored locally.
@@ -80,7 +80,7 @@ class Resource(Base):
 
     # Many Works may use this resource (as opposed to other resources
     # linked to them with rel="description") as their summary.
-    from work import Work
+    from .work import Work
     summary_works = relationship("Work", backref="summary", foreign_keys=[Work.summary_id])
 
     # Many LicensePools (but probably one at most) may use this
@@ -415,7 +415,7 @@ class Hyperlink(Base, LinkRelations):
         thumbnail was created of it. (We do cover the case where the thumbnail
         was created but not mirrored.)
         """
-        from identifier import Identifier
+        from .identifier import Identifier
         _db = Session.object_session(collection)
         qu = _db.query(Hyperlink).join(
             Hyperlink.identifier
@@ -453,10 +453,10 @@ class Hyperlink(Base, LinkRelations):
         given link relation for a given identifier), you'll need some
         other way of coming up with generic URIs.
         """
-        l = [identifier.urn, urllib.quote(data_source.name), urllib.quote(rel)]
+        l = [identifier.urn, urllib.parse.quote(data_source.name), urllib.parse.quote(rel)]
         if content:
             m = md5.new()
-            if isinstance(content, unicode):
+            if isinstance(content, str):
                 content = content.encode("utf8")
             m.update(content)
             l.append(m.hexdigest())
@@ -616,7 +616,7 @@ class Representation(Base, MediaTypes):
         elif self.resource:
             # This really shouldn't happen.
             url = self.resource.url
-        if isinstance(url, unicode):
+        if isinstance(url, str):
             url = url.encode("utf8")
         return url
 
@@ -656,7 +656,7 @@ class Representation(Base, MediaTypes):
         if not filename:
             return None
         filename = filename.lower()
-        for extension, media_type in cls.MEDIA_TYPE_FOR_EXTENSION.items():
+        for extension, media_type in list(cls.MEDIA_TYPE_FOR_EXTENSION.items()):
             if filename.endswith(extension):
                 return media_type
         return None
@@ -757,9 +757,9 @@ class Representation(Base, MediaTypes):
                 response_reviewer((status_code, headers, content))
             exception = None
             media_type = cls._best_media_type(url, headers, presumed_media_type)
-            if isinstance(content, unicode):
+            if isinstance(content, str):
                 content = content.encode("utf8")
-        except Exception, fetch_exception:
+        except Exception as fetch_exception:
             # This indicates there was a problem with making the HTTP
             # request, not that the HTTP request returned an error
             # condition.
@@ -779,7 +779,7 @@ class Representation(Base, MediaTypes):
             or media_type != representation.media_type
             or url != representation.url):
             representation, is_new = get_one_or_create(
-                _db, Representation, url=url, media_type=unicode(media_type))
+                _db, Representation, url=url, media_type=str(media_type))
 
         if fetch_exception:
             exception_handler(
@@ -928,7 +928,7 @@ class Representation(Base, MediaTypes):
             try:
                 content = self.content.decode(encoding)
                 break
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 pass
         return content
 
@@ -937,7 +937,7 @@ class Representation(Base, MediaTypes):
         This is used when the content of the representation is obtained
         through some other means.
         """
-        if isinstance(content, unicode):
+        if isinstance(content, str):
             content = content.encode("utf8")
         self.content = content
 
@@ -1075,7 +1075,7 @@ class Representation(Base, MediaTypes):
             return any(domain == x or domain.endswith('.' + x)
                        for x in check_against)
 
-        netloc = urlparse.urlparse(url).netloc
+        netloc = urllib.parse.urlparse(url).netloc
         if has_domain(netloc, do_not_access):
             # The link points directly to a domain we don't want to
             # access.
@@ -1097,7 +1097,7 @@ class Representation(Base, MediaTypes):
         # Yes, it's a redirect. Does it redirect to a
         # domain we don't want to access?
         location = head_response.headers.get('location', '')
-        netloc = urlparse.urlparse(location).netloc
+        netloc = urllib.parse.urlparse(location).netloc
         return not has_domain(netloc, do_not_access)
 
     @property
@@ -1123,11 +1123,11 @@ class Representation(Base, MediaTypes):
     def url_extension(self):
         """The file extension in this representation's original url."""
 
-        url_path = urlparse.urlparse(self.url).path
+        url_path = urllib.parse.urlparse(self.url).path
 
         # Known extensions can be followed by a version number (.epub3)
         # or an additional extension (.epub.noimages)
-        known_extensions = "|".join(self.FILE_EXTENSIONS.values())
+        known_extensions = "|".join(list(self.FILE_EXTENSIONS.values()))
         known_extension_re = re.compile("\.(%s)\d?\.?[\w\d]*$" % known_extensions, re.I)
 
         known_match = known_extension_re.search(url_path)
@@ -1188,7 +1188,7 @@ class Representation(Base, MediaTypes):
     def default_filename(self, link=None, destination_type=None):
         """Try to come up with a good filename for this representation."""
 
-        scheme, netloc, path, query, fragment = urlparse.urlsplit(self.url)
+        scheme, netloc, path, query, fragment = urllib.parse.urlsplit(self.url)
         path_parts = path.split("/")
         filename = None
         if path_parts:
@@ -1273,7 +1273,7 @@ class Representation(Base, MediaTypes):
         image = None
         try:
             image = self.as_image()
-        except Exception, e:
+        except Exception as e:
             self.scale_exception = traceback.format_exc()
             self.scaled_at = None
             # This most likely indicates an error during the fetch
@@ -1324,13 +1324,13 @@ class Representation(Base, MediaTypes):
                 Image.ANTIALIAS]
         try:
             image.thumbnail(*args)
-        except IOError, e:
+        except IOError as e:
             # I'm not sure why, but sometimes just trying
             # it again works.
             original_exception = traceback.format_exc()
             try:
                 image.thumbnail(*args)
-            except IOError, e:
+            except IOError as e:
                 self.scale_exception = original_exception
                 self.scaled_at = None
                 return self, False
@@ -1342,7 +1342,7 @@ class Representation(Base, MediaTypes):
             image = image.convert('RGB')
         try:
             image.save(output, pil_format)
-        except Exception, e:
+        except Exception as e:
             self.scale_exception = traceback.format_exc()
             self.scaled_at = None
             # This most likely indicates a problem during the fetch phase,

@@ -6,10 +6,10 @@ from . import (
     Base,
     get_one_or_create,
 )
-from datasource import DataSource
-from identifier import Identifier
-from licensing import LicensePool
-from work import Work
+from .datasource import DataSource
+from .identifier import Identifier
+from .licensing import LicensePool
+from .work import Work
 
 import datetime
 import logging
@@ -30,7 +30,7 @@ from sqlalchemy.orm.session import Session
 class CustomList(Base):
     """A custom grouping of Editions."""
 
-    STAFF_PICKS_NAME = u"Staff Picks"
+    STAFF_PICKS_NAME = "Staff Picks"
 
     __tablename__ = 'customlists'
     id = Column(Integer, primary_key=True)
@@ -61,7 +61,7 @@ class CustomList(Base):
     # interface for managing this.
 
     def __repr__(self):
-        return (u'<Custom List name="%s" foreign_identifier="%s" [%d entries]>' % (
+        return ('<Custom List name="%s" foreign_identifier="%s" [%d entries]>' % (
             self.name, self.foreign_identifier, len(self.entries))).encode('utf8')
 
     @classmethod
@@ -71,7 +71,7 @@ class CustomList(Base):
             data_sources = [data_sources]
         ids = []
         for ds in data_sources:
-            if isinstance(ds, basestring):
+            if isinstance(ds, str):
                 ds = DataSource.lookup(_db, ds)
             ids.append(ds.id)
         return _db.query(CustomList).filter(CustomList.data_source_id.in_(ids))
@@ -84,12 +84,12 @@ class CustomList(Base):
         source_name = data_source
         if isinstance(data_source, DataSource):
             source_name = data_source.name
-        foreign_identifier = unicode(foreign_identifier_or_name)
+        foreign_identifier = str(foreign_identifier_or_name)
 
         qu = _db.query(cls)
         if source_name:
             qu = qu.join(CustomList.data_source).filter(
-                DataSource.name==unicode(source_name))
+                DataSource.name==str(source_name))
 
         qu = qu.filter(
             or_(CustomList.foreign_identifier==foreign_identifier,
@@ -150,7 +150,7 @@ class CustomList(Base):
             or entry.most_recent_appearance < first_appearance):
             entry.most_recent_appearance = first_appearance
         if annotation:
-            entry.annotation = unicode(annotation)
+            entry.annotation = str(annotation)
         if edition.work and not entry.work:
             entry.work = edition.work
         if featured is not None:
@@ -266,7 +266,7 @@ class CustomListEntry(Base):
         potential_license_pools = metadata.guess_license_pools(
             _db, metadata_client)
         for lp, quality in sorted(
-                potential_license_pools.items(), key=lambda x: -x[1]):
+                list(potential_license_pools.items()), key=lambda x: -x[1]):
             if lp.deliverable and lp.work and quality >= 0.8:
                 # This work has at least one deliverable LicensePool
                 # associated with it, so it's likely to be real
@@ -349,7 +349,7 @@ class CustomListEntry(Base):
             [e.most_recent_appearance for e in equivalent_entries]
         )
 
-        annotations = [unicode(e.annotation) for e in equivalent_entries
+        annotations = [str(e.annotation) for e in equivalent_entries
                        if e.annotation]
         if annotations:
             if len(annotations) > 1:

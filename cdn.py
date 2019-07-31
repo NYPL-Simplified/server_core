@@ -1,23 +1,23 @@
 """Turn local URLs into CDN URLs."""
 import os, sys
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 from nose.tools import set_trace
 
-from config import Configuration, CannotLoadConfiguration
-from s3 import S3Uploader
+from .config import Configuration, CannotLoadConfiguration
+from .s3 import S3Uploader
 
 def cdnify(url, cdns=None):
     """Turn local URLs into CDN URLs"""
     try:
         cdns = cdns or Configuration.cdns()
-    except CannotLoadConfiguration, e:
+    except CannotLoadConfiguration as e:
         pass
 
     if not cdns:
         # No CDNs configured
         return url
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
+    scheme, netloc, path, query, fragment = urllib.parse.urlsplit(url)
 
     if netloc == 's3.amazonaws.com':
         # This is a URL like "http://s3.amazonaws.com/bucket/foo".
@@ -34,6 +34,6 @@ def cdnify(url, cdns=None):
         return url
 
     cdn_host = cdns[netloc]
-    cdn_scheme, cdn_netloc, i1, i2, i3 = urlparse.urlsplit(cdn_host)
-    return urlparse.urlunsplit((cdn_scheme, cdn_netloc, path, query, fragment))
+    cdn_scheme, cdn_netloc, i1, i2, i3 = urllib.parse.urlsplit(cdn_host)
+    return urllib.parse.urlunsplit((cdn_scheme, cdn_netloc, path, query, fragment))
 

@@ -1,5 +1,5 @@
 # encoding: utf-8
-from StringIO import StringIO
+from io import StringIO
 import datetime
 import os
 import sys
@@ -49,64 +49,64 @@ class TestNameConversions(DatabaseTest):
         eq_(None, sort_name)
 
         # already sort-ready input means don't do anything
-        sort_name = display_name_to_sort_name(u"Bitshifter, Bob")
-        eq_(u"Bitshifter, Bob", sort_name)
+        sort_name = display_name_to_sort_name("Bitshifter, Bob")
+        eq_("Bitshifter, Bob", sort_name)
 
-        sort_name = display_name_to_sort_name(u"Prince")
-        eq_(u"Prince", sort_name)
+        sort_name = display_name_to_sort_name("Prince")
+        eq_("Prince", sort_name)
 
-        sort_name = display_name_to_sort_name(u"Pope Francis")
-        eq_(u"Pope, Francis", sort_name)
+        sort_name = display_name_to_sort_name("Pope Francis")
+        eq_("Pope, Francis", sort_name)
 
-        sort_name = display_name_to_sort_name(u"Bob Bitshifter")
-        eq_(u"Bitshifter, Bob", sort_name)
+        sort_name = display_name_to_sort_name("Bob Bitshifter")
+        eq_("Bitshifter, Bob", sort_name)
 
         # foreign characters don't confuse the algorithm
-        sort_name = display_name_to_sort_name(u"Боб Битшифтер")
-        eq_(u"Битшифтер, Боб", sort_name)
+        sort_name = display_name_to_sort_name("Боб Битшифтер")
+        eq_("Битшифтер, Боб", sort_name)
 
-        sort_name = display_name_to_sort_name(u"Bob Bitshifter, Jr.")
-        eq_(u"Bitshifter, Bob Jr.", sort_name)
+        sort_name = display_name_to_sort_name("Bob Bitshifter, Jr.")
+        eq_("Bitshifter, Bob Jr.", sort_name)
 
-        sort_name = display_name_to_sort_name(u"Bob Bitshifter, III")
-        eq_(u"Bitshifter, Bob III", sort_name)
+        sort_name = display_name_to_sort_name("Bob Bitshifter, III")
+        eq_("Bitshifter, Bob III", sort_name)
 
         # already having a comma still gets good results
-        sort_name = display_name_to_sort_name(u"Bob, The Grand Duke of Awesomeness")
-        eq_(u"Bob, Duke of Awesomeness The Grand", sort_name)
+        sort_name = display_name_to_sort_name("Bob, The Grand Duke of Awesomeness")
+        eq_("Bob, Duke of Awesomeness The Grand", sort_name)
 
         # all forms of PhD are recognized
-        sort_name = display_name_to_sort_name(u"John Doe, PhD")
-        eq_(u"Doe, John PhD", sort_name)
-        sort_name = display_name_to_sort_name(u"John Doe, Ph.D.")
-        eq_(u"Doe, John PhD", sort_name)
-        sort_name = display_name_to_sort_name(u"John Doe, Ph D")
-        eq_(u"Doe, John PhD", sort_name)
-        sort_name = display_name_to_sort_name(u"John Doe, Ph. D.")
-        eq_(u"Doe, John PhD", sort_name)
-        sort_name = display_name_to_sort_name(u"John Doe, PHD")
-        eq_(u"Doe, John PhD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, PhD")
+        eq_("Doe, John PhD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, Ph.D.")
+        eq_("Doe, John PhD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, Ph D")
+        eq_("Doe, John PhD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, Ph. D.")
+        eq_("Doe, John PhD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, PHD")
+        eq_("Doe, John PhD", sort_name)
 
-        sort_name = display_name_to_sort_name(u"John Doe, M.D.")
-        eq_(u"Doe, John MD", sort_name)
+        sort_name = display_name_to_sort_name("John Doe, M.D.")
+        eq_("Doe, John MD", sort_name)
 
         # corporate name is unchanged
-        sort_name = display_name_to_sort_name(u"Church of Jesus Christ of Latter-day Saints")
-        eq_(u"Church of Jesus Christ of Latter-day Saints", sort_name)
+        sort_name = display_name_to_sort_name("Church of Jesus Christ of Latter-day Saints")
+        eq_("Church of Jesus Christ of Latter-day Saints", sort_name)
 
 
     def test_name_tidy(self):
         # remove improper comma
-        sort_name = display_name_to_sort_name(u"Bitshifter, Bob,")
-        eq_(u"Bitshifter, Bob", sort_name)
+        sort_name = display_name_to_sort_name("Bitshifter, Bob,")
+        eq_("Bitshifter, Bob", sort_name)
 
         # remove improper period
-        sort_name = display_name_to_sort_name(u"Bitshifter, Bober.")
-        eq_(u"Bitshifter, Bober", sort_name)
+        sort_name = display_name_to_sort_name("Bitshifter, Bober.")
+        eq_("Bitshifter, Bober", sort_name)
 
         # retain proper period
-        sort_name = display_name_to_sort_name(u"Bitshifter, B.")
-        eq_(u"Bitshifter, B.", sort_name)
+        sort_name = display_name_to_sort_name("Bitshifter, B.")
+        eq_("Bitshifter, B.", sort_name)
 
 
 

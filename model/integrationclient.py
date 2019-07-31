@@ -44,7 +44,7 @@ class IntegrationClient(Base):
     holds = relationship('Hold', backref='integration_client')
 
     def __repr__(self):
-        return (u"<IntegrationClient: URL=%s ID=%s>" % (self.url, self.id)).encode('utf8')
+        return ("<IntegrationClient: URL=%s ID=%s>" % (self.url, self.id)).encode('utf8')
 
     @classmethod
     def for_url(cls, _db, url):
@@ -82,11 +82,11 @@ class IntegrationClient(Base):
         url = re.sub(r'^www\.', '', url)
         if url.endswith('/'):
             url = url[:-1]
-        return unicode(url.lower())
+        return str(url.lower())
 
     @classmethod
     def authenticate(cls, _db, shared_secret):
-        client = get_one(_db, cls, shared_secret=unicode(shared_secret))
+        client = get_one(_db, cls, shared_secret=str(shared_secret))
         if client:
             client.last_accessed = datetime.datetime.utcnow()
             # Committing immediately reduces the risk of contention.
@@ -95,4 +95,4 @@ class IntegrationClient(Base):
         return None
 
     def randomize_secret(self):
-        self.shared_secret = unicode(os.urandom(24).encode('hex'))
+        self.shared_secret = str(os.urandom(24).encode('hex'))

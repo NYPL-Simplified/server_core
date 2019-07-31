@@ -10,15 +10,15 @@ from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm.session import Session
 from flask_babel import lazy_gettext as _
 
-from facets import FacetConstants
-from entrypoint import EntryPoint
+from .facets import FacetConstants
+from .entrypoint import EntryPoint
 
 from sqlalchemy.exc import ArgumentError
-from util import LanguageCodes
+from .util import LanguageCodes
 
 # It's convenient for other modules import IntegrationException
 # from this module, alongside CannotLoadConfiguration.
-from util.http import IntegrationException
+from .util.http import IntegrationException
 
 
 class CannotLoadConfiguration(IntegrationException):
@@ -87,7 +87,7 @@ class Configuration(object):
     DATA_DIRECTORY = "data_directory"
 
     # ConfigurationSetting key for the base url of the app.
-    BASE_URL_KEY = u'base_url'
+    BASE_URL_KEY = 'base_url'
 
     # Policies, mostly circulation specific
     POLICIES = "policies"
@@ -105,11 +105,11 @@ class Configuration(object):
     NAME = "name"
     TYPE = "type"
     INTEGRATIONS = "integrations"
-    DATABASE_INTEGRATION = u"Postgres"
+    DATABASE_INTEGRATION = "Postgres"
     DATABASE_PRODUCTION_URL = "production_url"
     DATABASE_TEST_URL = "test_url"
 
-    CONTENT_SERVER_INTEGRATION = u"Content Server"
+    CONTENT_SERVER_INTEGRATION = "Content Server"
 
     AXIS_INTEGRATION = "Axis 360"
     RBDIGITAL_INTEGRATION = "RBDigital"
@@ -117,7 +117,7 @@ class Configuration(object):
     THREEM_INTEGRATION = "3M"
 
     # ConfigurationSetting key for a CDN's mirror domain
-    CDN_MIRRORED_DOMAIN_KEY = u'mirrored_domain'
+    CDN_MIRRORED_DOMAIN_KEY = 'mirrored_domain'
 
     # The name of the per-library configuration policy that controls whether
     # books may be put on hold.
@@ -143,7 +143,7 @@ class Configuration(object):
     # their authorization_identifier.
     EXTERNAL_TYPE_REGULAR_EXPRESSION = 'external_type_regular_expression'
 
-    WEBSITE_URL = u'website'
+    WEBSITE_URL = 'website'
 
     DEBUG = "DEBUG"
     INFO = "INFO"
@@ -199,6 +199,7 @@ class Configuration(object):
         },
     ]
 
+    set_trace()
     LIBRARY_SETTINGS = [
         {
             "key": WEBSITE_URL,
@@ -256,7 +257,7 @@ class Configuration(object):
           ],
           "default": FacetConstants.FACETS_BY_GROUP.get(group),
           "category": "Lanes & Filters",
-        } for group, description in FacetConstants.GROUP_DESCRIPTIONS.iteritems()
+        } for group, description in FacetConstants.GROUP_DESCRIPTIONS.items()
     ] + [
         { "key": DEFAULT_FACET_KEY_PREFIX + group,
           "label": _("Default %(group)s", group=display_name),
@@ -267,7 +268,7 @@ class Configuration(object):
           ],
           "default": FacetConstants.DEFAULT_FACET.get(group),
           "category": "Lanes & Filters",
-        } for group, display_name in FacetConstants.GROUP_DISPLAY_TITLES.iteritems()
+        } for group, display_name in FacetConstants.GROUP_DISPLAY_TITLES.items()
     ]
 
     # This is set once CDN data is loaded from the database and
@@ -351,12 +352,12 @@ class Configuration(object):
             # The CDNs were never initialized from the database.
             # Create a new database connection and find that
             # information now.
-            from model import SessionManager
+            from .model import SessionManager
             url = cls.database_url()
             _db = SessionManager.session(url)
             cls.load_cdns(_db)
 
-        from model import ExternalIntegration
+        from .model import ExternalIntegration
         return cls.integration(ExternalIntegration.CDN)
 
     @classmethod
@@ -404,7 +405,7 @@ class Configuration(object):
         url_obj = None
         try:
             url_obj = make_url(url)
-        except ArgumentError, e:
+        except ArgumentError as e:
             # Improve the error message by giving a guide as to what's
             # likely to work.
             raise ArgumentError(
@@ -442,7 +443,7 @@ class Configuration(object):
 
     @classmethod
     def load_cdns(cls, _db, config_instance=None):
-        from model import ExternalIntegration as EI
+        from .model import ExternalIntegration as EI
         cdns = _db.query(EI).filter(EI.goal==EI.CDN_GOAL).all()
         cdn_integration = dict()
         for cdn in cdns:
@@ -505,7 +506,7 @@ class Configuration(object):
         now = datetime.datetime.utcnow()
 
         if _db and timeout is None:
-            from model import ConfigurationSetting
+            from .model import ConfigurationSetting
             timeout = ConfigurationSetting.sitewide(
                 _db, cls.SITE_CONFIGURATION_TIMEOUT
             ).value
@@ -527,7 +528,7 @@ class Configuration(object):
         # site_configuration_was_changed() (defined in model.py) was
         # called.
         if not known_value:
-            from model import Timestamp
+            from .model import Timestamp
             known_value = Timestamp.value(
                 _db, cls.SITE_CONFIGURATION_CHANGED, service_type=None,
                 collection=None
@@ -566,7 +567,7 @@ class Configuration(object):
             try:
                 cls.log.info("Loading configuration from %s", config_path)
                 configuration = cls._load(open(config_path).read())
-            except Exception, e:
+            except Exception as e:
                 raise CannotLoadConfiguration(
                     "Error loading configuration file %s: %s" % (
                         config_path, e)

@@ -10,16 +10,16 @@ from lxml import etree
 from functools import wraps
 from flask import url_for, make_response
 from flask_babel import lazy_gettext as _
-from util.flask_util import problem
-from util.problem_detail import ProblemDetail
+from .util.flask_util import problem
+from .util.problem_detail import ProblemDetail
 import traceback
 import logging
-from entrypoint import EntryPoint
-from opds import (
+from .entrypoint import EntryPoint
+from .opds import (
     AcquisitionFeed,
     LookupAcquisitionFeed,
 )
-from util.opds_writer import (
+from .util.opds_writer import (
     OPDSFeed,
     OPDSMessage,
 )
@@ -28,21 +28,21 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.exc import (
     NoResultFound,
 )
-from log import LogConfiguration
-from model import (
+from .log import LogConfiguration
+from .model import (
     get_one,
     Complaint,
     Identifier,
     Patron,
 )
-from cdn import cdnify
-from classifier import Classifier
-from config import Configuration
-from lane import (
+from .cdn import cdnify
+from .classifier import Classifier
+from .config import Configuration
+from .lane import (
     Facets,
     Pagination,
 )
-from problem_details import *
+from .problem_details import *
 
 
 def cdn_url_for(*args, **kwargs):
@@ -52,10 +52,10 @@ def cdn_url_for(*args, **kwargs):
 def load_lending_policy(policy):
     if not policy:
         return {}
-    if isinstance(policy, basestring):
+    if isinstance(policy, str):
         logging.info("Lending policy: %s", policy)
         policy = json.loads(policy)
-    for external_type, p in policy.items():
+    for external_type, p in list(policy.items()):
         if Patron.AUDIENCE_RESTRICTION_POLICY in p:
             for audience in p[Patron.AUDIENCE_RESTRICTION_POLICY]:
                 if not audience in Classifier.AUDIENCES:
@@ -78,8 +78,8 @@ def entry_response(entry, cache_for=AcquisitionFeed.FEED_CACHE_TIME):
 def _make_response(content, content_type, cache_for):
     if isinstance(content, etree._Element):
         content = etree.tostring(content)
-    elif not isinstance(content, basestring):
-        content = unicode(content)
+    elif not isinstance(content, str):
+        content = str(content)
 
     if isinstance(cache_for, int):
         # A CDN should hold on to the cached representation only half
@@ -186,7 +186,7 @@ class ErrorHandler(object):
                 debug = debug or (
                     LogConfiguration.DEBUG in (log_level, database_log_level)
                 )
-            except SQLAlchemyError, e:
+            except SQLAlchemyError as e:
                 # The database session could not be used, possibly due to
                 # the very error under consideration. Go with the
                 # preexisting value for `debug`.
@@ -241,7 +241,7 @@ class ErrorHandler(object):
                 body = tb
             else:
                 body = _('An internal error occured')
-            response = make_response(unicode(body), 500, {"Content-Type": "text/plain"})
+            response = make_response(str(body), 500, {"Content-Type": "text/plain"})
 
         log_method("Exception in web app: %s", exception, exc_info=exception)
         return response
@@ -324,7 +324,7 @@ class URNLookupController(object):
         identifiers_by_urn, failures = Identifier.parse_urns(self._db, urns)
         self.add_urn_failure_messages(failures)
 
-        for urn, identifier in identifiers_by_urn.items():
+        for urn, identifier in list(identifiers_by_urn.items()):
             self.process_identifier(identifier, urn, **process_urn_kwargs)
 
     def add_urn_failure_messages(self, failures):
@@ -385,7 +385,7 @@ class ComplaintController(object):
         _db = Session.object_session(license_pool)
         try:
             data = json.loads(raw_data)
-        except ValueError, e:
+        except ValueError as e:
             return problem(None, 400, _("Invalid problem detail document"))
 
         type = data.get('type')
@@ -400,9 +400,9 @@ class ComplaintController(object):
         try:
             complaint = Complaint.register(license_pool, type, source, detail)
             _db.commit()
-        except ValueError, e:
+        except ValueError as e:
             return problem(
                 None, 400, _("Error registering complaint: %(error)s", error=str(e))
             )
 
-        return make_response(unicode(_("Success")), 201, {"Content-Type": "text/plain"})
+        return make_response(str(_("Success")), 201, {"Content-Type": "text/plain"})

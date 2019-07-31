@@ -408,7 +408,7 @@ class TestCollection(DatabaseTest):
         assert_raises(ValueError, getattr, self.collection, 'metadata_identifier')
 
         def build_expected(protocol, unique_id):
-            encoded = [base64.b64encode(unicode(value), '-_')
+            encoded = [base64.b64encode(str(value), '-_')
                        for value in [protocol, unique_id]]
             return base64.b64encode(':'.join(encoded), '-_')
 

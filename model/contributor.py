@@ -67,36 +67,36 @@ class Contributor(Base):
     contributions = relationship("Contribution", backref="contributor")
 
     # Types of roles
-    AUTHOR_ROLE = u"Author"
-    PRIMARY_AUTHOR_ROLE = u"Primary Author"
-    EDITOR_ROLE = u"Editor"
-    ARTIST_ROLE = u"Artist"
-    PHOTOGRAPHER_ROLE = u"Photographer"
-    TRANSLATOR_ROLE = u"Translator"
-    ILLUSTRATOR_ROLE = u"Illustrator"
-    INTRODUCTION_ROLE = u"Introduction Author"
-    FOREWORD_ROLE = u"Foreword Author"
-    AFTERWORD_ROLE = u"Afterword Author"
-    COLOPHON_ROLE = u"Colophon Author"
-    UNKNOWN_ROLE = u'Unknown'
-    DIRECTOR_ROLE = u'Director'
-    PRODUCER_ROLE = u'Producer'
-    EXECUTIVE_PRODUCER_ROLE = u'Executive Producer'
-    ACTOR_ROLE = u'Actor'
-    LYRICIST_ROLE = u'Lyricist'
-    CONTRIBUTOR_ROLE = u'Contributor'
-    COMPOSER_ROLE = u'Composer'
-    NARRATOR_ROLE = u'Narrator'
-    COMPILER_ROLE = u'Compiler'
-    ADAPTER_ROLE = u'Adapter'
-    PERFORMER_ROLE = u'Performer'
-    MUSICIAN_ROLE = u'Musician'
-    ASSOCIATED_ROLE = u'Associated name'
-    COLLABORATOR_ROLE = u'Collaborator'
-    ENGINEER_ROLE = u'Engineer'
-    COPYRIGHT_HOLDER_ROLE = u'Copyright holder'
-    TRANSCRIBER_ROLE = u'Transcriber'
-    DESIGNER_ROLE = u'Designer'
+    AUTHOR_ROLE = "Author"
+    PRIMARY_AUTHOR_ROLE = "Primary Author"
+    EDITOR_ROLE = "Editor"
+    ARTIST_ROLE = "Artist"
+    PHOTOGRAPHER_ROLE = "Photographer"
+    TRANSLATOR_ROLE = "Translator"
+    ILLUSTRATOR_ROLE = "Illustrator"
+    INTRODUCTION_ROLE = "Introduction Author"
+    FOREWORD_ROLE = "Foreword Author"
+    AFTERWORD_ROLE = "Afterword Author"
+    COLOPHON_ROLE = "Colophon Author"
+    UNKNOWN_ROLE = 'Unknown'
+    DIRECTOR_ROLE = 'Director'
+    PRODUCER_ROLE = 'Producer'
+    EXECUTIVE_PRODUCER_ROLE = 'Executive Producer'
+    ACTOR_ROLE = 'Actor'
+    LYRICIST_ROLE = 'Lyricist'
+    CONTRIBUTOR_ROLE = 'Contributor'
+    COMPOSER_ROLE = 'Composer'
+    NARRATOR_ROLE = 'Narrator'
+    COMPILER_ROLE = 'Compiler'
+    ADAPTER_ROLE = 'Adapter'
+    PERFORMER_ROLE = 'Performer'
+    MUSICIAN_ROLE = 'Musician'
+    ASSOCIATED_ROLE = 'Associated name'
+    COLLABORATOR_ROLE = 'Collaborator'
+    ENGINEER_ROLE = 'Engineer'
+    COPYRIGHT_HOLDER_ROLE = 'Copyright holder'
+    TRANSCRIBER_ROLE = 'Transcriber'
+    DESIGNER_ROLE = 'Designer'
     AUTHOR_ROLES = set([PRIMARY_AUTHOR_ROLE, AUTHOR_ROLE])
 
     # Map our recognized roles to MARC relators.
@@ -156,7 +156,7 @@ class Contributor(Base):
             extra += " lc=%s" % self.lc
         if self.viaf:
             extra += " viaf=%s" % self.viaf
-        return (u"Contributor %d (%s)" % (self.id, self.sort_name)).encode("utf8")
+        return ("Contributor %d (%s)" % (self.id, self.sort_name)).encode("utf8")
 
     @classmethod
     def author_contributor_tiers(cls):
@@ -291,7 +291,7 @@ class Contributor(Base):
             # They're already the same.
             return
         logging.info(
-            u"MERGING %r (%s) into %r (%s)",
+            "MERGING %r (%s) into %r (%s)",
             self,
             self.viaf,
             destination,
@@ -318,7 +318,7 @@ class Contributor(Base):
             destination.wikipedia_name = self.wikipedia_name
 
         # merge non-name-related properties
-        for k, v in self.extra.items():
+        for k, v in list(self.extra.items()):
             if not k in destination.extra:
                 destination.extra[k] = v
         if not destination.lc:
@@ -353,11 +353,11 @@ class Contributor(Base):
     NUMBERS = re.compile("[0-9]")
 
     DATE_RES = [re.compile("\(?" + x + "\)?") for x in
-                "[0-9?]+-",
+                ("[0-9?]+-",
                 "[0-9]+st cent",
                 "[0-9]+nd cent",
                 "[0-9]+th cent",
-                "\bcirca",
+                "\bcirca",)
                 ]
 
 

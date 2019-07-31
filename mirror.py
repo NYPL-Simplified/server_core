@@ -1,6 +1,6 @@
 from nose.tools import set_trace
 import datetime
-from config import CannotLoadConfiguration
+from .config import CannotLoadConfiguration
 
 class MirrorUploader(object):
 
@@ -8,7 +8,7 @@ class MirrorUploader(object):
     a mirror that we control.
     """
 
-    STORAGE_GOAL = u'storage'
+    STORAGE_GOAL = 'storage'
 
     # Depending on the .protocol of an ExternalIntegration with
     # .goal=STORAGE, a different subclass might be initialized by
@@ -33,7 +33,7 @@ class MirrorUploader(object):
     @classmethod
     def sitewide_integration(cls, _db):
         """Find the ExternalIntegration for the site-wide mirror."""
-        from model import ExternalIntegration
+        from .model import ExternalIntegration
         qu = _db.query(ExternalIntegration).filter(
             ExternalIntegration.goal==cls.STORAGE_GOAL
         )
@@ -70,10 +70,10 @@ class MirrorUploader(object):
         if not integration:
             if use_sitewide:
                 try:
-                    from model import Session
+                    from .model import Session
                     _db = Session.object_session(collection)
                     return cls.sitewide(_db)
-                except CannotLoadConfiguration, e:
+                except CannotLoadConfiguration as e:
                     return None
             else:
                 return None

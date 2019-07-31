@@ -430,7 +430,7 @@ class TestErrorHandler(DatabaseTest):
             response = None
             try:
                 self.raise_exception()
-            except Exception, exception:
+            except Exception as exception:
                 response = handler.handle(exception)
             eq_(500, response.status_code)
             eq_("An internal error occured", response.data)
@@ -446,7 +446,7 @@ class TestErrorHandler(DatabaseTest):
             response = None
             try:
                 self.raise_exception()
-            except Exception, exception:
+            except Exception as exception:
                 response = handler.handle(exception)
             eq_(500, response.status_code)
             assert response.data.startswith('Traceback (most recent call last)')
@@ -457,7 +457,7 @@ class TestErrorHandler(DatabaseTest):
         with self.app.test_request_context('/'):
             try:
                 self.raise_exception(CanBeProblemDetailDocument)
-            except Exception, exception:
+            except Exception as exception:
                 response = handler.handle(exception)
 
             eq_(400, response.status_code)
@@ -476,13 +476,13 @@ class TestErrorHandler(DatabaseTest):
         with self.app.test_request_context('/'):
             try:
                 self.raise_exception(CanBeProblemDetailDocument)
-            except Exception, exception:
+            except Exception as exception:
                 response = handler.handle(exception)
 
             eq_(400, response.status_code)
             data = json.loads(response.data)
             eq_(INVALID_URN.title, data['title'])
             assert data['debug_message'].startswith(
-                u"A debug_message which should only appear in debug mode.\n\n"
-                u'Traceback (most recent call last)'
+                "A debug_message which should only appear in debug mode.\n\n"
+                'Traceback (most recent call last)'
             )

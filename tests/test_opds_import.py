@@ -1,7 +1,7 @@
 import os
 import datetime
-import urllib
-from StringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 from lxml import builder
 from nose.tools import (
     set_trace,
@@ -99,7 +99,7 @@ class TestMetadataWranglerOPDSLookup(DatabaseTest):
             password='secret', url="http://metadata.in"
         )
         self.collection = self._collection(
-            protocol=ExternalIntegration.OVERDRIVE, external_account_id=u'library'
+            protocol=ExternalIntegration.OVERDRIVE, external_account_id='library'
         )
 
     def test_authenticates_wrangler_requests(self):
@@ -158,7 +158,7 @@ class TestMetadataWranglerOPDSLookup(DatabaseTest):
             data_source_name=DataSource.OA_CONTENT_SERVER
         )
         lookup.collection = opds
-        data_source_args = '?data_source=%s' % urllib.quote(opds.data_source.name)
+        data_source_args = '?data_source=%s' % urllib.parse.quote(opds.data_source.name)
         assert lookup.get_collection_url('banana').endswith(data_source_args)
 
     def test_lookup_endpoint(self):
@@ -298,8 +298,8 @@ class TestOPDSImporter(OPDSImporterTest):
         eq_(data_source_name, c1._data_source)
         eq_(data_source_name, c2._data_source)
 
-        [failure] = failures.values()
-        eq_(u"202: I'm working to locate a source for this identifier.", failure.exception)
+        [failure] = list(failures.values())
+        eq_("202: I'm working to locate a source for this identifier.", failure.exception)
 
     def test_extract_link(self):
         no_rel = AtomFeed.E.link(href="http://foo/")
@@ -373,7 +373,7 @@ class TestOPDSImporter(OPDSImporterTest):
         )
 
         # No metadata was extracted.
-        eq_(0, len(values.keys()))
+        eq_(0, len(list(values.keys())))
 
         # There are 2 failures, both from exceptions. The 202 message
         # found in content_server_mini.opds is not extracted
@@ -491,7 +491,7 @@ class TestOPDSImporter(OPDSImporterTest):
         # The CoverageFailure contains the information that was in a
         # <simplified:message> tag in unrecognized_identifier.opds.
         key = 'http://www.gutenberg.org/ebooks/100'
-        eq_([key], failures.keys())
+        eq_([key], list(failures.keys()))
         failure = failures[key]
         eq_("404: I've never heard of this work.", failure.exception)
         eq_(key, failure.obj.urn)
@@ -663,7 +663,7 @@ class TestOPDSImporter(OPDSImporterTest):
         )
 
         # No metadata was extracted.
-        eq_(0, len(values.keys()))
+        eq_(0, len(list(values.keys())))
 
         # There are 3 CoverageFailures - every <entry> threw an
         # exception and the <simplified:message> indicated failure.
@@ -1019,7 +1019,7 @@ class TestOPDSImporter(OPDSImporterTest):
             ).import_from_feed(feed)
         )
 
-        [failure] = failures.values()
+        [failure] = list(failures.values())
         assert isinstance(failure, CoverageFailure)
         eq_(True, failure.transient)
         eq_("404: I've never heard of this work.", failure.exception)
@@ -1693,7 +1693,7 @@ class TestMirroring(OPDSImporterTest):
         # the open-access content source, the default data source used
         # when no distributor was specified for a book.
         book1_url = 'https://s3.amazonaws.com/test.content.bucket/Gutenberg/Gutenberg+ID/10441/The+Green+Mouse.epub.images'
-        book1_svg_cover = u'https://s3.amazonaws.com/test.cover.bucket/Library+Simplified+Open+Access+Content+Server/Gutenberg+ID/10441/cover_10441_9.svg'
+        book1_svg_cover = 'https://s3.amazonaws.com/test.cover.bucket/Library+Simplified+Open+Access+Content+Server/Gutenberg+ID/10441/cover_10441_9.svg'
         book2_url = 'https://s3.amazonaws.com/test.content.bucket/Library+Simplified+Open+Access+Content+Server/Gutenberg+ID/10557/Johnny+Crow%27s+Party.epub.images'
         book2_png_cover = 'https://s3.amazonaws.com/test.cover.bucket/Library+Simplified+Open+Access+Content+Server/Gutenberg+ID/10557/working-cover-image.png'
         book2_png_thumbnail = 'https://s3.amazonaws.com/test.cover.bucket/scaled/300/Library+Simplified+Open+Access+Content+Server/Gutenberg+ID/10557/working-cover-image.png'
@@ -2156,8 +2156,8 @@ class TestOPDSImportMonitor(OPDSImporterTest):
         # Accept header is added.
         headers = {'Some other': 'header'}
         new_headers = monitor._update_headers(headers)
-        eq_(['Some other'], headers.keys())
-        eq_(['Some other', 'Accept'], new_headers.keys())
+        eq_(['Some other'], list(headers.keys()))
+        eq_(['Some other', 'Accept'], list(new_headers.keys()))
 
         # If the monitor has a username and password, an Authorization
         # header using HTTP Basic Authentication is also added.

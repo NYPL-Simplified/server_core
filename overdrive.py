@@ -5,8 +5,8 @@ import isbnlib
 import os
 import json
 import logging
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import sys
 
 from sqlalchemy.orm.exc import (
@@ -14,13 +14,13 @@ from sqlalchemy.orm.exc import (
 )
 from sqlalchemy.orm.session import Session
 
-from config import (
+from .config import (
     temp_config,
     CannotLoadConfiguration,
     Configuration,
 )
 
-from model import (
+from .model import (
     get_one,
     get_one_or_create,
     Collection,
@@ -39,7 +39,7 @@ from model import (
     Subject,
 )
 
-from metadata_layer import (
+from .metadata_layer import (
     CirculationData,
     ContributorData,
     FormatData,
@@ -50,19 +50,19 @@ from metadata_layer import (
     SubjectData,
 )
 
-from coverage import (
+from .coverage import (
     BibliographicCoverageProvider,
 )
 
-from testing import DatabaseTest
+from .testing import DatabaseTest
 
-from util.http import (
+from .util.http import (
     HTTP,
     BadResponseException,
 )
-from util.worker_pools import RLock
+from .util.worker_pools import RLock
 
-from testing import MockRequestsResponse
+from .testing import MockRequestsResponse
 
 class OverdriveAPI(object):
 
@@ -111,14 +111,14 @@ class OverdriveAPI(object):
 
     TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-    WEBSITE_ID = u"website_id"
+    WEBSITE_ID = "website_id"
 
     # When associating an Overdrive account with a library, it's
     # necessary to also specify an "ILS name" obtained from
     # Overdrive. Components that don't authenticate patrons (such as
     # the metadata wrangler) don't need to set this value.
-    ILS_NAME_KEY = u"ils_name"
-    ILS_NAME_DEFAULT = u"default"
+    ILS_NAME_KEY = "ils_name"
+    ILS_NAME_DEFAULT = "default"
 
     def __init__(self, _db, collection):
         if collection.protocol != ExternalIntegration.OVERDRIVE:
@@ -363,7 +363,7 @@ class OverdriveAPI(object):
         """
         # We don't cache this because it changes constantly.
         status_code, headers, content = self.get(link, {})
-        if isinstance(content, basestring):
+        if isinstance(content, str):
             content = json.loads(content)
 
         # Find the link to the next page of results, if any.
@@ -415,7 +415,7 @@ class OverdriveAPI(object):
             item_id=identifier.identifier
         )
         status_code, headers, content = self.get(url, {})
-        if isinstance(content, basestring):
+        if isinstance(content, str):
             content = json.loads(content)
         return content
 
@@ -425,7 +425,7 @@ class OverdriveAPI(object):
             item_id=identifier
         )
         status_code, headers, content = self.get(url, {})
-        if isinstance(content, basestring):
+        if isinstance(content, str):
             content = json.loads(content)
         return OverdriveRepresentationExtractor.book_info_to_metadata(content)
 
@@ -437,15 +437,15 @@ class OverdriveAPI(object):
         This is completely obnoxious and I have complained about it to
         Overdrive.
         """
-        parts = list(urlparse.urlsplit(url))
-        parts[2] = urllib.quote(parts[2])
+        parts = list(urllib.parse.urlsplit(url))
+        parts[2] = urllib.parse.quote(parts[2])
         query_string = parts[3]
         query_string = query_string.replace("+", "%2B")
         query_string = query_string.replace(":", "%3A")
         query_string = query_string.replace("{", "%7B")
         query_string = query_string.replace("}", "%7D")
         parts[3] = query_string
-        return urlparse.urlunsplit(tuple(parts))
+        return urllib.parse.urlunsplit(tuple(parts))
 
     def _do_get(self, url, headers):
         """This method is overridden in MockOverdriveAPI."""
@@ -468,14 +468,14 @@ class MockOverdriveAPI(OverdriveAPI):
             _db, Collection,
                 name="Test Overdrive Collection",
                 create_method_kwargs=dict(
-                    external_account_id=u'c'
+                    external_account_id='c'
                 )
             )
         integration = collection.create_external_integration(
             protocol=ExternalIntegration.OVERDRIVE
         )
-        integration.username = u'a'
-        integration.password = u'b'
+        integration.username = 'a'
+        integration.password = 'b'
         integration.set_setting('website_id', 'd')
         library.collections.append(collection)
         OverdriveAPI.ils_name_setting(_db, collection, library).value = 'e'
@@ -1095,7 +1095,7 @@ class OverdriveAdvantageAccount(object):
             parent = Collection.by_protocol(_db, ExternalIntegration.OVERDRIVE).filter(
                 Collection.external_account_id==self.parent_library_id
             ).one()
-        except NoResultFound, e:
+        except NoResultFound as e:
             # Without the parent's credentials we can't access the child.
             raise ValueError(
                 "Cannot create a Collection whose parent does not already exist."
