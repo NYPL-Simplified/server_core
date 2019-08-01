@@ -25,7 +25,7 @@ from io import StringIO
 import datetime
 import json
 import logging
-import md5
+from hashlib import md5
 import os
 from PIL import Image
 import re
@@ -455,7 +455,7 @@ class Hyperlink(Base, LinkRelations):
         """
         l = [identifier.urn, urllib.parse.quote(data_source.name), urllib.parse.quote(rel)]
         if content:
-            m = md5.new()
+            m = md5()
             if isinstance(content, str):
                 content = content.encode("utf8")
             m.update(content)
