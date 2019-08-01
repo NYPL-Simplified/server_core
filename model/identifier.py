@@ -83,8 +83,7 @@ class Identifier(Base, IdentifierConstants):
             title = ' prim_ed=%d ("%s")' % (records[0].id, records[0].title)
         else:
             title = ""
-        return ("%s/%s ID=%s%s" % (self.type, self.identifier, self.id,
-                                    title)).encode("utf8")
+        return "%s/%s ID=%s%s" % (self.type, self.identifier, self.id, title)
 
     # One Identifier may serve as the primary identifier for
     # several Editions.
@@ -832,7 +831,7 @@ class Equivalency(Base):
             repr(self.output).decode("utf8"),
             self.data_source.name, self.strength, self.votes
         )
-        return r.encode("utf8")
+        return r
 
     @classmethod
     def for_identifiers(self, _db, identifiers, exclude_ids=None):

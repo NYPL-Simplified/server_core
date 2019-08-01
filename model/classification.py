@@ -169,9 +169,8 @@ class Subject(Base):
             age_range= " " + self.target_age_string
         else:
             age_range = ""
-        a = '[%s:%s%s%s%s%s%s]' % (
+        return '[%s:%s%s%s%s%s%s]' % (
             self.type, self.identifier, name, fiction, audience, genre, age_range)
-        return a.encode("utf8")
 
     @property
     def target_age_string(self):

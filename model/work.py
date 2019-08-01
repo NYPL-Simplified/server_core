@@ -312,9 +312,9 @@ class Work(Base):
         return complaints
 
     def __repr__(self):
-        return ('<Work #%s "%s" (by %s) %s lang=%s (%s lp)>' % (
+        return '<Work #%s "%s" (by %s) %s lang=%s (%s lp)>' % (
                 self.id, self.title, self.author, ", ".join([g.name for g in self.genres]), self.language,
-                len(self.license_pools))).encode("utf8")
+                len(self.license_pools))
 
     @classmethod
     def missing_coverage_from(

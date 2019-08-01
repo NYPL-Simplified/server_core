@@ -132,11 +132,10 @@ class Edition(Base, EditionConstants):
 
     def __repr__(self):
         id_repr = repr(self.primary_identifier).decode("utf8")
-        a = ("Edition %s [%r] (%s/%s/%s)" % (
+        return "Edition %s [%r] (%s/%s/%s)" % (
             self.id, id_repr, self.title,
             ", ".join([x.sort_name for x in self.contributors]),
-            self.language))
-        return a.encode("utf8")
+            self.language)
 
     @property
     def language_code(self):

@@ -156,7 +156,7 @@ class Contributor(Base):
             extra += " lc=%s" % self.lc
         if self.viaf:
             extra += " viaf=%s" % self.viaf
-        return ("Contributor %d (%s)" % (self.id, self.sort_name)).encode("utf8")
+        return "Contributor %d (%s)" % (self.id, self.sort_name)
 
     @classmethod
     def author_contributor_tiers(cls):
