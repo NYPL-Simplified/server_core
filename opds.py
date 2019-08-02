@@ -1168,7 +1168,7 @@ class AcquisitionFeed(OPDSFeed):
             xml = etree.fromstring(xml)
         else:
             xml = self._make_entry_xml(work, edition)
-            data = etree.tostring(xml)
+            data = etree.tounicode(xml)
             if field and use_cache:
                 setattr(work, field, data)
 

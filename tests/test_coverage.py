@@ -2267,6 +2267,6 @@ class TestMARCRecordWorkCoverageProvider(DatabaseTest):
         # regenerated.
         work.presentation_ready = True
         provider.run()
-        assert work.title in work.marc_record
-        assert "online resource" in work.marc_record
+        assert work.title.encode("utf8") in work.marc_record
+        assert b"online resource" in work.marc_record
 

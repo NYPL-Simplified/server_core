@@ -237,7 +237,7 @@ class S3Uploader(MirrorUploader):
             if isinstance(part, str):
                 part = part.encode("utf-8")
             else:
-                part = str(part)
+                part = bytes(part)
             new_parts.append(urllib.parse.quote_plus(part))
         return b'/'.join(new_parts)
 

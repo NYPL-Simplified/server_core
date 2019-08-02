@@ -2293,7 +2293,7 @@ class CSVMetadataImporter(object):
         Unicode.
         """
         value = row.get(name, default)
-        if isinstance(value, str):
+        if isinstance(value, bytes):
             value = value.decode("utf8")
         return value
 

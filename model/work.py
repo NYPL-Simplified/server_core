@@ -39,6 +39,7 @@ import logging
 import random
 from sqlalchemy import (
     Boolean,
+    Binary,
     Column,
     DateTime,
     Enum,
@@ -218,7 +219,7 @@ class Work(Base):
     # A precalculated MARC record containing metadata about this
     # work that would be relevant to display in a library's public
     # catalog.
-    marc_record = Column(Text, default=None)
+    marc_record = Column(Binary, default=None)
 
     @property
     def title(self):
