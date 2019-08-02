@@ -616,8 +616,6 @@ class Representation(Base, MediaTypes):
         elif self.resource:
             # This really shouldn't happen.
             url = self.resource.url
-        if isinstance(url, str):
-            url = url.encode("utf8")
         return url
 
     @property
