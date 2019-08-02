@@ -1241,7 +1241,7 @@ class TestWork(DatabaseTest):
 
         work.calculate_opds_entries(verbose=False)
         simple_entry = work.simple_opds_entry
-        assert simple_entry.startswith(b'<entry')
+        assert simple_entry.startswith('<entry')
         eq_(None, work.verbose_opds_entry)
 
         work.calculate_opds_entries(verbose=True)
@@ -1251,7 +1251,7 @@ class TestWork(DatabaseTest):
         eq_(len(simple_entry), len(work.simple_opds_entry))
 
         # The verbose OPDS entry is longer than the simple one.
-        assert work.verbose_opds_entry.startswith(b'<entry')
+        assert work.verbose_opds_entry.startswith('<entry')
         assert len(work.verbose_opds_entry) > len(simple_entry)
 
     def test_calculate_marc_record(self):
