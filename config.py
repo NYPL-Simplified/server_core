@@ -142,10 +142,6 @@ class Configuration(ConfigurationConstants):
     # 'featured' lanes.
     FEATURED_LANE_SIZE = "featured_lane_size"
 
-    # The default value to put into the 'app' field of JSON-format logs,
-    # unless LOG_APP_NAME overrides it.
-    DEFAULT_APP_NAME = 'simplified'
-
     # The name of the per-library per-patron authentication integration
     # regular expression used to derive a patron's external_type from
     # their authorization_identifier.
@@ -157,6 +153,10 @@ class Configuration(ConfigurationConstants):
     INFO = "INFO"
     WARN = "WARN"
     ERROR = "ERROR"
+
+    # The default value to put into the 'app' field of JSON-format logs,
+    # unless LOG_APP_NAME overrides it.
+    DEFAULT_APP_NAME = 'simplified'
 
     # Settings for the integration with protocol=INTERNAL_LOGGING
     LOG_LEVEL = 'log_level'
