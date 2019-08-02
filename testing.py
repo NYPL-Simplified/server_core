@@ -13,6 +13,7 @@ from nose.tools import (
     set_trace,
     eq_,
 )
+from psycopg2.errors import UndefinedTable
 from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import ProgrammingError
 from .config import Configuration
@@ -110,10 +111,12 @@ def package_setup():
         try:
             engine.execute(statement)
         except ProgrammingError as e:
-            if 'does not exist' in e.message:
+            if isinstance(e.orig, UndefinedTable):
                 # This is the first time running these tests
                 # on this server, and the tables don't exist yet.
                 pass
+            else:
+                raise e
 
 
 def package_teardown():
@@ -554,6 +557,8 @@ class DatabaseTest(object):
             self._db, Representation, url=url)
         repr.media_type = media_type
         if media_type and content:
+            if isinstance(content, str):
+                content = content.encode("utf8")
             repr.content = content
             repr.fetched_at = datetime.utcnow()
             if mirrored:

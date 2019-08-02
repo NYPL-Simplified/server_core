@@ -8,7 +8,6 @@ import copy
 import datetime
 import feedparser
 import logging
-import md5
 import os
 import random
 import re
@@ -1227,7 +1226,7 @@ class AcquisitionFeed(OPDSFeed):
                 links.append(AtomFeed.link(rel=rel, href=url, type=image_type))
 
         content = self.annotator.content(work)
-        if isinstance(content, str):
+        if isinstance(content, bytes):
             content = content.decode("utf8")
 
         content_type = 'html'

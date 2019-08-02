@@ -49,6 +49,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     Table,
+    Text,
     Unicode,
 )
 from sqlalchemy.dialects.postgresql import INT4RANGE
@@ -207,17 +208,17 @@ class Work(Base):
 
     # A precalculated OPDS entry containing all metadata about this
     # work that would be relevant to display to a library patron.
-    simple_opds_entry = Column(Unicode, default=None)
+    simple_opds_entry = Column(Text, default=None)
 
     # A precalculated OPDS entry containing all metadata about this
     # work that would be relevant to display in a machine-to-machine
     # integration context.
-    verbose_opds_entry = Column(Unicode, default=None)
+    verbose_opds_entry = Column(Text, default=None)
 
     # A precalculated MARC record containing metadata about this
     # work that would be relevant to display in a library's public
     # catalog.
-    marc_record = Column(Unicode, default=None)
+    marc_record = Column(Text, default=None)
 
     @property
     def title(self):

@@ -961,7 +961,10 @@ class TestWork(DatabaseTest):
             dict(identifier=pool1.identifier.identifier,
                  type=pool1.identifier.type),
         ]
-        eq_(sorted(expect), sorted(search_doc['identifiers']))
+        def s(x):
+            # Sort an identifier dictionary by its identifier value.
+            return sorted(x, key = lambda b: b['identifier'])
+        eq_(s(expect), s(search_doc['identifiers']))
 
         # Each custom list entry for the work is in the 'customlists'
         # section.
@@ -1238,7 +1241,7 @@ class TestWork(DatabaseTest):
 
         work.calculate_opds_entries(verbose=False)
         simple_entry = work.simple_opds_entry
-        assert simple_entry.startswith('<entry')
+        assert simple_entry.startswith(b'<entry')
         eq_(None, work.verbose_opds_entry)
 
         work.calculate_opds_entries(verbose=True)
@@ -1248,7 +1251,7 @@ class TestWork(DatabaseTest):
         eq_(len(simple_entry), len(work.simple_opds_entry))
 
         # The verbose OPDS entry is longer than the simple one.
-        assert work.verbose_opds_entry.startswith('<entry')
+        assert work.verbose_opds_entry.startswith(b'<entry')
         assert len(work.verbose_opds_entry) > len(simple_entry)
 
     def test_calculate_marc_record(self):
@@ -1256,8 +1259,8 @@ class TestWork(DatabaseTest):
         work.marc_record = None
 
         work.calculate_marc_record()
-        assert work.title in work.marc_record
-        assert "online resource" in work.marc_record
+        assert work.title.encode("utf8") in work.marc_record
+        assert b"online resource" in work.marc_record
 
     def test_active_licensepool_ignores_superceded_licensepools(self):
         work = self._work(with_license_pool=True,

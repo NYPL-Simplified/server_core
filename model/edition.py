@@ -131,7 +131,7 @@ class Edition(Base, EditionConstants):
     extra = Column(MutableDict.as_mutable(JSON), default={})
 
     def __repr__(self):
-        id_repr = repr(self.primary_identifier).decode("utf8")
+        id_repr = repr(self.primary_identifier)
         return "Edition %s [%r] (%s/%s/%s)" % (
             self.id, id_repr, self.title,
             ", ".join([x.sort_name for x in self.contributors]),
