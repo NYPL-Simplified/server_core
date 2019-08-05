@@ -33,16 +33,16 @@ class TestJSONFormatter(object):
         formatter = JSONFormatter("some app")
         eq_("some app", formatter.app_name)
 
+        exc_info = None
         # Cause an exception so we can capture its exc_info()
         try:
             raise ValueError("fake exception")
         except ValueError as e:
-            pass
-        exception = sys.exc_info()
+            exc_info = sys.exc_info()
 
         record = logging.LogRecord(
             "some logger", logging.DEBUG, "pathname",
-            104, "A message", {}, exception, None
+            104, "A message", {}, exc_info, None
         )
         data = json.loads(formatter.format(record))
         eq_("some logger", data['name'])

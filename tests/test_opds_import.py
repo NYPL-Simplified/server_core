@@ -726,7 +726,7 @@ class TestOPDSImporter(OPDSImporterTest):
         # A Representation was imported for the summary with known
         # content.
         description_rep = description.resource.representation
-        eq_("This is a summary!", description_rep.content)
+        eq_(b"This is a summary!", description_rep.content)
         eq_(Representation.TEXT_PLAIN, description_rep.media_type)
 
         # A Representation was imported for the image with a media type
