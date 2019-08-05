@@ -512,7 +512,7 @@ class Configuration(ConfigurationConstants):
             from .model import ConfigurationSetting
             timeout = ConfigurationSetting.sitewide(
                 _db, cls.SITE_CONFIGURATION_TIMEOUT
-            ).value
+            ).int_value
         if timeout is None:
             timeout = 60
 

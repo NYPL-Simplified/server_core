@@ -644,14 +644,14 @@ class TestWork(DatabaseTest):
         cover_link = lp.add_link(
             Hyperlink.IMAGE, cover_href, lp.data_source,
             media_type=Representation.PNG_MEDIA_TYPE,
-            content=open(sample_cover_path).read()
+            content=open(sample_cover_path, 'rb').read()
         )[0]
 
         thumbnail_href = 'http://thumbnail.png'
         thumbnail_rep = self._representation(
             url=thumbnail_href,
             media_type=Representation.PNG_MEDIA_TYPE,
-            content=open(sample_cover_path).read(),
+            content=open(sample_cover_path, 'rb').read(),
             mirrored=True
         )[0]
 
