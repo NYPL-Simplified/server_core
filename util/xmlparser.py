@@ -2,7 +2,7 @@ import re
 import sys
 from nose.tools import set_trace
 from lxml import etree
-from io import StringIO
+from io import StringIO, BytesIO
 
 class XMLParser(object):
 
@@ -54,14 +54,14 @@ class XMLParser(object):
         if not handler:
             handler = self.process_one
         if isinstance(xml, str):
-            root = None
-
+            xml = xml.encode("utf8")
             # XMLParser can handle most characters and entities that are
             # invalid in XML but it will stop processing a document if it
             # encounters the null character. Remove that character
             # immediately and XMLParser will handle the rest.
-            xml = xml.replace(b"\x00", "")
-            root = etree.parse(StringIO(xml), parser)
+        if isinstance(xml, bytes):
+            xml = xml.replace(b"\x00", b"")
+            root = etree.parse(BytesIO(xml), parser)
         else:
             root = xml
 
