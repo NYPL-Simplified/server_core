@@ -2,7 +2,6 @@
 import os
 import datetime
 from PIL import Image
-from io import StringIO
 import urllib.request, urllib.parse, urllib.error
 from botocore.exceptions import (
     BotoCoreError,
@@ -253,7 +252,9 @@ class TestS3Uploader(S3UploaderTest):
     def test_mirror_one(self):
         edition, pool = self._edition(with_license_pool=True)
         original_cover_location = "http://example.com/a-cover.png"
-        content = open(self.sample_cover_path("test-book-cover.png")).read()
+        content = open(
+            self.sample_cover_path("test-book-cover.png"), 'rb'
+        ).read()
         cover, ignore = pool.add_link(
             Hyperlink.IMAGE, original_cover_location, edition.data_source,
             Representation.PNG_MEDIA_TYPE,
@@ -296,7 +297,7 @@ class TestS3Uploader(S3UploaderTest):
         eq_(Representation.PNG_MEDIA_TYPE, args1['ContentType'])
         assert (datetime.datetime.utcnow() - cover_rep.mirrored_at).seconds < 10
 
-        eq_("i'm an epub", data2)
+        eq_(b"i'm an epub", data2)
         eq_("books-go", bucket2)
         eq_("here.epub", key2)
         eq_(Representation.EPUB_MEDIA_TYPE, args2['ContentType'])

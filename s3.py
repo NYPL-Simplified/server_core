@@ -234,10 +234,9 @@ class S3Uploader(MirrorUploader):
             parts = key
         new_parts = []
         for part in parts:
-            if isinstance(part, str):
-                part = part.encode("utf-8")
-            else:
-                part = bytes(part)
+            if not isinstance(part, (str, bytes)):
+                part = str(part)
+            part = part.encode("utf-8")
             new_parts.append(urllib.parse.quote_plus(part))
         return b'/'.join(new_parts)
 

@@ -21,7 +21,7 @@ from .licensing import (
 )
 from ..util.http import HTTP
 
-from io import StringIO
+from io import BytesIO
 import datetime
 import json
 import logging
@@ -1225,7 +1225,7 @@ class Representation(Base, MediaTypes):
         or in a file on disk.
         """
         if self.content:
-            return StringIO(self.content)
+            return BytesIO(self.content)
         elif self.local_path:
             if not os.path.exists(self.local_path):
                 raise ValueError("%s does not exist." % self.local_path)
@@ -1335,7 +1335,7 @@ class Representation(Base, MediaTypes):
 
         # Save the thumbnail image to the database under
         # thumbnail.content.
-        output = StringIO()
+        output = BytesIO()
         if image.mode != 'RGB':
             image = image.convert('RGB')
         try:
