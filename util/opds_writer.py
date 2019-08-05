@@ -189,7 +189,7 @@ class OPDSMessage(object):
         self.message = message
 
     def __str__(self):
-        return etree.tostring(self.tag)
+        return etree.tounicode(self.tag)
 
     def __repr__(self):
         return etree.tostring(self.tag)
