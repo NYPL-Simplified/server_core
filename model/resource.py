@@ -21,7 +21,7 @@ from .licensing import (
 )
 from ..util.http import HTTP
 
-from io import StringIO
+from io import BytesIO
 import datetime
 import json
 import logging
@@ -625,7 +625,7 @@ class Representation(Base, MediaTypes):
         """
         if not self.fetch_exception and (
             self.content or self.local_path or self.status_code
-            and self.status_code / 100 != 5
+            and int(self.status_code / 100) != 5
         ):
             return True
         return False
@@ -757,10 +757,11 @@ class Representation(Base, MediaTypes):
             media_type = cls._best_media_type(url, headers, presumed_media_type)
             if isinstance(content, str):
                 content = content.encode("utf8")
-        except Exception as fetch_exception:
+        except Exception as e:
             # This indicates there was a problem with making the HTTP
             # request, not that the HTTP request returned an error
             # condition.
+            fetch_exception = e
             logging.error("Error making HTTP request to %s", url, exc_info=fetch_exception)
             exception_traceback = traceback.format_exc()
 
@@ -794,7 +795,7 @@ class Representation(Base, MediaTypes):
             return representation, False
 
         if status_code:
-            status_code_series = status_code / 100
+            status_code_series = int(status_code / 100)
         else:
             status_code_series = None
 
@@ -1088,7 +1089,7 @@ class Representation(Base, MediaTypes):
         # don't want to access. Make a HEAD request to see what
         # happens.
         head_response = head_client(url, headers=headers)
-        if head_response.status_code / 100 != 3:
+        if int(head_response.status_code / 100) != 3:
             # It's not a redirect. Go ahead and make the GET request.
             return True
 
@@ -1225,11 +1226,11 @@ class Representation(Base, MediaTypes):
         or in a file on disk.
         """
         if self.content:
-            return StringIO(self.content)
+            return BytesIO(self.content)
         elif self.local_path:
             if not os.path.exists(self.local_path):
                 raise ValueError("%s does not exist." % self.local_path)
-            return open(self.local_path)
+            return open(self.local_path, 'rb')
         return None
 
     def as_image(self):
@@ -1335,7 +1336,7 @@ class Representation(Base, MediaTypes):
 
         # Save the thumbnail image to the database under
         # thumbnail.content.
-        output = StringIO()
+        output = BytesIO()
         if image.mode != 'RGB':
             image = image.convert('RGB')
         try:

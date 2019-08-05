@@ -287,4 +287,9 @@ class MediaTypes(object):
         ".jpeg" : JPEG_MEDIA_TYPE,
     }
     for media_type, extension in list(FILE_EXTENSIONS.items()):
-        MEDIA_TYPE_FOR_EXTENSION['.' + extension] = media_type
+        extension = '.' + extension
+        if extension not in MEDIA_TYPE_FOR_EXTENSION:
+            # FILE_EXTENSIONS lists more common extensions first.  If
+            # multiple media types have the same extension, the most
+            # common media type will be used.
+            MEDIA_TYPE_FOR_EXTENSION[extension] = media_type

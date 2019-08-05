@@ -791,6 +791,10 @@ class Identifier(Base, IdentifierConstants):
             quality=quality, most_recent_update=most_recent_update
         )
 
+    def __lt__(self, other):
+        """A comparator for Identifiers, making them easy to sort in tests."""
+        return (self.type, self.identifier) < (other.type, other.identifier)
+
 class Equivalency(Base):
     """An assertion that two Identifiers identify the same work.
     This assertion comes with a 'strength' which represents how confident

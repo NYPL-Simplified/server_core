@@ -971,7 +971,9 @@ class DatabaseTest(object):
         """A Representation of the sample cover with the given filename."""
         sample_cover_path = self.sample_cover_path(name)
         return self._representation(
-            media_type="image/png", content=open(sample_cover_path).read())[0]
+            media_type="image/png",
+            content=open(sample_cover_path, 'rb').read()
+        )[0]
 
 
 class SearchClientForTesting(ExternalSearchIndex):
