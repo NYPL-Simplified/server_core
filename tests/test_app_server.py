@@ -433,7 +433,7 @@ class TestErrorHandler(DatabaseTest):
             except Exception as exception:
                 response = handler.handle(exception)
             eq_(500, response.status_code)
-            eq_("An internal error occured", response.data)
+            eq_(b"An internal error occured", response.data)
 
 
     def test_unhandled_error_debug(self):
