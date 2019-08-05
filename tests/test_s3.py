@@ -133,7 +133,7 @@ class TestS3Uploader(S3UploaderTest):
 
     def test_key_join(self):
         """Test the code used to build S3 keys from parts."""
-        parts = ["Gutenberg", "Gutenberg ID", 1234, "Die Flügelmaus.epub"]
+        parts = ["Gutenberg", b"Gutenberg ID", 1234, "Die Flügelmaus.epub"]
         eq_('Gutenberg/Gutenberg+ID/1234/Die+Fl%C3%BCgelmaus.epub',
             S3Uploader.key_join(parts))
 
@@ -378,8 +378,8 @@ class TestS3Uploader(S3UploaderTest):
         [[data, bucket, key, args, ignore]] = s3.client.uploads
 
         eq_(Representation.SVG_MEDIA_TYPE, args['ContentType'])
-        assert 'svg' in data
-        assert 'PNG' not in data
+        assert b'svg' in data
+        assert b'PNG' not in data
 
     def test_multipart_upload(self):
         class MockMultipartS3Upload(MultipartS3Upload):

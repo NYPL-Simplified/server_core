@@ -226,7 +226,7 @@ class S3Uploader(MirrorUploader):
         :param key: Either a key, or a list of parts to be
         assembled into a key.
 
-        :return: A bytestring that can be used as an S3 key.
+        :return: A string that can be used as an S3 key.
         """
         if isinstance(key, str):
             parts = key.split('/')
@@ -234,11 +234,16 @@ class S3Uploader(MirrorUploader):
             parts = key
         new_parts = []
         for part in parts:
-            if not isinstance(part, (str, bytes)):
+            # Convert a bytestring to a string.
+            if isinstance(part, bytes):
+                part = part.decode("utf8")
+            # Convert anything else -- a numeric ID, for instance,
+            # into a string.
+            if not isinstance(part, str):
                 part = str(part)
-            part = part.encode("utf-8")
-            new_parts.append(urllib.parse.quote_plus(part))
-        return b'/'.join(new_parts)
+            quoted = urllib.parse.quote_plus(part)
+            new_parts.append(quoted)
+        return '/'.join(new_parts)
 
     def book_url(self, identifier, extension='.epub', open_access=True,
                  data_source=None, title=None):
