@@ -62,7 +62,10 @@ class CustomList(Base):
 
     def __repr__(self):
         return ('<Custom List name="%s" foreign_identifier="%s" [%d entries]>' % (
-            self.name, self.foreign_identifier, len(self.entries))).encode('utf8')
+            self.name, self.foreign_identifier, len(self.entries)))
+
+    def __lt__(self, other):
+        return (self.foreign_identifier, self.name) < (other.foreign_identifier, other.name)
 
     @classmethod
     def all_from_data_sources(cls, _db, data_sources):
