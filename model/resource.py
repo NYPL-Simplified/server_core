@@ -625,7 +625,7 @@ class Representation(Base, MediaTypes):
         """
         if not self.fetch_exception and (
             self.content or self.local_path or self.status_code
-            and self.status_code / 100 != 5
+            and int(self.status_code / 100) != 5
         ):
             return True
         return False
@@ -795,7 +795,7 @@ class Representation(Base, MediaTypes):
             return representation, False
 
         if status_code:
-            status_code_series = status_code / 100
+            status_code_series = int(status_code / 100)
         else:
             status_code_series = None
 
@@ -1089,7 +1089,7 @@ class Representation(Base, MediaTypes):
         # don't want to access. Make a HEAD request to see what
         # happens.
         head_response = head_client(url, headers=headers)
-        if head_response.status_code / 100 != 3:
+        if int(head_response.status_code / 100) != 3:
             # It's not a redirect. Go ahead and make the GET request.
             return True
 
