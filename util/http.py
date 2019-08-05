@@ -69,7 +69,8 @@ class RemoteIntegrationException(IntegrationException):
         super(RemoteIntegrationException, self).__init__(message, debug_message)
 
     def __str__(self):
-        return self.internal_message % (self.url, self.message)
+        message = super(RemoteIntegrationException, self).__str__()
+        return self.internal_message % (self.url, message)
 
     def document_detail(self, debug=True):
         if debug:
@@ -107,7 +108,7 @@ class BadResponseException(RemoteIntegrationException):
 
     def document_debug_message(self, debug=True):
         if debug:
-            msg = self.message
+            msg = str(self)
             if self.debug_message:
                 msg += "\n\n" + self.debug_message
             return msg
@@ -252,11 +253,11 @@ class HTTP(object):
         except requests.exceptions.Timeout as e:
             # Wrap the requests-specific Timeout exception
             # in a generic RequestTimedOut exception.
-            raise RequestTimedOut(url, e.message)
+            raise RequestTimedOut(url, str(e))
         except requests.exceptions.RequestException as e:
             # Wrap all other requests-specific exceptions in
             # a generic RequestNetworkException.
-            raise RequestNetworkException(url, e.message)
+            raise RequestNetworkException(url, str(e))
 
         return process_response_with(
             url, response, allowed_response_codes, disallowed_response_codes

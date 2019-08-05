@@ -482,6 +482,8 @@ class LogConfiguration(object):
                 if handler:
                     handlers.append(handler)
             except Exception as e:
-                errors.append("Error creating logger %s %s" % (logger.NAME, e.message))
+                errors.append(
+                    "Error creating logger %s %s" % (logger.NAME, str(e))
+                )
 
         return log_level, database_log_level, handlers, errors
