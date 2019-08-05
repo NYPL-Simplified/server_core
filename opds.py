@@ -1805,10 +1805,8 @@ class TestAnnotatorWithGroup(TestAnnotator):
         lanes = self.lanes_by_work.get(work, None)
 
         if lanes:
-            lane_name = lanes[0]['lane'].display_name
-            additional_lanes = lanes[1:]
-            if additional_lanes:
-                self.lanes_by_work[work] = additional_lanes
+            lane_dic = lanes.pop(0)
+            lane_name = lane_dic['lane'].display_name
         else:
             lane_name = str(work.id)
         return ("http://group/%s" % lane_name,

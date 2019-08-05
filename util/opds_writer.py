@@ -143,12 +143,11 @@ class AtomFeed(object):
         )
 
 
-    def __unicode__(self):
+    def __str__(self):
         if self.feed is None:
             return None
 
-        string_tree = etree.tostring(self.feed, pretty_print=True)
-        return string_tree.encode("utf8")
+        return etree.tounicode(self.feed, pretty_print=True)
 
 
 

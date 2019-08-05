@@ -154,7 +154,7 @@ class TestMetadataImporter(DatabaseTest):
         eq_("http://example.com/", image.resource.url)
 
         eq_(Hyperlink.DESCRIPTION, description.rel)
-        eq_("foo", description.resource.representation.content)
+        eq_(b"foo", description.resource.representation.content)
 
     def test_image_with_original_and_rights(self):
         edition = self._edition()
@@ -250,7 +250,7 @@ class TestMetadataImporter(DatabaseTest):
             edition.primary_identifier.links, key=lambda x:x.rel
         )
         eq_(Hyperlink.DESCRIPTION, description.rel)
-        eq_("A great book", description.resource.representation.content)
+        eq_(b"A great book", description.resource.representation.content)
         eq_([], image.resource.representation.thumbnails)
         eq_(None, description.resource.representation.thumbnail_of)
 
