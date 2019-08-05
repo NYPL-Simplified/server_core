@@ -757,10 +757,11 @@ class Representation(Base, MediaTypes):
             media_type = cls._best_media_type(url, headers, presumed_media_type)
             if isinstance(content, str):
                 content = content.encode("utf8")
-        except Exception as fetch_exception:
+        except Exception as e:
             # This indicates there was a problem with making the HTTP
             # request, not that the HTTP request returned an error
             # condition.
+            fetch_exception = e
             logging.error("Error making HTTP request to %s", url, exc_info=fetch_exception)
             exception_traceback = traceback.format_exc()
 
@@ -1229,7 +1230,7 @@ class Representation(Base, MediaTypes):
         elif self.local_path:
             if not os.path.exists(self.local_path):
                 raise ValueError("%s does not exist." % self.local_path)
-            return open(self.local_path)
+            return open(self.local_path, 'rb')
         return None
 
     def as_image(self):

@@ -255,17 +255,17 @@ class TestRepresentation(DatabaseTest):
     def test_set_fetched_content(self):
         representation, ignore = self._representation(self._url, "text/plain")
         representation.set_fetched_content("some text")
-        eq_("some text", representation.content_fh().read())
+        eq_(b"some text", representation.content_fh().read())
 
     def test_set_fetched_content_file_on_disk(self):
         filename = "set_fetched_content_file_on_disk.txt"
         path = os.path.join(self.tmp_data_dir, filename)
-        open(path, "w").write("some text")
+        open(path, "wb").write(b"some text")
 
         representation, ignore = self._representation(self._url, "text/plain")
         representation.set_fetched_content(None, filename)
         fh = representation.content_fh()
-        eq_("some text", fh.read())
+        eq_(b"some text", fh.read())
 
     def test_unicode_content_utf8_default(self):
         unicode_content = "It’s complicated."
