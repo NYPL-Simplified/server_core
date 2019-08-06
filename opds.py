@@ -1414,7 +1414,7 @@ class AcquisitionFeed(OPDSFeed):
                 elements.append(thumbnail_link)
         if description:
             content = description.representation.content
-            if isinstance(content, str):
+            if isinstance(content, bytes):
                 content = content.decode("utf8")
             description_e = AtomFeed.summary(content, type='html')
             elements.append(description_e)

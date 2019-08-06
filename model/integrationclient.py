@@ -20,6 +20,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     relationship,
 )
+import binascii
 
 class IntegrationClient(Base):
     """A client that has authenticated access to this application.
@@ -95,4 +96,4 @@ class IntegrationClient(Base):
         return None
 
     def randomize_secret(self):
-        self.shared_secret = str(os.urandom(24).encode('hex'))
+        self.shared_secret = binascii.hexlify(os.urandom(24)).decode("utf8")

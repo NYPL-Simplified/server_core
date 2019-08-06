@@ -618,7 +618,7 @@ class TestIdentifier(DatabaseTest):
         )[0]
 
         def get_entry_dict(entry):
-            return feedparser.parse(str(etree.tostring(entry))).entries[0]
+            return feedparser.parse(etree.tounicode(entry)).entries[0]
 
         def format_timestamp(timestamp):
             return timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
