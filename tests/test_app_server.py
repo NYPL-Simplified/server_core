@@ -194,8 +194,9 @@ class TestURNLookupController(DatabaseTest):
             eq_(200, response.status_code)
             eq_(OPDSFeed.ACQUISITION_FEED_TYPE,
                 response.headers['Content-Type'])
-            assert identifier.urn in response.data
-            assert work.title in response.data
+            response_data = response.data.decode("utf8")
+            assert identifier.urn in response_data
+            assert work.title in response_data
 
     def test_permalink(self):
         work = self._work(with_license_pool=True)
@@ -209,8 +210,9 @@ class TestURNLookupController(DatabaseTest):
             eq_(200, response.status_code)
             eq_(OPDSFeed.ACQUISITION_FEED_TYPE,
                 response.headers['Content-Type'])
-            assert identifier.urn in response.data
-            assert work.title in response.data
+            response_data = response.data.decode("utf8")
+            assert identifier.urn in response_data
+            assert work.title in response_data
 
 
 class TestComplaintController(DatabaseTest):
@@ -449,7 +451,7 @@ class TestErrorHandler(DatabaseTest):
             except Exception as exception:
                 response = handler.handle(exception)
             eq_(500, response.status_code)
-            assert response.data.startswith('Traceback (most recent call last)')
+            assert response.data.startswith(b'Traceback (most recent call last)')
 
 
     def test_handle_error_as_problem_detail_document(self):

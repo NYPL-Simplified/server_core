@@ -439,7 +439,7 @@ class ContributorData(object):
             log = logging.getLogger("Abstract metadata layer")
             if (response.status_code == 200
                 and response.headers['Content-Type'].startswith('text/plain')):
-                sort_name = response.content.decode("utf8")
+                sort_name = response.content
                 log.info(
                     "Canonicalizer found sort name for %r: %s => %s",
                     identifier_obj, self.display_name, sort_name
