@@ -1629,7 +1629,8 @@ class OPDSImportMonitor(CollectionMonitor, HasSelfTests):
     def _update_headers(self, headers):
         headers = dict(headers or {})
         if self.username and self.password and not 'Authorization' in headers:
-            auth_header = "Basic %s" % base64.b64encode("%s:%s" % (self.username, self.password))
+            creds = "%s:%s" % (self.username, self.password)
+            auth_header = b"Basic %s" % base64.b64encode(creds.encode("utf8"))
             headers['Authorization'] = auth_header
 
         if not 'Accept' in headers:

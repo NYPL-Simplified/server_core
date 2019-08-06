@@ -2402,14 +2402,20 @@ class TestQuery(DatabaseTest):
         # how heavily to weight that hypothesis. Rather than do
         # anything with this information -- which is mostly mocked
         # anyway -- we just stored it in _boosts.
-        boosts = sorted(list(query._boosts.items()), key=lambda x: x[1])
+        boosts = list(query._boosts.items())
         eq_(boosts,
             [
-                ('match imprint', 1),
-                ('match series', 1),
                 ('match title', 1),
-                ('match publisher', 1),
                 ('match subtitle', 1),
+                ('match series', 1),
+                ('match publisher', 1),
+                ('match imprint', 1),
+                ('author query 1', 2),
+                ('author query 2', 3),
+                ('topic query', 4),
+                ('multi match title+subtitle', 5),
+                ('multi match title+series', 5),
+                ('multi match title+author', 5),
                 # The only non-mocked value here is this one. The
                 # substring hypotheses have their own weights, which
                 # we don't see in this test. This is saying that if a
@@ -2419,12 +2425,6 @@ class TestQuery(DatabaseTest):
                 # works that match the filter an edge over works that
                 # don't.
                 (Mock.SUBSTRING_HYPOTHESES, 1.1),
-                ('author query 1', 2),
-                ('author query 2', 3),
-                ('topic query', 4),
-                ('multi match title+author', 5),
-                ('multi match title+subtitle', 5),
-                ('multi match title+series', 5),
             ]
         )
 

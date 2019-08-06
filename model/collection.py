@@ -164,7 +164,7 @@ class Collection(Base, HasFullTableCache):
 
     def __repr__(self):
         return ('<Collection "%s"/"%s" ID=%d>' %
-                (self.name, self.protocol, self.id)).encode('utf8')
+                (self.name, self.protocol, self.id))
 
     def cache_key(self):
         return (self.name, self.external_integration.protocol)
@@ -465,7 +465,9 @@ class Collection(Base, HasFullTableCache):
         name of the collection.
         """
         def encode(detail):
-            return base64.urlsafe_b64encode(detail.encode('utf-8'))
+            if isinstance(detail, str):
+                detail = detail.encode('utf-8')
+            return base64.urlsafe_b64encode(detail)
 
         account_id = self.unique_account_id
         if self.protocol == ExternalIntegration.OPDS_IMPORT:
@@ -477,8 +479,8 @@ class Collection(Base, HasFullTableCache):
         account_id = encode(account_id)
         protocol = encode(self.protocol)
 
-        metadata_identifier = protocol + ':' + account_id
-        return encode(metadata_identifier)
+        metadata_identifier = protocol + b':' + account_id
+        return encode(metadata_identifier).decode("utf8")
 
     @classmethod
     def from_metadata_identifier(cls, _db, metadata_identifier, data_source=None):
@@ -495,11 +497,16 @@ class Collection(Base, HasFullTableCache):
 
         if not collection or opds_collection_without_url:
             def decode(detail):
-                return base64.urlsafe_b64decode(detail.encode('utf-8'))
+                if isinstance(detail, str):
+                    detail = detail.encode("utf8")
+                return base64.urlsafe_b64decode(detail)
 
             details = decode(metadata_identifier)
-            encoded_details  = details.split(':', 1)
+            encoded_details  = details.split(b':', 1)
             [protocol, account_id] = [decode(d) for d in encoded_details]
+
+            protocol = protocol.decode("utf8")
+            account_id = account_id.decode("utf8")
 
             if not collection:
                 collection, is_new = create(
@@ -509,7 +516,7 @@ class Collection(Base, HasFullTableCache):
 
             if protocol == ExternalIntegration.OPDS_IMPORT:
                 # Share the feed URL so the Metadata Wrangler can find it.
-               collection.external_account_id = str(account_id)
+                collection.external_account_id = account_id
 
         if data_source:
             collection.data_source = data_source

@@ -408,9 +408,9 @@ class TestCollection(DatabaseTest):
         assert_raises(ValueError, getattr, self.collection, 'metadata_identifier')
 
         def build_expected(protocol, unique_id):
-            encoded = [base64.b64encode(str(value), '-_')
+            encoded = [base64.b64encode(value.encode("utf8"), b'-_')
                        for value in [protocol, unique_id]]
-            return base64.b64encode(':'.join(encoded), '-_')
+            return base64.b64encode(b':'.join(encoded), b'-_').decode("utf8")
 
         # With a unique identifier, we get back the expected identifier.
         self.collection.external_account_id = 'id'
