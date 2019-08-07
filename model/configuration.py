@@ -2,6 +2,7 @@
 # ExternalIntegration, ConfigurationSetting
 from nose.tools import set_trace
 
+import binascii
 from . import (
     Base,
     get_one,
@@ -447,7 +448,7 @@ class ConfigurationSetting(Base, HasFullTableCache):
         """
         secret = ConfigurationSetting.sitewide(_db, key)
         if not secret.value:
-            secret.value = os.urandom(24).encode('hex')
+            secret_value = binascii.hexlify(os.urandom(24)).decode("utf8")
             # Commit to get this in the database ASAP.
             _db.commit()
         return secret.value
