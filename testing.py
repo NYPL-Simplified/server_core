@@ -1380,4 +1380,6 @@ class MockRequestsResponse(object):
 
     @property
     def text(self):
-        return self.content.decode("utf8")
+        if isisntance(self.content, bytes):
+            return self.content.decode("utf8")
+        return self.content
