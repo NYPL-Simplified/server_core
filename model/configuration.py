@@ -448,7 +448,7 @@ class ConfigurationSetting(Base, HasFullTableCache):
         """
         secret = ConfigurationSetting.sitewide(_db, key)
         if not secret.value:
-            secret_value = binascii.hexlify(os.urandom(24)).decode("utf8")
+            secret.value = binascii.hexlify(os.urandom(24)).decode("utf8")
             # Commit to get this in the database ASAP.
             _db.commit()
         return secret.value
