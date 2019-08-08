@@ -1374,7 +1374,7 @@ class MockRequestsResponse(object):
         content = self.content
         # The queued content might be a JSON string or it might
         # just be the object you'd get from loading a JSON string.
-        if isinstance(content, str):
+        if isinstance(content, (str, bytes)):
             content = json.loads(self.content)
         return content
 
