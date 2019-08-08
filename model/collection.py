@@ -29,8 +29,8 @@ from .licensing import (
     LicensePoolDeliveryMechanism,
 )
 from .work import Work
+from ..util.binary import base64
 
-import base64
 from sqlalchemy import (
     Column,
     exists,
@@ -465,8 +465,6 @@ class Collection(Base, HasFullTableCache):
         name of the collection.
         """
         def encode(detail):
-            if isinstance(detail, str):
-                detail = detail.encode('utf-8')
             return base64.urlsafe_b64encode(detail)
 
         account_id = self.unique_account_id
@@ -479,8 +477,8 @@ class Collection(Base, HasFullTableCache):
         account_id = encode(account_id)
         protocol = encode(self.protocol)
 
-        metadata_identifier = protocol + b':' + account_id
-        return encode(metadata_identifier).decode("utf8")
+        metadata_identifier = protocol + ':' + account_id
+        return encode(metadata_identifier)
 
     @classmethod
     def from_metadata_identifier(cls, _db, metadata_identifier, data_source=None):

@@ -2166,7 +2166,7 @@ class TestOPDSImportMonitor(OPDSImporterTest):
         monitor.password = "a password"
         headers = {}
         new_headers = monitor._update_headers(headers)
-        assert new_headers['Authorization'].startswith(b'Basic')
+        assert new_headers['Authorization'].startswith('Basic')
 
         # However, if the Authorization and/or Accept headers have been
         # filled in by some other piece of code, _update_headers does

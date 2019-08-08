@@ -1,5 +1,4 @@
 from nose.tools import set_trace
-import base64
 import datetime
 import isbnlib
 import os
@@ -61,6 +60,7 @@ from .util.http import (
     BadResponseException,
 )
 from .util.worker_pools import RLock
+from .util.binary import base64
 
 from .testing import MockRequestsResponse
 
@@ -266,7 +266,6 @@ class OverdriveAPI(object):
     def token_post(self, url, payload, headers={}, **kwargs):
         """Make an HTTP POST request for purposes of getting an OAuth token."""
         s = "%s:%s" % (self.client_key, self.client_secret)
-        s = s.encode("utf8")
         auth = base64.standard_b64encode(s).strip()
         headers = dict(headers)
         headers['Authorization'] = "Basic %s" % auth

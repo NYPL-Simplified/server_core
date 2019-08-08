@@ -7,7 +7,6 @@ from collections import (
     defaultdict,
     Counter,
 )
-import base64
 import datetime
 import dateutil
 import feedparser
@@ -23,6 +22,7 @@ from lxml import builder, etree
 
 from .monitor import CollectionMonitor
 from .util import LanguageCodes
+from .util.binary import base64
 from .util.xmlparser import XMLParser
 from .config import (
     CannotLoadConfiguration,
@@ -1639,7 +1639,7 @@ class OPDSImportMonitor(CollectionMonitor, HasSelfTests):
         headers = dict(headers or {})
         if self.username and self.password and not 'Authorization' in headers:
             creds = "%s:%s" % (self.username, self.password)
-            auth_header = b"Basic %s" % base64.b64encode(creds.encode("utf8"))
+            auth_header = "Basic %s" % base64.b64encode(creds)
             headers['Authorization'] = auth_header
 
         if not 'Accept' in headers:

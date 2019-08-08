@@ -58,6 +58,7 @@ class ProfileController(object):
         :param return: A ProblemDetail if there is a problem; otherwise,
             a 3-tuple (response code, media type, entity-body)
         """
+        set_trace()
         media_type = headers.get('Content-Type')
         if media_type != self.MEDIA_TYPE:
             return UNSUPPORTED_MEDIA_TYPE.detailed(
