@@ -2,7 +2,6 @@
 # ExternalIntegration, ConfigurationSetting
 from nose.tools import set_trace
 
-import binascii
 from . import (
     Base,
     get_one,
@@ -16,6 +15,7 @@ from .constants import DataSourceConstants
 from .hasfulltablecache import HasFullTableCache
 from .library import Library
 from ..mirror import MirrorUploader
+from ..util.binary import random_string
 
 import json
 import logging
@@ -448,7 +448,7 @@ class ConfigurationSetting(Base, HasFullTableCache):
         """
         secret = ConfigurationSetting.sitewide(_db, key)
         if not secret.value:
-            secret.value = binascii.hexlify(os.urandom(24)).decode("utf8")
+            secret.value = random_string(24)
             # Commit to get this in the database ASAP.
             _db.commit()
         return secret.value

@@ -2,6 +2,7 @@
 
 import base64 as stdlib_base64
 import binascii
+import os
 
 class UnicodeAwareBase64(object):
     """Simulate the interface of the base64 module, but make it look as
@@ -53,3 +54,11 @@ class UnicodeAwareBase64(object):
 # when you try to encode/decode them, you can use this object instead of
 # the standard 'base64' module.
 base64 = UnicodeAwareBase64("utf8")
+
+def random_string(size):
+    """Generate a random string of binary, encoded as hex digits.
+
+    :param: Size of binary string in bytes.
+    :return: A Unicode string.
+    """
+    return binascii.hexlify(os.urandom(size)).decode("utf8")
