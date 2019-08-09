@@ -96,4 +96,4 @@ class IntegrationClient(Base):
         return None
 
     def randomize_secret(self):
-        self.shared_secret = random_password(24)
+        self.shared_secret = random_string(24)
