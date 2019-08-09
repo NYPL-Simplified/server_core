@@ -464,9 +464,6 @@ class Collection(Base, HasFullTableCache):
         In the metadata wrangler, this identifier is used as the unique
         name of the collection.
         """
-        def encode(detail):
-            return base64.urlsafe_b64encode(detail)
-
         account_id = self.unique_account_id
         if self.protocol == ExternalIntegration.OPDS_IMPORT:
             # Remove ending / from OPDS url that could duplicate the collection
@@ -474,6 +471,7 @@ class Collection(Base, HasFullTableCache):
             while account_id.endswith('/'):
                 account_id = account_id[:-1]
 
+        encode = base64.urlsafe_b64encode
         account_id = encode(account_id)
         protocol = encode(self.protocol)
 
@@ -494,17 +492,10 @@ class Collection(Base, HasFullTableCache):
         )
 
         if not collection or opds_collection_without_url:
-            def decode(detail):
-                if isinstance(detail, str):
-                    detail = detail.encode("utf8")
-                return base64.urlsafe_b64decode(detail)
-
+            decode = base64.urlsafe_b64decode
             details = decode(metadata_identifier)
-            encoded_details  = details.split(b':', 1)
+            encoded_details  = details.split(':', 1)
             [protocol, account_id] = [decode(d) for d in encoded_details]
-
-            protocol = protocol.decode("utf8")
-            account_id = account_id.decode("utf8")
 
             if not collection:
                 collection, is_new = create(
