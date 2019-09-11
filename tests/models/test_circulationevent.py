@@ -157,6 +157,12 @@ class TestCirculationEvent(DatabaseTest):
         eq_(end, event.end)
         eq_(location, event.location)
 
+        # location may be a callable rather than a string; this lets
+        # the creator of the event defer a potentially expensive
+        # lookup until it's absolutely clear that the lookup needs to
+        # happen.
+        location = lambda : "Eastgate Branch"
+
         # If no timestamp is provided, the current time is used. This
         # is the most common case, so basically a new event will be
         # created each time you call log().
@@ -171,7 +177,7 @@ class TestCirculationEvent(DatabaseTest):
         eq_(library, event.library)
         eq_(-2, event.delta)
         eq_(end, event.end)
-        eq_(location, event.location)
+        eq_("Eastgate Branch", event.location)
 
     def test_uniqueness_constraints_no_library(self):
         # If library is null, then license_pool + type + start must be

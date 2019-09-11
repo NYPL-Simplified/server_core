@@ -135,6 +135,12 @@ class CirculationEvent(Base):
         """Log a CirculationEvent to the database, assuming it
         hasn't already been recorded.
         """
+        if callable(location):
+            # The event location is a deferred function, probably
+            # because obtaining it is expensive. There's no way around
+            # it -- we have to do the expensive thing.
+            location = location()
+
         if new_value is None or old_value is None:
             delta = None
         else:
