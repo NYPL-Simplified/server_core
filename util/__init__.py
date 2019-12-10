@@ -649,6 +649,7 @@ zza|||Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki|zaza; dimili; dimli; kirdki
 
     @classmethod
     def name_for_languageset(cls, languages):
+        """Attempt to find any name for a language code."""
         if isinstance(languages, basestring):
             languages = languages.split(",")
         all_names = []
@@ -661,9 +662,8 @@ zza|||Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki|zaza; dimili; dimli; kirdki
                 all_names.append(native_names[0])
             else:
                 names = cls.english_names.get(normalized, [])
-                if not names:
-                    raise ValueError("No native or English name for %s" % l)
-                all_names.append(names[0])
+                if names:
+                    all_names.append(names[0])
         if len(all_names) == 1:
             return all_names[0]
         return "/".join(all_names)

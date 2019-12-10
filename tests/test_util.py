@@ -87,7 +87,10 @@ class TestLanguageCodes(object):
         eq_(u"English/español", m(["eng", "spa"]))
         eq_(u"español/English", m("spa,eng"))
         eq_(u"español/English/Chinese", m(["spa","eng","chi"]))
-        assert_raises(ValueError(m, ["eng, nxx"]))
+        # Ignore any codes that don't have a name,
+        # but return the languages found
+        eq_(u"English", m(["eng", "nxx"]))
+        eq_(u"English/español", m("eng,nxx,spa"))
 
 class DummyAuthor(object):
 
