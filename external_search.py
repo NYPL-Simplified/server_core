@@ -495,7 +495,7 @@ class ExternalSearchIndex(HasSelfTests):
             for q in queries:
                 yield []
 
-        # Create a MultiSearch. 
+        # Create a MultiSearch.
         multi = MultiSearch(using=self.__client)
 
         # Give it a Search object for every query definition passed in
