@@ -1911,6 +1911,17 @@ class OPDSImportMonitor(CollectionMonitor, HasSelfTests):
                 )
                 return True
 
+            # The imported title might be known already but not in the collection we are importing,
+            # check for that condition
+            has_pool = LicensePool.exists(self._db, identifier, self.collection_id, self.importer.data_source_name)
+            if not has_pool:
+                # The collection doesnt have this title. Importing it will create a LicensePool
+                self.log.info(
+                    "Counting %s as new because it is not in the collection.",
+                    identifier
+                )
+                return True
+
     def follow_one_link(self, url, do_get=None):
         """Download a representation of a URL and extract the useful
         information.

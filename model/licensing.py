@@ -203,6 +203,18 @@ class LicensePool(Base):
         )
 
     @classmethod
+    def exists(self, _db, identifier, collection_id, data_source_name):
+        """Determine if we have a license pool for the given id, collection, and datasource"""
+        from datasource import DataSource
+
+        q = _db.query(LicensePool).join(DataSource).filter(LicensePool.collection_id == collection_id,
+                LicensePool.identifier_id == identifier.id,
+                DataSource.name == data_source_name,
+                LicensePool.data_source_id == DataSource.id)
+
+        return _db.query(q.exists()).scalar()
+
+    @classmethod
     def for_foreign_id(self, _db, data_source, foreign_id_type, foreign_id,
                        rights_status=None, collection=None, autocreate=True):
         """Find or create a LicensePool for the given foreign ID."""
