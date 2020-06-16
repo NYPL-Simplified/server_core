@@ -1396,6 +1396,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
 
     NO_DRM = None
     ADOBE_DRM = u"application/vnd.adobe.adept+xml"
+    AXISNOW_DRM = u"http://librarysimplified.org/terms/profiles/axisnow"
     FINDAWAY_DRM = u"application/vnd.librarysimplified.findaway.license+json"
     KINDLE_DRM = u"Kindle DRM"
     NOOK_DRM = u"Nook DRM"
@@ -1415,6 +1416,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
     FEEDBOOKS_AUDIOBOOK_DRM = u"http://www.feedbooks.com/audiobooks/access-restriction"
 
     FEEDBOOKS_AUDIOBOOK_PROFILE = ';profile="%s"' % FEEDBOOKS_AUDIOBOOK_DRM
+    AXISNOW_PROFILE = ';profile="%s"' % AXISNOW_DRM
     STREAMING_PROFILE = ';profile="http://librarysimplified.org/terms/profiles/streaming-media"'
     MEDIA_TYPES_FOR_STREAMING = {
         STREAMING_TEXT_CONTENT_TYPE: MediaTypes.TEXT_HTML_MEDIA_TYPE,
@@ -1506,12 +1508,13 @@ class DeliveryMechanism(Base, HasFullTableCache):
     def implicit_medium(self):
         """What would be a good setting for EditionConstants.MEDIUM for an edition
         available through this DeliveryMechanism?
+
+        TODO: This should either be updated or removed.
         """
-        if self.content_type in (
-                MediaTypes.EPUB_MEDIA_TYPE,
-                MediaTypes.PDF_MEDIA_TYPE,
+        if self.content_type in MediaTypes.BOOK_MEDIA_TYPES + [
                 "Kindle via Amazon",
-                "Streaming Text"):
+                "Streaming Text"
+        ]:
             return EditionConstants.BOOK_MEDIUM
         elif self.content_type in (
                 "Streaming Video" or self.content_type.startswith('video/')
@@ -1538,6 +1541,7 @@ class DeliveryMechanism(Base, HasFullTableCache):
         """Return the media type for this delivery mechanism's
         DRM scheme, assuming it's represented that way.
         """
+
         if self.is_media_type(self.drm_scheme):
             return self.drm_scheme
         return None
@@ -1550,6 +1554,8 @@ class DeliveryMechanism(Base, HasFullTableCache):
         if self.is_media_type(self.content_type):
             if self.drm_scheme == self.FEEDBOOKS_AUDIOBOOK_DRM:
                 return self.content_type + self.FEEDBOOKS_AUDIOBOOK_PROFILE
+            elif self.drm_scheme == self.AXISNOW_DRM:
+                return self.content_type + self.AXISNOW_PROFILE
             return self.content_type
 
         media_type_for_streaming = self.MEDIA_TYPES_FOR_STREAMING.get(self.content_type)

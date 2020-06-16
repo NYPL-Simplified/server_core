@@ -211,6 +211,7 @@ class LinkRelations(object):
 
 class MediaTypes(object):
     EPUB_MEDIA_TYPE = u"application/epub+zip"
+    UNZIPPED_EPUB_MEDIA_TYPE = u'application/vnd.librarysimplified.epub-unzipped'
     PDF_MEDIA_TYPE = u"application/pdf"
     MOBI_MEDIA_TYPE = u"application/x-mobipocket-ebook"
     AMAZON_KF8_MEDIA_TYPE = u"application/x-mobi8-ebook"
@@ -229,6 +230,7 @@ class MediaTypes(object):
     OCTET_STREAM_MEDIA_TYPE = u"application/octet-stream"
     TEXT_PLAIN = u"text/plain"
     AUDIOBOOK_MANIFEST_MEDIA_TYPE = u"application/audiobook+json"
+    AXISNOW_MANIFEST_MEDIA_TYPE = "application/vnd.librarysimplified.axisnow.manifest+json"
     MARC_MEDIA_TYPE = u"application/marc"
 
     # To distinguish internally between Overdrive's audiobook and
@@ -245,6 +247,7 @@ class MediaTypes(object):
 
     BOOK_MEDIA_TYPES = [
         EPUB_MEDIA_TYPE,
+        UNZIPPED_EPUB_MEDIA_TYPE,
         PDF_MEDIA_TYPE,
         MOBI_MEDIA_TYPE,
         MP3_MEDIA_TYPE,
