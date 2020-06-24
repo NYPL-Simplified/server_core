@@ -46,6 +46,10 @@ class TestDeliveryMechanism(DatabaseTest):
             self._db, Representation.AUDIOBOOK_MANIFEST_MEDIA_TYPE,
             DeliveryMechanism.FEEDBOOKS_AUDIOBOOK_DRM
         )
+        self.axisnow_ebook, ignore = DeliveryMechanism.lookup(
+            self._db, MediaTypes.UNZIPPED_EPUB_MEDIA_TYPE,
+            DeliveryMechanism.AXISNOW_DRM
+        )
 
     def test_implicit_medium(self):
         eq_(Edition.BOOK_MEDIUM, self.epub_no_drm.implicit_medium)
@@ -75,6 +79,8 @@ class TestDeliveryMechanism(DatabaseTest):
             self.overdrive_streaming_text.content_type_media_type)
         eq_(Representation.AUDIOBOOK_MANIFEST_MEDIA_TYPE + DeliveryMechanism.FEEDBOOKS_AUDIOBOOK_PROFILE,
             self.audiobook_drm_scheme.content_type_media_type)
+        eq_(MediaTypes.UNZIPPED_EPUB_MEDIA_TYPE + DeliveryMechanism.AXISNOW_PROFILE,
+            self.axisnow_ebook.content_type_media_type)
 
     def test_default_fulfillable(self):
         # Try some well-known media type/DRM combinations known to be
