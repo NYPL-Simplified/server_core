@@ -230,7 +230,6 @@ class MediaTypes(object):
     OCTET_STREAM_MEDIA_TYPE = u"application/octet-stream"
     TEXT_PLAIN = u"text/plain"
     AUDIOBOOK_MANIFEST_MEDIA_TYPE = u"application/audiobook+json"
-    AXISNOW_MANIFEST_MEDIA_TYPE = "application/vnd.librarysimplified.axisnow.manifest+json"
     MARC_MEDIA_TYPE = u"application/marc"
 
     # To distinguish internally between Overdrive's audiobook and
