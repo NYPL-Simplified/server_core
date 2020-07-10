@@ -1,3 +1,4 @@
+# Trivial change
 # encoding: utf-8
 
 # If the genre classification does not match the fiction classification, throw
