@@ -338,6 +338,8 @@ class Loan(Base, LoanAndHoldMixin):
         start = self.start or datetime.datetime.utcnow()
         return start + default_loan_period
 
+Index("ix_loan_external_identifier", Loan.external_identifier)
+
 class Hold(Base, LoanAndHoldMixin):
     """A patron is in line to check out a book.
     """
