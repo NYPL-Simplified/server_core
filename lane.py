@@ -1997,6 +1997,43 @@ class WorkList(object):
                 yield work, lane
 
 
+class JackpotWorkList(WorkList):
+    def initialize(self, library, filter_list):
+        super(JackpotWorkList, self).initialize(library)
+        self.library = library
+        self.filter_list = filter_list
+
+    def groups(self, _db, include_sublanes=True, facets=None,
+               search_engine=None, debug=False, **response_kwargs):
+        """
+        :param facets: A FeaturedFacets object that may restrict the works on view.
+        :param search_engine: An ExternalSearchIndex to use when
+            asking for the featured works in a given WorkList.
+        :param debug: A debug argument passed into `search_engine` when
+            running the search.
+        :yield: A sequence of (Work, WorkList) 2-tuples, with each
+            WorkList representing the child WorkList in which the Work is
+            found.
+        """
+        pagination = Pagination(size=5)
+        queries = []
+        for (collection, medium, availability) in self.filter_list:
+            from external_search import Filter
+            facets = Facets.default(self.library, availability=availability)
+            filter = Filter.from_worklist(_db, self, facets)
+            # filter = Filter(collections=collection, media=medium, languages=["eng"])
+            # filter.availability = availability
+            queries.append((None, filter, pagination))
+
+        resultsets = list(search_engine.query_works_multi(queries))
+        l = Lane()
+        results = l.works_for_resultsets(_db, resultsets)
+
+        flat_list = [item for sublist in results for item in sublist]
+
+        yield None, flat_list
+
+
 class DatabaseBackedWorkList(WorkList):
     """A WorkList that can get its works from the database in addition to
     (or possibly instead of) the search index.

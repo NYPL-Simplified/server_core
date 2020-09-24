@@ -563,40 +563,6 @@ class AcquisitionFeed(OPDSFeed):
     FACET_REL = "http://opds-spec.org/facet"
 
     @classmethod
-    def qa_feed(cls, _db, title, url, annotator,
-               search_engine=None, filter_list=None,
-               **response_kwargs
-    ):
-        """The acquisition feed for items to QA from all collections, with
-        media type of ebook or audiobook, and different availability.
-
-        :param response_kwargs: Extra keyword arguments to pass into
-            the OPDSFeedResponse constructor.
-        
-        :return: An OPDSFeedResponse containing the feed.
-        """
-        pagination = Pagination(size=5)
-        queries = []
-        for (collection, medium, availability) in filter_list:
-            from external_search import Filter
-            filter = Filter(collections=collection, media=medium, languages=["eng"])
-            filter.availability = availability
-            queries.append((None, filter, pagination))
-
-        resultsets = list(search_engine.query_works_multi(queries))
-        l = Lane()
-        results = l.works_for_resultsets(_db, resultsets)
-
-        flat_list = [item for sublist in results for item in sublist]
-        opds_feed = AcquisitionFeed(
-            _db, title, url, flat_list, annotator=annotator
-        )
-
-        return OPDSFeedResponse(
-            response=opds_feed,
-        )
-
-    @classmethod
     def groups(cls, _db, title, url, worklist, annotator,
                facets=None, max_age=None,
                search_engine=None, search_debug=False,
