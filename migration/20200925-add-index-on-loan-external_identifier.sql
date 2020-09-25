@@ -1,0 +1,1 @@
+CREATE index ix_loan_external_identifier on loans (external_identifier);
