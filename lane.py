@@ -2016,22 +2016,25 @@ class JackpotWorkList(WorkList):
             found.
         """
         pagination = Pagination(size=5)
-        queries = []
         for (collection, medium, availability) in self.filter_list:
+            # Set up getting the filter to use for the es query.
             from external_search import Filter
             facets = Facets.default(self.library, availability=availability)
             filter = Filter.from_worklist(_db, self, facets)
-            # filter = Filter(collections=collection, media=medium, languages=["eng"])
-            # filter.availability = availability
-            queries.append((None, filter, pagination))
+            filter.media = medium
 
-        resultsets = list(search_engine.query_works_multi(queries))
-        l = Lane()
-        results = l.works_for_resultsets(_db, resultsets)
+            query = (None, filter, pagination)
 
-        flat_list = [item for sublist in results for item in sublist]
+            # Create a Worklist for every query
+            wl = WorkList()
+            display_name = "%s - %s - %s" % (collection.name, medium, availability)
+            wl.initialize(self.library, display_name=display_name)
+            
+            resultsets = list(search_engine.query_works_multi([query]))
+            [results] = wl.works_for_resultsets(_db, resultsets)
 
-        yield None, flat_list
+            for work in results:
+                yield (work, wl)
 
 
 class DatabaseBackedWorkList(WorkList):
