@@ -523,6 +523,20 @@ class TestOverdriveRepresentationExtractor(OverdriveTestWithAPI):
         eq_(1, awards.value)
         eq_(1, awards.weight)
 
+    def test_book_info_idempotent(self):
+        raw, info = self.sample_json("overdrive_metadata.json")
+        metadata = OverdriveRepresentationExtractor.book_info_to_metadata(info)
+        edition, pool = self._edition(
+            identifier_type=metadata.primary_identifier.type,
+            identifier_id=metadata.primary_identifier.identifier,
+            with_license_pool=True)
+        # The first time we apply the metadata to the edition it should result in a change
+        edition, changed = metadata.apply(edition, pool.collection)
+        eq_(changed, True)
+        # Applying the same metadata to the edition a second time should not result in a change
+        edition, changed = metadata.apply(edition, pool.collection)
+        eq_(changed, False)
+
     def test_image_link_to_linkdata(self):
         def m(link):
             return OverdriveRepresentationExtractor.image_link_to_linkdata(
