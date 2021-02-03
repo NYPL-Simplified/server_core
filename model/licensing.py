@@ -67,9 +67,10 @@ class License(Base):
     # A License belongs to one LicensePool.
     license_pool_id = Column(Integer, ForeignKey('licensepools.id'), index=True)
 
-    # One License can have many Loans.
+    # One License can have many Loans. A Loan might or might not have
+    # an associated License.
     loans = relationship(
-        'Loan', backref='license', cascade='all, delete-orphan'
+        'Loan', backref='license', cascade='all, delete'
     )
 
     __table_args__ = (
@@ -126,28 +127,33 @@ class LicensePool(Base):
     presentation_edition_id = Column(Integer, ForeignKey('editions.id'), index=True)
 
     # If the source provides information about individual licenses, the
-    # LicensePool may have many Licenses.
+    # LicensePool may have many Licenses. Each License must have an
+    # associated LicensePool.
     licenses = relationship(
         'License', backref='license_pool', cascade='all, delete-orphan'
     )
 
-    # One LicensePool can have many Loans.
+    # One LicensePool can have many Loans. Each Loan must have an
+    # associated LicensePool.
     loans = relationship(
         'Loan', backref='license_pool', cascade='all, delete-orphan'
     )
 
-    # One LicensePool can have many Holds.
+    # One LicensePool can have many Holds. Each Hold must have an
+    # associated LicensePool.
     holds = relationship(
         'Hold', backref='license_pool', cascade='all, delete-orphan'
     )
 
-    # One LicensePool can have many CirculationEvents
+    # One LicensePool can have many CirculationEvents. A CirculationEvent may
+    # or may not have an associated LicensePool.
     circulation_events = relationship(
         "CirculationEvent", backref="license_pool",
-        cascade='all, delete-orphan'
+        cascade='all, delete'
     )
 
-    # One LicensePool can be associated with many Complaints.
+    # One LicensePool can be associated with many Complaints. A
+    # Complaint must have an associated LicensePool.
     complaints = relationship(
         'Complaint', backref='license_pool', cascade='all, delete-orphan'
     )

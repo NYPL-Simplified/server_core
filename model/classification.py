@@ -485,6 +485,7 @@ class Genre(Base, HasFullTableCache):
     # One Genre may participate in many WorkGenre assignments.
     works = association_proxy('work_genres', 'work')
 
+    # A WorkGenre must have an associated Genre.
     work_genres = relationship("WorkGenre", backref="genre",
                                cascade="all, delete-orphan")
 

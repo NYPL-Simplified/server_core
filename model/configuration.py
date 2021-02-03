@@ -304,6 +304,8 @@ class ExternalIntegration(Base, HasFullTableCache):
         foreign_keys='Collection.external_integration_id',
     )
 
+    # An ExternalIntegrationLink must have an associated
+    # other_integration.
     links = relationship(
         "ExternalIntegrationLink",
         backref="other_integration",

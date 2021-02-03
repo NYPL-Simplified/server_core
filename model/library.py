@@ -71,21 +71,22 @@ class Library(Base, HasFullTableCache):
     # consumption by the library registry.
     library_registry_shared_secret = Column(Unicode, unique=True)
 
-    # A library may have many Patrons.
+    # A Library may have many Patrons, and each Patron must have a Library.
     patrons = relationship(
         'Patron', backref='library', cascade="all, delete-orphan"
     )
 
     # An Library may have many admin roles.
-    adminroles = relationship("AdminRole", backref="library", cascade="all, delete-orphan")
+    adminroles = relationship("AdminRole", backref="library", cascade="all, delete")
 
     # A Library may have many CachedFeeds.
     cachedfeeds = relationship(
         "CachedFeed", backref="library",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
 
-    # A Library may have many CachedMARCFiles.
+    # A Library may have many CachedMARCFiles, and each CachedMARCFile
+    # must have a library.
     cachedmarcfiles = relationship(
         "CachedMARCFile", backref="library",
         cascade="all, delete-orphan",
@@ -109,10 +110,10 @@ class Library(Base, HasFullTableCache):
         lazy="joined", cascade="all, delete",
     )
 
-    # A Library may have many CirculationEvents
+    # A Library may have many CirculationEvents.
     circulation_events = relationship(
         "CirculationEvent", backref="library",
-        cascade='all, delete-orphan'
+        cascade='all, delete'
     )
 
     _cache = HasFullTableCache.RESET

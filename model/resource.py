@@ -573,7 +573,8 @@ class Representation(Base, MediaTypes):
     # data root.
     local_content_path = Column(Unicode)
 
-    # A Representation may be a CachedMARCFile.
+    # A Representation may be a CachedMARCFile. Each CachedMARCFile must
+    # have a corresponding Representation.
     marc_file = relationship(
         "CachedMARCFile", backref="representation",
         cascade="all, delete-orphan",

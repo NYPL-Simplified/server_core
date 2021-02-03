@@ -57,7 +57,7 @@ class CachedFeed(Base):
     # The content of the feed.
     content = Column(Unicode, nullable=True)
 
-    # Every feed is associated with a Library.
+    # A feed may be associated with a Library.
     library_id = Column(
         Integer, ForeignKey('libraries.id'), index=True
     )

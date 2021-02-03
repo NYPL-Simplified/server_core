@@ -115,7 +115,8 @@ class Collection(Base, HasFullTableCache):
         backref="collections"
     )
 
-    # A Collection can include many LicensePools.
+    # A Collection can include many LicensePools. A LicensePool must
+    # have an associated collection.
     licensepools = relationship(
         "LicensePool", backref="collection",
         cascade="all, delete-orphan"

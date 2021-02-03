@@ -135,7 +135,8 @@ class Work(Base):
     # But this Edition is a composite of provider, metadata wrangler, admin interface, etc.-derived Editions.
     presentation_edition_id = Column(Integer, ForeignKey('editions.id'), index=True)
 
-    # One Work may have many associated WorkCoverageRecords.
+    # One Work may have many associated WorkCoverageRecords. A
+    # WorkCoverageRecord must have an associated Work.
     coverage_records = relationship(
         "WorkCoverageRecord", backref="work",
         cascade="all, delete-orphan"
@@ -146,15 +147,17 @@ class Work(Base):
     # ceasing to exist.
     custom_list_entries = relationship('CustomListEntry', backref='work')
 
-    # One Work may have multiple CachedFeeds, and if a CachedFeed
-    # loses its Work, it ceases to exist.
+    # One Work may have multiple CachedFeeds. A CachedFeed may or may
+    # not have an associated Work.
     cached_feeds = relationship(
-        'CachedFeed', backref='work', cascade="all, delete-orphan"
+        'CachedFeed', backref='work', cascade="all, delete"
     )
 
     # One Work may participate in many WorkGenre assignments.
     genres = association_proxy('work_genres', 'genre',
                                creator=WorkGenre.from_genre)
+
+    # A WorkGenre must have an associated Work.
     work_genres = relationship("WorkGenre", backref="work",
                                cascade="all, delete-orphan")
     audience = Column(Unicode, index=True)

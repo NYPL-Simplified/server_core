@@ -38,8 +38,11 @@ class Admin(Base, HasFullTableCache):
     # Admins can also log in with a local password.
     password_hashed = Column(Unicode, index=True)
 
-    # An Admin may have many roles.
-    roles = relationship("AdminRole", backref="admin", cascade="all, delete-orphan")
+    # An Admin may have many roles. An AdminRole must have an
+    # associated Admin.
+    roles = relationship(
+        "AdminRole", backref="admin", cascade="all, delete-orphan"
+    )
 
     _cache = HasFullTableCache.RESET
     _id_cache = HasFullTableCache.RESET

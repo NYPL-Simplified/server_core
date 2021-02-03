@@ -2514,6 +2514,8 @@ class Lane(Base, DatabaseBackedWorkList, HierarchyWorkList):
     # this is how the contents of the lanes are defined.
     genres = association_proxy('lane_genres', 'genre',
                                creator=LaneGenre.from_genre)
+
+    # A LaneGenre must have an associated Lane.
     lane_genres = relationship(
         "LaneGenre", foreign_keys="LaneGenre.lane_id", backref="lane",
         cascade='all, delete-orphan'
@@ -2606,13 +2608,13 @@ class Lane(Base, DatabaseBackedWorkList, HierarchyWorkList):
     # A Lane may have many CachedFeeds.
     cachedfeeds = relationship(
         "CachedFeed", backref="lane",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
 
     # A Lane may have many CachedMARCFiles.
     cachedmarcfiles = relationship(
         "CachedMARCFile", backref="lane",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
 
     __table_args__ = (
@@ -3092,6 +3094,7 @@ class Lane(Base, DatabaseBackedWorkList, HierarchyWorkList):
         lines.append("Display name: %s" % self.display_name)
         return lines
 
+# A Lane must be associated with some Library.
 Library.lanes = relationship("Lane", backref="library", foreign_keys=Lane.library_id, cascade='all, delete-orphan')
 DataSource.list_lanes = relationship("Lane", backref="_list_datasource", foreign_keys=Lane._list_datasource_id)
 DataSource.license_lanes = relationship("Lane", backref="license_datasource", foreign_keys=Lane.license_datasource_id)

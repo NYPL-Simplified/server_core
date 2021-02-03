@@ -65,12 +65,14 @@ class Identifier(Base, IdentifierConstants):
     type = Column(String(64), index=True)
     identifier = Column(String, index=True)
 
+    # An Equivalency must have an input_id.
     equivalencies = relationship(
         "Equivalency",
         primaryjoin=("Identifier.id==Equivalency.input_id"),
         backref="input_identifiers", cascade="all, delete-orphan"
     )
 
+    # An Equivalency must have an output_id.
     inbound_equivalencies = relationship(
         "Equivalency",
         primaryjoin=("Identifier.id==Equivalency.output_id"),
