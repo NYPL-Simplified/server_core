@@ -99,6 +99,9 @@ class Configuration(ConfigurationConstants):
     # ConfigurationSetting key for the base url of the app.
     BASE_URL_KEY = u'base_url'
 
+    # config item to allow SERVER_NAME to be overridden by BASE_URL on startup
+    OVERRIDE_HOSTNAME = False
+
     # ConfigurationSetting to enable the MeasurementReaper script
     MEASUREMENT_REAPER = 'measurement_reaper_enabled'
 
@@ -180,6 +183,12 @@ class Configuration(ConfigurationConstants):
             "label": _("Base url of the application"),
             "required": True,
             "format": "url",
+        },
+        {
+            "key": OVERRIDE_HOSTNAME,
+            "label": _("Set application SERVER_NAME variable to BASE_URL if it exists on startup"),
+            "default": False,
+            "required": False,
         },
         {
             "key": LOG_LEVEL, "label": _("Log Level"), "type": "select",
