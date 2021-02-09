@@ -829,6 +829,7 @@ class OPDSImporter(object):
         policy = ReplacementPolicy(
             subjects=True,
             links=True,
+            formats=True,
             contributions=True,
             rights=True,
             link_content=True,

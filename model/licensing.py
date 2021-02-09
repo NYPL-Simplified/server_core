@@ -1125,7 +1125,7 @@ class LicensePool(Base):
         if not self.identifier:
             return
         q = Identifier.resources_for_identifier_ids(
-            _db, [self.identifier.id], open_access
+            _db, [self.identifier.id], open_access, data_source=self.data_source
         )
         for resource in q:
             yield resource
@@ -1222,7 +1222,13 @@ class LicensePool(Base):
             self.data_source, self.identifier, *args, **kwargs
         )
 
+    def reset_open_access_download_url(self):
+        """Reset this license pool's open-access download url."""
+        self._open_access_download_url = None
+
+
 Index("ix_licensepools_data_source_id_identifier_id_collection_id", LicensePool.collection_id, LicensePool.data_source_id, LicensePool.identifier_id, unique=True)
+
 
 class LicensePoolDeliveryMechanism(Base):
     """A mechanism for delivering a specific book from a specific

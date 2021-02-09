@@ -3,24 +3,15 @@ import datetime
 import os
 from copy import deepcopy
 
-from nose.tools import (
-    assert_raises_regexp,
-    eq_,
-)
+from nose.tools import assert_raises_regexp, eq_
 from parameterized import parameterized
 
-from . import (
-    DatabaseTest,
-    DummyHTTPClient,
-    DummyMetadataClient,
-)
 from ..analytics import Analytics
-from ..classifier import Classifier
-from ..classifier import NO_VALUE, NO_NUMBER
+from ..classifier import NO_NUMBER, NO_VALUE, Classifier
 from ..metadata_layer import (
-    CSVMetadataImporter,
     CirculationData,
     ContributorData,
+    CSVMetadataImporter,
     IdentifierData,
     LinkData,
     MARCExtractor,
@@ -35,9 +26,10 @@ from ..model import (
     CoverageRecord,
     DataSource,
     Edition,
+    Hyperlink,
     Identifier,
     Measurement,
-    Hyperlink,
+    MediaTypes,
     Representation,
     RightsStatus,
     Subject,
@@ -48,6 +40,7 @@ from ..model import (
 from ..model.configuration import ExternalIntegrationLink
 from ..s3 import MockS3Uploader
 from ..util.http import RemoteIntegrationException
+from . import DatabaseTest, DummyHTTPClient, DummyMetadataClient
 
 
 class TestIdentifierData(object):
@@ -797,7 +790,6 @@ class TestMetadataImporter(DatabaseTest):
         eq_(older_last_update, coverage.timestamp)
 
 
-
 class TestContributorData(DatabaseTest):
     def test_from_contribution(self):
         # Makes sure ContributorData.from_contribution copies all the fields over.
@@ -1282,6 +1274,79 @@ class TestMetadata(DatabaseTest):
         # We need to choose a new presentation edition.
         assert_registered(full=False)
 
+    def test_apply_updates_acquisition_and_cover_links(self):
+        # This test makes sure that Metadata.apply with replace_links=True, replace_formats=True
+        # updates acquisition and cover links.
+
+        # 1. First, let's create an edition.
+        data_source = DataSource.GUTENBERG
+        edition, pool = self._edition(
+            data_source_name=data_source,
+            title="The Wrong Title",
+            with_license_pool=True,
+            with_open_access_download=True
+        )
+
+        # 2. Let's define initial links.
+        open_access_link = 'https://book.epub'
+        cover_full_url = 'https://image/'
+        cover_thumbnail_url = 'https://thumbnail/'
+        links = [
+            LinkData(Hyperlink.OPEN_ACCESS_DOWNLOAD, href=open_access_link, media_type=MediaTypes.EPUB_MEDIA_TYPE),
+            LinkData(Hyperlink.IMAGE, href=cover_full_url, media_type=MediaTypes.PNG_MEDIA_TYPE),
+            LinkData(Hyperlink.THUMBNAIL_IMAGE, href=cover_thumbnail_url, media_type=MediaTypes.PNG_MEDIA_TYPE)
+        ]
+
+        # 3. Now let's update edition's metadata with the links defined above.
+        metadata = Metadata(
+            data_source=data_source,
+            primary_identifier=edition.primary_identifier,
+            links=links
+        )
+        metadata.circulation = CirculationData(
+            data_source=data_source,
+            primary_identifier=edition.primary_identifier,
+            links=links
+        )
+        edition, ignore = metadata.edition(self._db)
+        edition, _ = metadata.apply(edition, pool.collection, replace_links=True, replace_formats=True)
+
+        # 4. After the initial import let's make sure that the links were set correctly.
+        eq_(1, len(edition.license_pools))
+        [license_pool] = edition.license_pools
+        eq_(open_access_link, license_pool.best_open_access_link)
+        eq_(cover_full_url, edition.cover_full_url)
+        eq_(cover_thumbnail_url, edition.cover_thumbnail_url)
+
+        # 5. Now let's change the links.
+        open_access_link = 'https://book1234567890.epub'
+        cover_full_url = 'https://image/1234567890'
+        cover_thumbnail_url = 'https://thumbnail/1234567890'
+        links = [
+            LinkData(Hyperlink.OPEN_ACCESS_DOWNLOAD, href=open_access_link, media_type=MediaTypes.EPUB_MEDIA_TYPE),
+            LinkData(Hyperlink.IMAGE, href=cover_full_url, media_type=MediaTypes.PNG_MEDIA_TYPE),
+            LinkData(Hyperlink.THUMBNAIL_IMAGE, href=cover_thumbnail_url, media_type=MediaTypes.PNG_MEDIA_TYPE)
+        ]
+
+        # 6. Update the metadata.
+        metadata = Metadata(
+            data_source=data_source,
+            primary_identifier=edition.primary_identifier,
+            links=links
+        )
+        metadata.circulation = CirculationData(
+            data_source=data_source,
+            primary_identifier=edition.primary_identifier,
+            links=links
+        )
+        edition, _ = metadata.apply(edition, pool.collection, replace_links=True, replace_formats=True)
+
+        # 7. And finally let's make sure that all the links were updated.
+        eq_(1, len(edition.license_pools))
+        [license_pool] = edition.license_pools
+        eq_(open_access_link, license_pool.best_open_access_link)
+        eq_(cover_full_url, edition.cover_full_url)
+        eq_(cover_thumbnail_url, edition.cover_thumbnail_url)
 
     def test_apply_identifier_equivalency(self):
 
@@ -1423,8 +1488,6 @@ class TestMetadata(DatabaseTest):
         eq_(1, records.count())
         eq_(CoverageRecord.TRANSIENT_FAILURE, records.all()[0].status)
 
-
-
     def test_update_contributions(self):
         edition = self._edition()
 
@@ -1480,7 +1543,6 @@ class TestMetadata(DatabaseTest):
         # The genuwine article.
         eq_(known_identifier, result)
 
-
     def test_metadata_can_be_deepcopied(self):
         # Check that we didn't put something in the metadata that
         # will prevent it from being copied. (e.g., self.log)
@@ -1529,7 +1591,6 @@ class TestMetadata(DatabaseTest):
 
         # If deepcopy didn't throw an exception we're ok.
         assert m_copy is not None
-
 
     def test_links_filtered(self):
         # test that filter links to only metadata-relevant ones

@@ -1822,11 +1822,70 @@ class TestOPDSImporter(OPDSImporterTest):
 
         [august_pool] = imported_pools
         eq_(True, august_pool.open_access)
-        eq_(download_manifest_url, august_pool._open_access_download_url)
+        eq_(download_manifest_url, august_pool.open_access_download_url)
 
         [lpdm] = august_pool.delivery_mechanisms
         eq_(Representation.AUDIOBOOK_MANIFEST_MEDIA_TYPE, lpdm.delivery_mechanism.content_type)
         eq_(DeliveryMechanism.NO_DRM, lpdm.delivery_mechanism.drm_scheme)
+
+    def test_importer_updates_acquisition_and_cover_links(self):
+        importer = OPDSImporter(
+            self._db,
+            collection=self._default_collection,
+        )
+
+        # 1. Let's import the initial feed specified content_server_mini.opds file.
+        initial_feed = self.content_server_mini_feed
+        imported_editions, imported_pools, imported_works, failures = (
+            importer.import_from_feed(initial_feed)
+        )
+
+        # 2. Let's make sure that after the initial import the editions have cover links and acquisition links.
+        eq_(2, len(imported_editions))
+
+        book1 = imported_editions[0]
+        eq_(
+            u'https://s3.amazonaws.com/book-covers.nypl.org/Gutenberg-Illustrated/10441/cover_10441_9.png',
+            book1.cover_full_url
+        )
+        eq_(
+            u'https://s3.amazonaws.com/book-covers.nypl.org/Gutenberg-Illustrated/10441/cover_10441_9.thumb.png',
+            book1.cover_thumbnail_url
+        )
+        eq_(1, len(book1.work.license_pools))
+        [book1_license_pool] = book1.work.license_pools
+        eq_(u'http://www.gutenberg.org/ebooks/10441.epub.images', book1_license_pool.open_access_download_url)
+
+        book2 = imported_editions[1]
+        eq_(1, len(book2.work.license_pools))
+        [book2_license_pool] = book2.work.license_pools
+        eq_(u'http://www.gutenberg.org/ebooks/10557.epub.images', book2_license_pool.open_access_download_url)
+
+        # 3. Now let's reimport the feed from content_server_mini_with_different_links.opds file.
+        # Please note that content_server_mini.opds and content_server_mini_with_different_links.opds
+        # are almost identical except the fact that the latter contains different acquisition and cover links.
+        changed_content_server_mini_feed = self.sample_opds(
+            u"content_server_mini_with_different_links.opds"
+        )
+        imported_editions, imported_pools, imported_works, failures = (
+            importer.import_from_feed(changed_content_server_mini_feed)
+        )
+
+        # 4. After the reimport let's make sure that acquisition and cover links have been updated.
+        eq_(2, len(imported_editions))
+
+        book1 = imported_editions[0]
+        eq_(u'http://localhost:5000/cover1.png', book1.cover_full_url)
+        eq_(u'http://localhost:5000/thumbnail1.png', book1.cover_thumbnail_url)
+        eq_(1, len(book1.work.license_pools))
+        [book1_license_pool] = book1.work.license_pools
+        eq_(u'http://localhost:5000/book1.epub', book1_license_pool.open_access_download_url)
+
+        book2 = imported_editions[1]
+        eq_(u'http://localhost:5000/cover2.png', book2.cover_full_url)
+        eq_(1, len(book2.work.license_pools))
+        [book2_license_pool] = book2.work.license_pools
+        eq_(u'http://localhost:5000/book2.epub', book2_license_pool.open_access_download_url)
 
 
 class TestCombine(object):

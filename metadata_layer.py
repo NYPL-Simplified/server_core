@@ -1990,21 +1990,23 @@ class Metadata(MetaToModelUtility):
             # If there is a Work associated with the Edition's primary
             # identifier, mark it for recalculation.
 
-            # Any LicensePool will do here, since all LicensePools for
-            # a given Identifier have the same Work.
-            pool = get_one(
-                _db, LicensePool, identifier=edition.primary_identifier,
-                on_multiple='interchangeable'
-            )
-            if pool and pool.work:
-                work = pool.work
-                if work_requires_full_recalculation:
-                    work.needs_full_presentation_recalculation()
-                else:
-                    work.needs_new_presentation_edition()
+            pools = _db.query(
+                LicensePool).filter(LicensePool.identifier == edition.primary_identifier)
+
+            for pool in pools:
+                pool.reset_open_access_download_url()
+
+            for pool in pools:
+                if pool and pool.work:
+                    work = pool.work
+                    if work_requires_full_recalculation:
+                        work.needs_full_presentation_recalculation()
+                    else:
+                        work.needs_new_presentation_edition()
+
+                    break
 
         return edition, work_requires_new_presentation_edition
-
 
     def make_thumbnail(self, data_source, link, link_obj):
         """Make sure a Hyperlink representing an image is connected
