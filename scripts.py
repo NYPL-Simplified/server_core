@@ -1779,6 +1779,15 @@ class CollectionType(Enum):
     def __str__(self):
         return self.name
 
+    @property
+    def is_self_hosted(self):
+        """Whether this collection type is self-hosted.
+
+        :return: Boolean asserting whether to treat this CollectionType as self-hosted.
+        :rtype: bool
+        """
+        return self in (self.OPEN_ACCESS, self.PROTECTED_ACCESS)
+
 
 class CollectionInputScript(Script):
     """A script that takes collection names as command line inputs."""

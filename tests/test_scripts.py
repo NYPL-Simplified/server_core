@@ -2111,6 +2111,27 @@ class TestConfigureLaneScript(DatabaseTest):
         eq_(expect, output.getvalue())
 
 
+class TestCollectionType(object):
+
+    TEST_MEMBER_PROPERTIES = {
+        CollectionType.LCP:
+            {'is_self_hosted': False, 'test_name': 'LCP is not self-hosted'},
+        CollectionType.OPEN_ACCESS:
+            {'is_self_hosted': True, 'test_name': 'open access is self-hosted'},
+        CollectionType.PROTECTED_ACCESS:
+            {'is_self_hosted': True, 'test_name': 'protected access is self-hosted'},
+    }
+
+    def test_collection_type_membership(self):
+        """Ensure that we will test all values of the CollectionType enumeration."""
+        eq_(len(self.TEST_MEMBER_PROPERTIES), len(CollectionType))
+
+    @parameterized.expand([(v['test_name'], k, v['is_self_hosted']) for k, v in TEST_MEMBER_PROPERTIES.items()])
+    def test_collection_type(self, test_name, collection_type, should_be_self_hosted):
+        """Verify the `is_self_tested` method for each member."""
+        eq_(collection_type.is_self_hosted, should_be_self_hosted)
+
+
 class TestCollectionInputScript(DatabaseTest):
     """Test the ability to name collections on the command line."""
 
