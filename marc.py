@@ -165,7 +165,7 @@ class Annotator(object):
                 Identifier.type==Identifier.ISBN).filter(
                 Identifier.id.in_(identifier_ids)).order_by(
                 Identifier.id).first()
-        if isbn:
+        if isbn and isbn.identifier:
             record.add_field(
                 Field(
                     tag="020",

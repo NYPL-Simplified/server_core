@@ -1689,6 +1689,8 @@ class ReclassifyWorksForUncheckedSubjectsScript(WorkClassificationScript):
 
     batch_size = 100
 
+    timestamp_collection = None
+
     def __init__(self, _db=None):
         if _db:
             self._session = _db
