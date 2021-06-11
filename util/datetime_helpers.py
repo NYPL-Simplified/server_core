@@ -36,6 +36,10 @@ def to_utc(dt):
     """
     if dt is None:
         return None
+    if isinstance(dt, datetime.date):
+        # Dates don't have timezones.
+        # TODO: Not sure about this, maybe it should become midnight.
+        return dt
     if dt.tzinfo is None:
         return dt.replace(tzinfo=pytz.UTC)
     if dt.tzinfo == pytz.UTC:
@@ -48,6 +52,11 @@ def to_naive_utc(dt):
     datetime object that represents UTC.
     """
     if dt is None:
+        return dt
+
+    if isinstance(dt, datetime.date):
+        # Dates don't have timezones.
+        # TODO: Not sure about this, maybe it should become midnight.
         return dt
 
     if dt.tzinfo is None:
