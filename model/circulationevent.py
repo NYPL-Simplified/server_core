@@ -5,7 +5,6 @@
 import logging
 from sqlalchemy import (
     Column,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -15,6 +14,7 @@ from sqlalchemy import (
 
 from . import (
     Base,
+    DateTime,
     get_one_or_create,
 )
 from ..util.datetime_helpers import utc_now

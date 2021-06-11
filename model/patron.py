@@ -7,7 +7,6 @@ from sqlalchemy import (
     Boolean,
     Column,
     Date,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -23,6 +22,7 @@ import uuid
 
 from . import (
     Base,
+    DateTime,
     get_one_or_create,
     numericrange_to_tuple
 )

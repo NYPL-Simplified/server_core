@@ -7,7 +7,6 @@ import logging
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -20,6 +19,7 @@ from sqlalchemy.orm.session import Session
 
 from . import (
     Base,
+    DateTime,
     get_one_or_create,
 )
 from .datasource import DataSource

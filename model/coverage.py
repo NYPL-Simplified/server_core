@@ -3,7 +3,6 @@
 
 from sqlalchemy import (
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -22,6 +21,7 @@ from sqlalchemy.sql.expression import (
 
 from . import (
     Base,
+    DateTime,
     get_one,
     get_one_or_create,
 )

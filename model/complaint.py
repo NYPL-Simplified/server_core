@@ -3,7 +3,6 @@
 
 from sqlalchemy import (
     Column,
-    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -12,6 +11,7 @@ from sqlalchemy.orm.session import Session
 
 from . import (
     Base,
+    DateTime,
     create,
     get_one_or_create,
 )

@@ -6,7 +6,6 @@ from collections import Counter
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     Enum,
     Float,
     ForeignKey,
@@ -49,6 +48,7 @@ from .identifier import Identifier
 from .measurement import Measurement
 from . import (
     Base,
+    DateTime,
     flush,
     get_one_or_create,
     numericrange_to_string,

@@ -3,6 +3,7 @@
 
 from . import (
     Base,
+    DateTime,
     flush,
     get_one,
     get_one_or_create,
@@ -12,7 +13,6 @@ import datetime
 import logging
 from sqlalchemy import (
     Column,
-    DateTime,
     ForeignKey,
     Index,
     Integer,

@@ -5,7 +5,6 @@ import logging
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -23,7 +22,7 @@ from .complaint import Complaint
 from .constants import DataSourceConstants, EditionConstants, LinkRelations, MediaTypes
 from .hasfulltablecache import HasFullTableCache
 from .patron import Hold, Loan, Patron
-from . import Base, create, flush, get_one, get_one_or_create
+from . import Base, create, DateTime, flush, get_one, get_one_or_create
 from ..util.datetime_helpers import utc_now
 
 

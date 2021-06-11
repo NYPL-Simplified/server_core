@@ -6,7 +6,6 @@ import re
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     Integer,
     Unicode,
 )
@@ -16,6 +15,7 @@ from sqlalchemy.orm import (
 
 from . import (
     Base,
+    DateTime,
     get_one,
     get_one_or_create,
 )

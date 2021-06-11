@@ -43,6 +43,26 @@ def to_utc(dt):
         return dt
     return dt.astimezone(pytz.UTC)
 
+def to_naive_utc(dt):
+    """This tries really hard to convert a datetime object into a naive
+    datetime object that represents UTC.
+    """
+    if dt is None:
+        return dt
+
+    if dt.tzinfo is None:
+        # Already naive; we can only assume it also already represents
+        # UTC.
+        return dt
+
+    if dt.tzinfo != pytz.UTC:
+        # Timezone-aware but not UTC. Convert to UTC.
+        dt = to_utc(dt)
+
+    # Now it's a timezone-aware UTC datetime. Remove the tzinfo to
+    # make it naive.
+    return dt.replace(tzinfo=None)
+
 def strptime_utc(date_string, format):
     """Parse a string that describes a time but includes no timezone,
     into a timezone-aware datetime object set to UTC.

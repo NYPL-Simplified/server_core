@@ -7,6 +7,7 @@ from psycopg2.extensions import adapt as sqlescape
 from psycopg2.extras import NumericRange
 from sqlalchemy import (
     Column,
+    DateTime as SQLAlchemyDateTime,
     create_engine,
     ForeignKey,
     Integer,
@@ -45,7 +46,11 @@ from .constants import (
     MediaTypes,
 )
 from .. import classifier
-from ..util.datetime_helpers import utc_now
+from ..util.datetime_helpers import (
+    to_naive_utc,
+    to_utc,
+    utc_now,
+)
 
 def flush(db):
     """Flush the database connection unless it's known to already be flushing."""
@@ -163,6 +168,24 @@ def tuple_to_numericrange(t):
     if not t:
         return None
     return NumericRange(t[0], t[1], '[]')
+
+import sqlalchemy.types as types
+class DateTime(types.TypeDecorator):
+
+    impl = SQLAlchemyDateTime
+
+    def __init__(self, timezone=False):
+        super(DateTime, self).__init__(timezone=False)
+
+    def process_result_value(self, value, dialect):
+        # Convert values to tz-aware UTC on their way in from the database.
+        return to_utc(value)
+
+    def process_bind_param(self, value, dialect):
+        # Convert values to tz-naive UTC, if possible,
+        # on the way out to the database.
+        return to_naive_utc(value)
+
 
 class PresentationCalculationPolicy(object):
     """Which parts of the Work or Edition's presentation

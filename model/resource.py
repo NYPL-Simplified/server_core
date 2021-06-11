@@ -14,7 +14,6 @@ import requests
 from sqlalchemy import (
     Binary,
     Column,
-    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -35,6 +34,7 @@ from urllib.parse import urlparse, urlsplit, quote
 
 from . import (
     Base,
+    DateTime,
     get_one,
     get_one_or_create,
 )

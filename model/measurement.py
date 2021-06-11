@@ -2,7 +2,7 @@
 # Measurement
 
 
-from . import Base
+from . import Base, DateTime
 from .constants import DataSourceConstants
 
 import bisect
@@ -10,7 +10,6 @@ import logging
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     Float,
     ForeignKey,
     Integer,
