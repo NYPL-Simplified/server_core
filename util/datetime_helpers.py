@@ -11,21 +11,21 @@ def datetime_utc(*args, **kwargs):
     """Return a datetime object but with UTC information from pytz.
     :return: datetime object
     """
-    return datetime.datetime(*args, **kwargs, tzinfo=pytz.UTC)
+    return to_naive_utc(datetime.datetime(*args, **kwargs, tzinfo=pytz.UTC))
 
 def from_timestamp(ts):
     """Return a UTC datetime object from a timestamp.
 
     :return: datetime object
     """
-    return datetime.datetime.fromtimestamp(ts, tz=pytz.UTC)
+    return to_naive_utc(datetime.datetime.fromtimestamp(ts, tz=pytz.UTC))
 
 def utc_now():
     """Get the current time in UTC.
 
     :return: datetime object
     """
-    return datetime.datetime.now(tz=pytz.UTC)
+    return to_naive_utc(datetime.datetime.now(tz=pytz.UTC))
 
 def to_utc(dt):
     """This converts a naive datetime object that represents UTC into
@@ -41,11 +41,11 @@ def to_utc(dt):
         # TODO: Not sure about this, maybe it should become midnight.
         return dt
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=pytz.UTC)
+        return to_naive_utc(dt.replace(tzinfo=pytz.UTC))
     if dt.tzinfo == pytz.UTC:
         # Already UTC.
-        return dt
-    return dt.astimezone(pytz.UTC)
+        return to_naive_utc(dt)
+    return to_naive_utc(dt.astimezone(pytz.UTC))
 
 def to_naive_utc(dt):
     """This tries really hard to convert a datetime object into a naive
@@ -54,7 +54,7 @@ def to_naive_utc(dt):
     if dt is None:
         return dt
 
-    if isinstance(dt, datetime.date):
+    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime):
         # Dates don't have timezones.
         # TODO: Not sure about this, maybe it should become midnight.
         return dt
