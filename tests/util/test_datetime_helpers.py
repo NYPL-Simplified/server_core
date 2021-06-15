@@ -38,6 +38,33 @@ class TestDatetimeUTC(object):
         assert util_dt.month == time[1]
         assert util_dt.day == time[2]
 
+    # TODO-UTC: Remove this test so the previous one runs instead.
+    @parameterized.expand([
+        ([2021, 1, 1], "2021-01-01T00:00:00", "2021-01-01T00:00:00"),
+        ([1955, 11, 5, 12], "1955-11-05T12:00:00", "1955-11-05T12:00:00"),
+        ([2015, 10, 21, 4, 29], "2015-10-21T04:29:00", "2015-10-21T04:29:00"),
+        ([2015, 5, 9, 9, 30, 15], "2015-05-09T09:30:15", "2015-05-09T09:30:15"),
+    ])
+    def test_datetime_utc(self, time, formatted, isoformat):
+        """`datetime_utc` is a wrapper around `datetime.datetime` that
+        converts a datetime to UTC and makes it timezone-naive.
+        """
+        time_format = "%Y-%m-%dT%H:%M:%S"
+        dt = datetime.datetime(*time, tzinfo=pytz.UTC)
+        util_dt = datetime_utc(*time)
+
+        # The util function is the same as the datetime function, except
+        # any incoming timezone information is stripped.
+        assert dt.replace(tzinfo=None) == util_dt
+        # A datetime object is returned and works like any datetime object.
+        assert util_dt.tzinfo == None
+        assert util_dt.strftime(time_format) == formatted
+        assert util_dt.isoformat() == isoformat
+        assert util_dt.year == time[0]
+        assert util_dt.month == time[1]
+        assert util_dt.day == time[2]
+
+
 class TestFromTimestamp(object):
     def test_from_timestamp(self):
         """`from_timestamp` is a wrapper around `datetime.fromtimestamp`
@@ -56,6 +83,24 @@ class TestFromTimestamp(object):
         assert util_from_ts.tzinfo is not None
         assert util_from_ts.tzinfo == pytz.UTC
 
+    # TODO-UTC: Remove this test so the previous one runs instead.
+    def test_from_timestamp(self):
+        """`from_timestamp` is a wrapper around `datetime.fromtimestamp`
+        that runs the timezone through to_naive_utc.
+        """
+        ts = 0
+        datetime_from_ts = datetime.datetime.fromtimestamp(ts, tz=pytz.UTC)
+        util_from_ts = from_timestamp(ts)
+
+        # The util function returns the right datetime object from a timestamp.
+        assert datetime_from_ts.replace(tzinfo=None) == util_from_ts
+        assert datetime_from_ts.strftime("%Y-%m-%d") == "1970-01-01"
+        assert util_from_ts.strftime("%Y-%m-%d") == "1970-01-01"
+
+        # There is no timezone information.
+        assert util_from_ts.tzinfo is None
+
+
 class TestUTCNow(object):
     def test_utc_now(self):
         """`utc_now` is a wrapper around `datetime.now` but it also includes
@@ -63,34 +108,50 @@ class TestUTCNow(object):
         """
         datetime_now = datetime.datetime.now(tz=pytz.UTC)
         util_now = utc_now()
-        
+
         # Same time but it's going to be off by a few milliseconds.
         assert (datetime_now - util_now).total_seconds() < 2
-        
+
         # The UTC information for this datetime object is the pytz UTC value.
         assert util_now.tzinfo == pytz.UTC
-        
+
+    # TODO-UTC: Remove this test so the previous one runs instead.
+    def test_utc_now(self):
+        """`utc_now` is a wrapper around `datetime.utcnow` that runs the
+        result to to_naive_utc.
+        """
+        datetime_now = datetime.datetime.utcnow()
+        util_now = utc_now()
+
+        # Same time but it's going to be off by a few milliseconds.
+        assert (datetime_now - util_now).total_seconds() < 2
+
+        # The result is timezone-naive.
+        assert util_now.tzinfo == None
+
+
 class TestToUTC(object):
     def test_to_utc(self):
         # `utc` marks a naive datetime object as being UTC, or
         # converts a timezone-aware datetime object to UTC.
         d1 = datetime.datetime(2021, 1, 1)
         d2 = datetime.datetime.strptime("2020", "%Y")
-        
+
         assert d1.tzinfo is None
         assert d2.tzinfo is None
-        
+
         d1_utc = to_utc(d1)
         d2_utc = to_utc(d2)
 
         # The wrapper function is the same as the `replace` function,
         # just less verbose.
+
         assert d1_utc == d1.replace(tzinfo=pytz.UTC)
         assert d2_utc == d2.replace(tzinfo=pytz.UTC)
-        # The timezone information is from pytz UTC.
+
         assert d1_utc.tzinfo == pytz.UTC
         assert d2_utc.tzinfo == pytz.UTC
-        
+
         # Passing in None gets you None.
         assert to_utc(None) == None
 
@@ -102,6 +163,26 @@ class TestToUTC(object):
         d1 = datetime.datetime(2021, 1, 1)
         d1_eastern = d1_utc.astimezone(pytz.timezone("US/Eastern"))
         assert d1_utc == to_utc(d1_eastern)
+
+    # TODO-UTC Remove this test so the previous one runs instead.
+    def test_to_utc(self):
+        # Passing in None gets you None.
+        assert to_utc(None) == None
+
+        # Passing in a date, or a timezone-naive datetime is a no-op.
+        d1 = datetime.datetime(2021, 1, 1)
+        assert to_utc(d1) == d1
+
+        d2 = datetime.date(2021, 1, 1)
+        assert to_utc(d2) == d2
+
+        # Passing in a timezone-aware datetime converts the datetime
+        # to UTC and removes timezone information.
+        d1 = datetime.datetime(2021, 1, 1, 0, 0, 0)
+        d1_eastern = d1.astimezone(pytz.timezone("US/Eastern"))
+        d1_utc_naive = to_utc(d1_eastern)
+        assert d1_utc_naive.tzinfo is None
+        assert d1_utc_naive == datetime.datetime(2021, 1, 1, 5, 0, 0)
 
     @parameterized.expand([
         ([2021, 1, 1], "2021-01-01", "%Y-%m-%d"),
@@ -117,3 +198,4 @@ class TestToUTC(object):
             strptime_utc("2020-01-01T12:00:00+0300", "%Y-%m-%dT%H:%M:%S%z")
         assert ("Cannot use strptime_utc with timezone-aware format %Y-%m-%dT%H:%M:%S%z"
                 in str(excinfo.value))
+

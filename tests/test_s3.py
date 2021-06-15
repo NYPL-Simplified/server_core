@@ -777,7 +777,8 @@ class TestS3Uploader(S3UploaderTest):
             'SHORT',
             'Lane',
             datetime_utc(2020, 1, 1, 0, 0, 0),
-            'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00/Lane.mrc'
+            # TODO-UTC 'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00/Lane.mrc'
+            'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00/Lane.mrc'
         ),
         (
             'with_s3_bucket_and_end_time_and_start_time',
@@ -785,7 +786,8 @@ class TestS3Uploader(S3UploaderTest):
             'SHORT',
             'Lane',
             datetime_utc(2020, 1, 2, 0, 0, 0),
-            'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            # TODO-UTC 'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            'https://marc.s3.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00-2020-01-02%2000%3A00%3A00/Lane.mrc',
             datetime_utc(2020, 1, 1, 0, 0, 0),
         ),
         (
@@ -794,7 +796,8 @@ class TestS3Uploader(S3UploaderTest):
             'SHORT',
             'Lane',
             datetime_utc(2020, 1, 2, 0, 0, 0),
-            'https://marc.s3.us-east-2.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            # TODO-UTC 'https://marc.s3.us-east-2.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            'https://marc.s3.us-east-2.amazonaws.com/SHORT/2020-01-01%2000%3A00%3A00-2020-01-02%2000%3A00%3A00/Lane.mrc',
             datetime_utc(2020, 1, 1, 0, 0, 0),
             'us-east-2'
         ),
@@ -804,7 +807,8 @@ class TestS3Uploader(S3UploaderTest):
             'SHORT',
             'Lane',
             datetime_utc(2020, 1, 2, 0, 0, 0),
-            'http://marc/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            # TODO-UTC 'http://marc/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            'http://marc/SHORT/2020-01-01%2000%3A00%3A00-2020-01-02%2000%3A00%3A00/Lane.mrc',
             datetime_utc(2020, 1, 1, 0, 0, 0)
         ),
         (
@@ -813,7 +817,8 @@ class TestS3Uploader(S3UploaderTest):
             'SHORT',
             'Lane',
             datetime_utc(2020, 1, 2, 0, 0, 0),
-            'https://marc/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            # TODO-UTC 'https://marc/SHORT/2020-01-01%2000%3A00%3A00%2B00%3A00-2020-01-02%2000%3A00%3A00%2B00%3A00/Lane.mrc',
+            'https://marc/SHORT/2020-01-01%2000%3A00%3A00-2020-01-02%2000%3A00%3A00/Lane.mrc',
             datetime_utc(2020, 1, 1, 0, 0, 0)
         )
     ])

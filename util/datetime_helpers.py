@@ -36,7 +36,7 @@ def to_utc(dt):
     """
     if dt is None:
         return None
-    if isinstance(dt, datetime.date):
+    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime):
         # Dates don't have timezones.
         # TODO: Not sure about this, maybe it should become midnight.
         return dt
@@ -74,7 +74,7 @@ def to_naive_utc(dt):
 
 def strptime_utc(date_string, format):
     """Parse a string that describes a time but includes no timezone,
-    into a timezone-aware datetime object set to UTC.
+    into a timezone-naive datetime object.
 
     :raise ValueError: If `format` expects timezone information to be
         present in `date_string`.
