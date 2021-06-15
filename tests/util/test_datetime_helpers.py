@@ -8,6 +8,7 @@ from ...util.datetime_helpers import (
     datetime_utc,
     from_timestamp,
     strptime_utc,
+    to_naive_utc,
     to_utc,
     utc_now,
 )
@@ -183,11 +184,15 @@ class TestToUTC(object):
 
         # At this point, UTC is 5 hours ahead of Eastern time.
         d1_utc_naive = to_utc(d1_eastern)
+        
+        expect_1 = to_naive_utc(d1_eastern.astimezone(pytz.UTC))
+        expect_2 = datetime.datetime(2021, 1, 2, 8, 4, 5)
 
         # So we end up with a timezone-naive datetime that
         # represents the corresponding time in UTC.
+        assert expect_1 == expect_2
         assert d1_utc_naive.tzinfo is None
-        assert d1_utc_naive == datetime.datetime(2021, 1, 2, 8, 4, 5)
+        assert d1_utc_naive == expect_2
 
     @parameterized.expand([
         ([2021, 1, 1], "2021-01-01", "%Y-%m-%d"),
