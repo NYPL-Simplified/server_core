@@ -178,11 +178,16 @@ class TestToUTC(object):
 
         # Passing in a timezone-aware datetime converts the datetime
         # to UTC and removes timezone information.
-        d1 = datetime.datetime(2021, 1, 1, 0, 0, 0)
+        d1 = datetime.datetime(2021, 1, 2, 3, 4, 5)
         d1_eastern = d1.astimezone(pytz.timezone("US/Eastern"))
+
+        # At this point, UTC is 5 hours ahead of Eastern time.
         d1_utc_naive = to_utc(d1_eastern)
+
+        # So we end up with a timezone-naive datetime that
+        # represents the corresponding time in UTC.
         assert d1_utc_naive.tzinfo is None
-        assert d1_utc_naive == datetime.datetime(2021, 1, 1, 5, 0, 0)
+        assert d1_utc_naive == datetime.datetime(2021, 1, 2, 8, 4, 5)
 
     @parameterized.expand([
         ([2021, 1, 1], "2021-01-01", "%Y-%m-%d"),
