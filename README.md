@@ -1,4 +1,7 @@
-# Library Simplified Server Core
+# Library Simplified Server Core - DEPRECATED
+
+This module has been deprecated: the code has been moved into [circulation](https://github.com/NYPL-Simplified/circulation).
+
 ![Build Status](https://github.com/nypl-simplified/server_core/actions/workflows/test.yml/badge.svg?branch=develop)
 
 Default Branch: `develop`
